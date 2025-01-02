@@ -1,5 +1,6 @@
 import React from 'react';
-import nav from './nav';
+import Nav from './nav';
+import SideNav from './sideNav';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 
 
@@ -9,19 +10,17 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
-        <div>
-             <AppRouterCacheProvider>
-            <header>
-                {nav()}
-              
+        <div className="flex flex-col min-h-screen">
+            <header className="w-full">
+                <Nav />
             </header>
-            <main>
-                {children}
+            <main className="flex flex-grow">
+                <SideNav  /> {/* Apply margin-top only here */}
+                <div className="flex-grow">{children}</div>
             </main>
-            <footer>
-                <p>&copy; 2023 Mindfull Connect. All rights reserved.</p>
+            <footer className="w-full">
+             
             </footer>
-            </AppRouterCacheProvider>
         </div>
     );
 };

@@ -1,19 +1,51 @@
-import React from 'react';
+import React from "react";
+import BoxOne from "./boxOne";
+import Session from "./Session";
+import Image from "next/image";
 
 const Admin = () => {
-    return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-                <h1 className="text-2xl font-bold mb-4">Welcome to the Blog</h1>
-                <p className="text-gray-700 mb-4">
-                    This is a sample blog page created for testing purposes. You can add your content here.
-                </p>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Read More
-                </button>
-            </div>
+  return (
+    <div className="n bg-[#E6EFF5] pt-12 px-4">
+      <div className="mainContent flex flex-row justify-between">
+        {/* Left Content */}
+        <div className="leftContent">
+          <h1 className="text-[#343C6A] mb-4 text-[20px]">
+            <b>Recent Data </b>
+          </h1>
+          <div className="flex gap-3">
+            <BoxOne />
+            <BoxOne />
+          </div>
+          <div className="flex gap-3 mt-3">
+            <BoxOne />
+            <BoxOne />
+          </div>
         </div>
-    );
+
+        {/* Right Content */}
+        <div className="rightContent">
+          <h1 className="text-[#343C6A] mb-4 text-[20px]">
+            <b>Recent Data </b>
+          </h1>
+          <Session />
+        </div>
+      </div>
+      <div className="mt-8 flex justify-between">
+        <div>
+          <h1 className="text-[#343C6A] mb-4 text-[20px]">
+            <b>Recent Data </b>
+          </h1>
+          <Image src="/graph.png" width={600} height={200} alt="text"></Image>
+        </div>
+        <div className="mr-10">
+          <h1 className="text-[#343C6A] mb-4 text-[20px]">
+            <b>Recent Data </b>
+          </h1>
+          <Image src="/pie.png" width={400} height={200} alt="text"></Image>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Admin;
