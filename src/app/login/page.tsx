@@ -2,8 +2,6 @@
 
 import Image from 'next/image';
 import React, { useState } from 'react';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 export default function LoginPage() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -68,10 +66,39 @@ export default function LoginPage() {
                   className="absolute inset-y-0 right-0 px-3 py-2 text-sm text-gray-500 focus:outline-none"
                 >
                   {passwordVisible ? (
-                    <VisibilityOffIcon className="w-5 h-5" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.98 8.223a12.042 12.042 0 0116.042 0m-1.26 5.914a3.5 3.5 0 10-4.924-4.924m2.477 3.885a6.5 6.5 0 01-10.254-.847M4.493 13.128a12.042 12.042 0 0115.015 0"
+                      />
+                      <line x1="3" y1="21" x2="21" y2="3" stroke="currentColor" strokeWidth={1.5} />
+                    </svg>
                   ) : (
-                    <VisibilityIcon className="w-5 h-5" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5c7.732 0 11.19 5.965 11.19 5.965S19.732 16.5 12 16.5 0.81 10.465 0.81 10.465 4.268 4.5 12 4.5z"
+                      />
+                      <circle cx="12" cy="10.5" r="3" fill="currentColor" />
+                    </svg>
                   )}
+
                 </button>
               </div>
             </div>
@@ -81,14 +108,14 @@ export default function LoginPage() {
                 <input type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500" />
                 <span className="ml-2">Remember me</span>
               </label>
-              <a href="#" className="text-sm text-blue-500 hover:underline">
+              <a href="#" className="text-sm text-blue-600 hover:underline">
                 Forgot password?
               </a>
             </div>
 
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-blue-600 text-white rounded-3xl shadow-sm bg hover:bg-blue-800"
+              className="w-full py-2 px-4 bg-blue-600 text-white rounded-3xl shadow-sm bg hover:bg-blue-700"
             >
               Sign in
             </button>
