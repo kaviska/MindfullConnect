@@ -1,4 +1,4 @@
-"use client";  // Add this line at the top of your file
+"use client";
 
 import { useState } from "react";
 
@@ -75,15 +75,6 @@ export default function BlogCreation() {
                     onChange={handleImageUpload}
                     style={{ display: "block", marginBottom: "10px" }}
                 />
-                <button onClick={() => document.getElementById("blog-images")?.click()}>Add Photo</button>
-            </div>
-            <div>
-                <h4>Selected Images:</h4>
-                <ul>
-                    {images.map((image, index) => (
-                        <li key={index}>{image.name}</li>
-                    ))}
-                </ul>
             </div>
         </div>
     );
