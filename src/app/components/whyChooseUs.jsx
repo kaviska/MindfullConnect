@@ -1,4 +1,6 @@
-import React from "react";
+import * as React from 'react';
+
+
 
 const FeaturesSection = () => {
   return (
@@ -6,12 +8,13 @@ const FeaturesSection = () => {
       <section
         id="features"
         className="relative block px-6 py-10 md:py-20 md:px-10 border-t border-b border-neutral-900 bg-neutral-900/30"
-      >
+       >
         <div className="relative mx-auto max-w-5xl text-center">
-          <span className="text-gray-400 my-3 flex items-center justify-center font-medium uppercase tracking-wider">
-            Why choose us
-          </span>
-          <h2 className="block w-full bg-gradient-to-b from-white to-gray-400 bg-clip-text font-bold text-transparent text-3xl sm:text-4xl">
+        <h1 className="bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent  my-3 flex items-center justify-center text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-wider">
+        Why choose us
+        </h1>
+
+          <h2 className="block w-full bg-gradient-to-b from-white to-gray-400  bg-clip-text font-bold text-transparent text-3xl sm:text-4xl">
             Build a Website That Your Customers Love
           </h2>
           <p className="mx-auto my-4 w-full max-w-xl bg-transparent text-center font-medium leading-relaxed tracking-wide text-gray-400">
@@ -117,6 +120,7 @@ const FeaturesSection = () => {
             borderColor: "rgba(61, 58, 94, 0.2)",
           }}
         ></div>
+        
       </section>
     </div>
   );
@@ -140,5 +144,6 @@ const FeatureItem = ({ icon, title, description }) => {
     </div>
   );
 };
+
 
 export default FeaturesSection;
