@@ -12,11 +12,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div>
             <AppRouterCacheProvider>
                 <header>
-                    <Nav />
+                   
                 </header>
                 <main>
                     {children}
-                    <PatientDetailsForm />  {/* Render as a component, not a function */}
+                    {/* <PatientDetailsForm />  Render as a component, not a function */}
                 </main>
                 <footer>
                     <p>&copy; 2023 Mindfull Connect. All rights reserved.</p>

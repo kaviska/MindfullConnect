@@ -1,5 +1,11 @@
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
+
 import { Bell } from 'lucide-react';
+
+interface NavLinkProps extends PropsWithChildren {
+  href: string;
+  active?: boolean;
+}
 
 const Nav = () => {
   return (
@@ -57,7 +63,7 @@ const Nav = () => {
 };
 
 // NavLink component for consistent styling
-const NavLink = ({ href, children, active = false }) => {
+const NavLink: React.FC<NavLinkProps> = ({ href, children, active = false }) => {
   return (
     <a
       href={href}
