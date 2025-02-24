@@ -6,7 +6,7 @@ const page = () => {
   return (
     <div>
       <WhyChooseUs/>
-      {/* <MultiActionAreaCard /> */}
+      <MultiActionAreaCard />
     </div>
   )
 }
