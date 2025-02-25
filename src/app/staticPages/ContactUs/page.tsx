@@ -6,11 +6,11 @@ interface StaticLayoutProps {
 
 export default function ContactUs({ children }: StaticLayoutProps) {
     return (
-        <div className="min-h-screen flex flex-col items-center py-10 bg-[#ffffff] "> {/* Reduced padding */}
+        <div className="min-h-screen flex flex-col items-center py-10 bg-[#E1F3FD] ">
             <h1 className="text-[64px] font-bold text-[#1045A1] font-inter text-center">
                 Contact Us
             </h1>
-            <div className="w-full max-w-7xl flex flex-col gap-20 mt-5 ml-100"> {/* Added gap */}
+            <div className="w-full max-w-7xl flex flex-col gap-20 mt-5 ml-100">
                 {['Full Name', 'Email', 'Message'].map((label, index) => (
                     <div key={index} className="flex flex-col w-[400px] ml-10 mr-10">
                         <span className="text-[26px] font-montserrat text-[#00024B] text-left">
