@@ -5,6 +5,20 @@
 :root {
  
 }
+/* globals.css */
+.sign-in-left {
+  background-image: url('/signIn.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 110vh;
+}
+.sign-up-left {
+  background-image: url('/signUp.svg');
+  background-size: cover;
+  background-position: center;
+  height: 110vh;
+}
+
 
 @media (prefers-color-scheme: dark) {
   :root {
