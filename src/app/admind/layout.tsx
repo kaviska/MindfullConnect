@@ -13,7 +13,7 @@ export default function AdminLayout() {
             setOpenDropdown(openDropdown === menu ? null : menu);
         } else {
             setActiveMenu(menu);
-            setOpenDropdown(null); // Close any open dropdown when clicking a main item
+            setOpenDropdown(null);
         }
     };
 
@@ -35,7 +35,6 @@ export default function AdminLayout() {
 
     return (
         <div className="flex h-screen">
-            {/* Sidebar */}
             <div className="w-64 bg-white shadow-md p-4 flex flex-col items-center">
                 <img src="/logo.png" alt="Logo" className="w-20 h-20 object-contain mb-6" />
                 <ul className="w-full pl-4">
@@ -62,9 +61,7 @@ export default function AdminLayout() {
                 </ul>
             </div>
 
-            {/* Main Content */}
             <div className="flex-1 bg-[#E6EFF5]">
-                {/* Header */}
                 <header className="h-[110px] bg-white shadow-md flex items-center px-8 justify-between">
                     <h1 className="text-[#343C6A] text-[28px] font-semibold font-inter">Admin</h1>
                     <div className="flex items-center gap-6">
