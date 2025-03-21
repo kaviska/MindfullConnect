@@ -6,7 +6,7 @@ interface StaticLayoutProps {
 
 export default function ContactUs({ children }: StaticLayoutProps) {
     return (
-        <div className="min-h-screen flex flex-col items-center py-10 bg-[#E1F3FD] ">
+        <div className="min-h-screen flex flex-col items-center ml-20 py-10 bg-[#E1F3FD]">
             <h1 className="text-[64px] font-bold text-[#1045A1] font-inter text-center">
                 Contact Us
             </h1>
