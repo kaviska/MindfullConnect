@@ -1,18 +1,48 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
+export default function SignupPage() {
 
-export default function LoginPage() {
+  const router =useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
-  
   const [user,setUser]=React.useState({
     email:"",
     password:"",
-   
+    username:"",
   })
+   const [buttonDisabled,setButtonDisabled]=React.useState(false);
+   const [Loading,setLoading]=React.useState(false)
+  useEffect(()=>{
+       if(user.email.length>0 && user.password.length>0){
+        setButtonDisabled(false); 
+       }
+       else{
+        setButtonDisabled(true);
+       }
+  },[user]);
+  
+   const onSignup = async () =>{
+   try {
+    setLoading(true);
+    const respose= await axios.post("/api/users/signup",user);
+    console.log("Signup success",respose.data);
+    router.push("/login");
+   } 
+   catch (error:any) {
+    console.log("Signup failed",error.message);
+    toast.error(error.message);
+   }
+   finally{
+    setLoading(false);
+   }
+
+  }
+
   //password visibility
   const togglePasswordVisibility = () => {
     setPasswordVisible(prevState => !prevState);
@@ -40,9 +70,23 @@ export default function LoginPage() {
         </div>
         <div className="w-full max-w-md px-6 py-12">
         <h1 className="text-4xl font-semibold mb-14 mt-6 text-blue-500">MindfulConnect</h1>
-          <h2 className="text-xl font-semibold mb-6 text-slate-700">Nice to see you again!</h2>
+          <h2 className="text-xl font-semibold mb-6 text-slate-700">Hello,here's to hope and healing !</h2>
 
           <form className="space-y-6">
+
+          <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                User Name
+              </label>
+              <input
+                type="text"
+                id="username"
+                value={user.username}
+                onChange={(e)=>setUser({...user,username:e.target.value})}
+                placeholder="Username"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email
@@ -73,7 +117,8 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
-                  onClick={togglePasswordVisibility}
+                  onClick={togglePasswordVisibility }
+                 
                   className="absolute inset-y-0 right-0 px-3 py-2 text-sm text-gray-500 focus:outline-none"
                 >
                   {passwordVisible ? (
@@ -126,9 +171,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
+              onClick={onSignup}
               className="w-full py-2 px-4 bg-blue-600 text-white rounded-3xl shadow-sm bg hover:bg-blue-700"
             >
-              Login
+              Sign up
             </button>
           </form>
 
