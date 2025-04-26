@@ -2,7 +2,7 @@ export interface ChatUser {
   name: string;
   role?: string;
   avatar?: string;
-  status?: "online" | "offline";
+  status?: string;
   lastMessage?: string;
   lastMessageTime?: string;
   unreadCount?: number;
@@ -13,7 +13,7 @@ export interface ChatMessage {
   id: string;
   content: string;
   timestamp: string;
-  sender: "user" | "other";
+  sender: string | { _id: string; fullName: string };
   attachment?: {
     type: string;
     name: string;
@@ -33,4 +33,18 @@ export interface FileTypeItem {
   count: string;
   size: string;
   bgColor: string;
+}
+export interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  profileImageUrl?: string;
+  lastSeen?: string;
+  role: string;
+}
+
+export interface Conversation {
+  _id: string;
+  participants: User[];
+  lastMessage?: ChatMessage;
 }

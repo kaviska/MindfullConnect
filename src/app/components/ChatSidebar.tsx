@@ -1,26 +1,108 @@
 "use client";
-import React from "react";
-import { ChatUserItem } from "./ChatUserItem";
-import { ChatUser } from "./types";
 
-export const ChatSidebar: React.FC = () => {
-  const users: ChatUser[] = [
-    {
-      name: "Jean-Eude Cokou",
-      status: "online",
-      avatar: "avatar1",
-      isTyping: true,
-      lastMessageTime: "5min ago",
-      unreadCount: 4,
-    },
-    {
-      name: "UI Design team",
-      lastMessage: "Frejus: Tell more about wireframe..",
-      lastMessageTime: "8:15 AM",
-      unreadCount: 3,
-    },
-    // Add other users...
-  ];
+import React, { useEffect, useState } from "react";
+import { ChatUserItem } from "./ChatUserItem";
+import { ChatUser, Conversation, User } from "./types";
+import { useAuth } from "@/context/AuthContext";
+
+interface ChatSidebarProps {
+  onSelectConversation: (conversationId: string) => void;
+  conversations: Conversation[];
+  users: User[];
+}
+
+export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, conversations, users }) => {
+  const { user, token } = useAuth();
+  const [otherUsers, setOtherUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(conversations[0]?._id || null); // Initially select the first conversation
+
+  // Filter users for "Start a new conversation" section
+  useEffect(() => {
+    if (!users) {
+      setIsLoadingUsers(false);
+      return;
+    }
+
+    // Get participant IDs from existing conversations (excluding the logged-in user)
+    const conversationParticipantIds = conversations
+      .flatMap((conv) => conv.participants)
+      .map((p) => p._id)
+      .filter((id) => id !== user?._id);
+
+    // Filter out users who are already in conversations
+    const filteredUsers = users.filter(
+      (u) => u._id !== user?._id && !conversationParticipantIds.includes(u._id)
+    );
+
+    setOtherUsers(filteredUsers);
+    setIsLoadingUsers(false);
+  }, [users, user, conversations]);
+
+  const mapConversationToChatUser = (conv: Conversation): ChatUser => {
+    console.log("Mapping conversation:", conv._id, "Participants:", conv.participants);
+    console.log("Logged-in user ID:", user?._id);
+
+    const otherParticipant = conv.participants.find((p) => p._id !== user?._id);
+    console.log("Selected other participant:", otherParticipant);
+
+    return {
+      name: otherParticipant?.fullName || "Unknown",
+      status: "offline",
+      avatar: otherParticipant?.profileImageUrl || "avatar1",
+      isTyping: false,
+      lastMessage: conv.lastMessage?.content,
+      lastMessageTime: conv.lastMessage?.timestamp
+        ? new Date(conv.lastMessage.timestamp).toLocaleTimeString()
+        : "Unknown",
+      unreadCount: 0,
+    };
+  };
+
+  const mapUserToChatUser = (u: User): ChatUser => ({
+    name: u.fullName,
+    status: "offline",
+    avatar: u.profileImageUrl || "avatar1",
+    isTyping: false,
+    lastMessage: "",
+    lastMessageTime: "",
+    unreadCount: 0,
+  });
+
+  const conversationUsers: ChatUser[] = conversations.map(mapConversationToChatUser);
+  const otherChatUsers: ChatUser[] = otherUsers.map(mapUserToChatUser);
+
+  const handleStartConversation = async (participantId: string) => {
+    if (!token) return;
+
+    try {
+      console.log("Starting new conversation with participant:", participantId);
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ participantId }),
+      });
+
+      const data = await res.json();
+      console.log("Response from POST /api/conversations:", data);
+      if (res.ok) {
+        setSelectedConversationId(data.conversation._id); // Set the new conversation as active
+        onSelectConversation(data.conversation._id);
+      } else {
+        console.error("Failed to start conversation:", data.error);
+      }
+    } catch (error) {
+      console.error("Error starting conversation:", error);
+    }
+  };
+
+  const handleSelectConversation = (conversationId: string) => {
+    setSelectedConversationId(conversationId); // Update the selected conversation ID
+    onSelectConversation(conversationId);
+  };
 
   return (
     <aside className="flex gap-2.5 items-start bg-white min-h-[805px] min-w-60 w-[306px]">
@@ -77,9 +159,40 @@ export const ChatSidebar: React.FC = () => {
         </header>
 
         <section className="mt-6 w-full bg-white rounded-xl">
-          {users.map((user, index) => (
-            <ChatUserItem key={user.name} user={user} isActive={index === 0} />
-          ))}
+          {conversationUsers.length > 0 ? (
+            <>
+              <h3 className="px-5 text-sm font-semibold text-gray-700">Conversations</h3>
+              {conversationUsers.map((chatUser, index) => (
+                <div
+                  key={conversations[index]._id}
+                  onClick={() => handleSelectConversation(conversations[index]._id)}
+                >
+                  <ChatUserItem
+                    user={chatUser}
+                    isActive={selectedConversationId === conversations[index]._id}
+                  />
+                </div>
+              ))}
+            </>
+          ) : (
+            <p className="px-5 text-sm text-gray-500">No conversations yet.</p>
+          )}
+
+          <h3 className="px-5 mt-6 text-sm font-semibold text-gray-700">Start a new conversation</h3>
+          {isLoadingUsers ? (
+            <p className="px-5 text-sm text-gray-500">Loading users...</p>
+          ) : otherChatUsers.length > 0 ? (
+            otherChatUsers.map((chatUser, index) => (
+              <div
+                key={otherUsers[index]._id}
+                onClick={() => handleStartConversation(otherUsers[index]._id)}
+              >
+                <ChatUserItem user={chatUser} isActive={false} />
+              </div>
+            ))
+          ) : (
+            <p className="px-5 text-sm text-gray-500">No other users available.</p>
+          )}
         </section>
       </div>
     </aside>
