@@ -1,18 +1,37 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 export default function LoginPage() {
+   const router =useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
-  
+    const [buttonDisabled,setButtonDisabled]=React.useState(false);
+    const [Loading,setLoading]=React.useState(false);
   const [user,setUser]=React.useState({
     email:"",
     password:"",
    
   })
+
+  const onLogin = async() =>{
+    try {
+    }
+  catch(error){
+
+  }
+  }
+useEffect(()=>{
+  if(user.email.length>0&&user.password.length>0){
+    setButtonDisabled(false);
+  }
+  else{
+    setButtonDisabled(true);
+  }
+},[user]);
+  
   //password visibility
   const togglePasswordVisibility = () => {
     setPasswordVisible(prevState => !prevState);

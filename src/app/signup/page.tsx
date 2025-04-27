@@ -10,13 +10,14 @@ export default function SignupPage() {
 
   const router =useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [buttonDisabled,setButtonDisabled]=React.useState(false);
+  const [Loading,setLoading]=React.useState(false);
   const [user,setUser]=React.useState({
     email:"",
     password:"",
     username:"",
   })
-   const [buttonDisabled,setButtonDisabled]=React.useState(false);
-   const [Loading,setLoading]=React.useState(false)
+   
   useEffect(()=>{
        if(user.email.length>0 && user.password.length>0){
         setButtonDisabled(false); 
@@ -26,7 +27,7 @@ export default function SignupPage() {
        }
   },[user]);
   
-   const onSignup = async () =>{
+   const onSignup = async() =>{
    try {
     setLoading(true);
     const respose= await axios.post("/api/users/signup",user);
