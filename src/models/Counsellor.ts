@@ -29,3 +29,5 @@ const CounsellorSchema = new mongoose.Schema({
 
 const Counsellor =
   mongoose.models.Counsellor || mongoose.model("Counsellor", CounsellorSchema);
+
+export default Counsellor;
