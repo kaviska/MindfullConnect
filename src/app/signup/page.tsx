@@ -7,42 +7,36 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 export default function SignupPage() {
-
-  const router =useRouter();
+  const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [buttonDisabled,setButtonDisabled]=React.useState(false);
-  const [Loading,setLoading]=React.useState(false);
-  const [user,setUser]=React.useState({
-    email:"",
-    password:"",
-    username:"",
-  })
-   
-  useEffect(()=>{
-       if(user.email.length>0 && user.password.length>0){
-        setButtonDisabled(false); 
-       }
-       else{
-        setButtonDisabled(true);
-       }
-  },[user]);
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+    username: "",
+  });
   
-   const onSignup = async() =>{
-   try {
-    setLoading(true);
-    const respose= await axios.post("/api/users/signup",user);
-    console.log("Signup success",respose.data);
-    router.push("/login");
-   } 
-   catch (error:any) {
-    console.log("Signup failed",error.message);
-    toast.error(error.message);
-   }
-   finally{
-    setLoading(false);
-   }
+  useEffect(() => {
+    setButtonDisabled(!(user.email && user.password && user.username));
+  }, [user]);
 
-  }
+  const onSignup = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent default form submission
+    try {
+      setLoading(true);
+      const response = await axios.post("/api/users/signup", user);
+      console.log("Signup success", response.data);
+      toast.success("Account created successfully!");
+      router.push("/login");
+    } catch (error: any) {
+      console.error("Signup failed", error);
+      const errorMessage = error.response?.data?.error || error.message;
+      toast.error(errorMessage || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   //password visibility
   const togglePasswordVisibility = () => {

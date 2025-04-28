@@ -4,33 +4,37 @@ import Image from 'next/image';
 import React, { useState,useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-
+import toast from 'react-hot-toast';
 export default function LoginPage() {
-   const router =useRouter();
+  const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
-    const [buttonDisabled,setButtonDisabled]=React.useState(false);
-    const [Loading,setLoading]=React.useState(false);
-  const [user,setUser]=React.useState({
-    email:"",
-    password:"",
-   
-  })
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+  });
 
-  const onLogin = async() =>{
+  const onLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent default form submission
     try {
+      setLoading(true);
+      const response = await axios.post("/api/users/login", user);
+      console.log("Login success", response.data);
+      toast.success("Login successful!");
+      router.push("/profile");
+    } catch (error: any) {
+      console.error("Login failed", error);
+      const errorMessage = error.response?.data?.error || error.message;
+      toast.error(errorMessage || "Login failed");
+    } finally {
+      setLoading(false);
     }
-  catch(error){
+  };
 
-  }
-  }
-useEffect(()=>{
-  if(user.email.length>0&&user.password.length>0){
-    setButtonDisabled(false);
-  }
-  else{
-    setButtonDisabled(true);
-  }
-},[user]);
+  useEffect(() => {
+    setButtonDisabled(!(user.email && user.password));
+  }, [user]);
   
   //password visibility
   const togglePasswordVisibility = () => {
@@ -61,7 +65,7 @@ useEffect(()=>{
         <h1 className="text-4xl font-semibold mb-14 mt-6 text-blue-500">MindfulConnect</h1>
           <h2 className="text-xl font-semibold mb-6 text-slate-700">Nice to see you again!</h2>
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={onLogin}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email

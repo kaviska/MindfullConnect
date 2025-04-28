@@ -1,47 +1,79 @@
 import { connect } from "@/dbConfig/dbConfig";
-import User from "@/models/userModel"
-import { NextRequest,NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import User from "@/models/userModel";
+import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
-import jwt from "jasonwebtoken";
+import jwt from "jsonwebtoken";
 
-connect()
+connect();
 
-export async function POST(request:NextRequest) {
-try {
-    const reqBody = request.json()
-    const {email,password}=reqBody;
-    console.log(reqBody);
+export async function POST(request: NextRequest) {
+  try {
+    const reqBody = await request.json(); // Added 'await' here
+    const { email, password } = reqBody;
+    console.log("Login request:", reqBody);
 
-    //check if user exists
-    const user = await User.findOne{{email}}
-    if(!user){
-        return NextResponse.json({error:"User does not exixst"},{status:400})
+    // Check if user exists
+    const user = await User.findOne({ email }); // Fixed syntax (removed extra braces)
+    if (!user) {
+      return NextResponse.json(
+        { error: "User does not exist" }, // Fixed typo
+        { status: 400 }
+      );
     }
 
-    //check if password is correct
-   const validPassword = await bcryptjs.compare(password,user.password)
-   if(!validPassword){
-    return NextResponse.json({error:"invalid password"},{status:400})
-   }
-//create token data 
-const tokenData ={
-    id:user.id,
-    username:user.username,
-    email:user.email
-}
-// create token
-const token = await jwt.sign(tokenData,process.env.TOKEN_SECRET!,{expiresIn:"1d"})
+    // Check if password is correct
+    const validPassword = await bcryptjs.compare(password, user.password);
+    if (!validPassword) {
+      return NextResponse.json(
+        { error: "Invalid password" },
+        { status: 400 }
+      );
+    }
 
-const response =NextResponse.json({message:"login successful"})
+    // Create token data
+    const tokenData = {
+      id: user._id, // Changed from user.id to user._id (MongoDB uses _id)
+      username: user.username,
+      email: user.email
+    };
 
-response.cookies.set("token",token,{httpOnly:true,})
+    // Create token
+    if (!process.env.TOKEN_SECRET) {
+      throw new Error("TOKEN_SECRET is not defined in environment variables");
+    }
 
-return response;
-} catch (error:any) {
-   return NextResponse.json({error:error.message},{status:500}) 
-}
+    const token = jwt.sign(
+      tokenData,
+      process.env.TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
 
+    const response = NextResponse.json({
+      message: "Login successful",
+      success: true,
+      user: { // Include basic user info in response
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
 
+    // Set cookie
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 86400, // 1 day in seconds
+    });
 
+   
+    return response;
+
+  } catch (error: any) {
+    console.error("Login error:", error);
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
 }
