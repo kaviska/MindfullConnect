@@ -8,7 +8,7 @@ const ClientList: React.FC = () => {
           {clients.map((client, index) => (
             <div key={index} className="text-center">
               <img
-                src="/avatar.png"
+                src="/ava3.svg"
                 alt={client}
                 className="w-12 h-12 mx-auto rounded-full mb-2"
               />
