@@ -1,37 +1,22 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, model, models } from "mongoose";
 
-const QuestionSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  counsellor_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "CounSellor",
-    required: true,
-  },
-  patients_ids: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
-      required: true,
-    },
-  ],
+const QuestionSchema = new Schema({
   question: {
     type: String,
     required: true,
   },
   options: {
-    type: [String], // an array of strings
+    type: [String],
     required: true,
   },
   correct_answer_index: {
     type: Number,
     required: true,
   },
-  tags: {
-    type: [String],
-    default: [],
+  question_group_id: {
+    type: Schema.Types.ObjectId,
+    ref: "QuestionGroup",
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -39,7 +24,7 @@ const QuestionSchema = new mongoose.Schema({
   },
 });
 
-const Question =
-  mongoose.models.Question || mongoose.model("Question", QuestionSchema);
-export default Question;
+// ⭐️ Fix is here
+const Question = models.Question || model("Question", QuestionSchema);
 
+export default Question;

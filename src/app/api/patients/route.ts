@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   await dbConnect();
   try {
+    
     const patients = await Patient.find({});
     return NextResponse.json(patients);
   } catch (error) {

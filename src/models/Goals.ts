@@ -19,3 +19,6 @@ const GoalsSchema = new mongoose.Schema({
         default: Date.now,
     },
     });
+
+const Goals = mongoose.models.Goals || mongoose.model('Goals', GoalsSchema);
+export default Goals;

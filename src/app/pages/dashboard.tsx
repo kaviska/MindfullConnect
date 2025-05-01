@@ -1,11 +1,11 @@
 import React from "react";
-import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
-import StatsCard from "../components/StatsCard";
-import Graph from "../components/Graph";
-import Transactions from "../components/Transactions";
-import ClientList from "../components/ClientList";
-import PieChart from "../components/PieChart";
+import Sidebar from "../../components/Sidebar";
+import Header from "../../components/Header";
+import StatsCard from "../../components/StatsCard";
+import Graph from "../../components/Graph";
+import Transactions from "../../components/Transactions";
+import ClientList from "../../components/ClientList";
+import PieChart from "../../components/PieChart";
 
 const Dashboard: React.FC = () => {
   return (

@@ -5,19 +5,17 @@ const PatientSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
-        type: String,
-        required: true,
-    },
     age: {
         type: Number,
         required: true
     },
+    status: {
+        type: String,
+        enum: ["normal", "danger"],
+        default: "active",
+    },
+  
+    
 })
 
 

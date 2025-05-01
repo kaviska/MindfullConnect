@@ -22,6 +22,8 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   await dbConnect();
   try {
+    //if request has counsellor_id, filter by that id
+    
     const counsellors = await Counsellor.find({});
     return NextResponse.json(counsellors);
   } catch (error) {
