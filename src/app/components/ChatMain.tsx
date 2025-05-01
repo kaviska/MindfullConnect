@@ -9,23 +9,28 @@ interface ChatMainProps {
   user: User | null;
   token: string | null;
   conversation?: Conversation;
+  onToggleProfileSidebar: () => void; // Add prop to toggle ProfileSidebar
 }
 
-export const ChatMain: React.FC<ChatMainProps> = ({ conversationId, user, token, conversation }) => {
+export const ChatMain: React.FC<ChatMainProps> = ({
+  conversationId,
+  user,
+  token,
+  conversation,
+  onToggleProfileSidebar, // Destructure the new prop
+}) => {
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isScrolledUp, setIsScrolledUp] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to the bottom when messages change, unless the user has scrolled up
   useEffect(() => {
     if (!isScrolledUp) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isScrolledUp]);
 
-  // Detect if the user has scrolled up
   useEffect(() => {
     const handleScroll = () => {
       if (messagesContainerRef.current) {
@@ -43,7 +48,6 @@ export const ChatMain: React.FC<ChatMainProps> = ({ conversationId, user, token,
     }
   }, [conversationId]);
 
-  // Fetch messages initially and set up polling
   useEffect(() => {
     if (!conversationId || !token) return;
 
@@ -177,7 +181,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({ conversationId, user, token,
                     alt="Audio call"
                   />
                 </button>
-                <button>
+                <button onClick={onToggleProfileSidebar}>
                   <img
                     src="https://cdn.builder.io/api/v1/image/assets/TEMP/0ee42b3e99f27e7d2774d2c8caf9c4f0b55edf43?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
                     className="object-contain w-6 aspect-square"
@@ -198,7 +202,6 @@ export const ChatMain: React.FC<ChatMainProps> = ({ conversationId, user, token,
                 <div ref={messagesEndRef} />
               </section>
 
-              {/* Scroll to bottom button */}
               {isScrolledUp && (
                 <button
                   onClick={handleScrollToBottom}

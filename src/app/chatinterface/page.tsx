@@ -14,8 +14,8 @@ export const ChatLayout: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [isProfileSidebarVisible, setIsProfileSidebarVisible] = useState(false);
 
-  // Authentication redirect
   useEffect(() => {
     if (isLoading) {
       console.log("AuthContext is still loading, skipping redirect...");
@@ -28,7 +28,6 @@ export const ChatLayout: React.FC = () => {
     }
   }, [user, token, isLoading, router]);
 
-  // Fetch users (excluding the logged-in user)
   const fetchUsers = useCallback(async () => {
     if (isLoading || !user || !token) {
       console.log("Skipping fetchUsers: AuthContext is loading or user/token is null");
@@ -44,7 +43,6 @@ export const ChatLayout: React.FC = () => {
       const data = await res.json();
       console.log("Response from /api/users:", data);
       if (res.ok) {
-        // Filter out the logged-in user
         const filteredUsers = data.users.filter((u: any) => u._id !== user._id);
         console.log("Setting users (excluding logged-in user):", filteredUsers);
         setUsers(filteredUsers);
@@ -56,7 +54,6 @@ export const ChatLayout: React.FC = () => {
     }
   }, [user, token, isLoading]);
 
-  // Fetch conversations
   const fetchConversations = useCallback(async () => {
     if (isLoading || !user || !token) {
       console.log("Skipping fetchConversations: AuthContext is loading or user/token is null");
@@ -87,26 +84,26 @@ export const ChatLayout: React.FC = () => {
     fetchUsers();
   }, [fetchConversations, fetchUsers]);
 
-  // Log conversations state changes for debugging
   useEffect(() => {
     console.log("Conversations state updated:", conversations);
   }, [conversations]);
 
-  // Log users state changes for debugging
   useEffect(() => {
     console.log("Users state updated:", users);
   }, [users]);
 
-  // Define handleSelectConversation before it's used in JSX
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
-    fetchConversations(); // Re-fetch conversations to include the new one
+    fetchConversations();
   };
 
-  // Redirect UI while waiting for the redirect
+  const toggleProfileSidebar = () => {
+    setIsProfileSidebarVisible((prev) => !prev);
+  };
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center h-full">
         <p>Loading authentication...</p>
       </div>
     );
@@ -114,35 +111,36 @@ export const ChatLayout: React.FC = () => {
 
   if (!user || !token) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center h-full">
         <p>Redirecting to login...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col pt-5 max-md:pt-24 w-full">
-      {/* Timeline */}
+    <div className="flex flex-col w-full h-full"> {/* Adjusted styling */}
       <div className="flex justify-center items-center text-xs font-medium text-blue-900 gap-2 my-4">
         <div className="flex-1 h-px bg-indigo-100" />
-        <time>Today</time>
+        <time>Chat Interface 
+          
+        </time>
         <div className="flex-1 h-px bg-indigo-100" />
       </div>
 
-      {/* Main Layout Row */}
-      <div className="flex w-full min-h-screen">
+      <div className="flex w-full h-full"> {/* Adjusted to fit within the section */}
         <ChatSidebar
           onSelectConversation={handleSelectConversation}
           conversations={conversations}
-          users={users} // Pass users to ChatSidebar
+          users={users}
         />
         <ChatMain
           conversationId={selectedConversationId}
           user={user}
           token={token}
           conversation={conversations.find((conv) => conv._id === selectedConversationId)}
+          onToggleProfileSidebar={toggleProfileSidebar}
         />
-        <ProfileSidebar />
+        {isProfileSidebarVisible && <ProfileSidebar />}
       </div>
     </div>
   );

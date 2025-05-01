@@ -23,7 +23,7 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({
         className="object-contain shrink-0 w-10 aspect-square"
       />
       {isSidebarOpen && (
-        <span className="shrink my-auto mx-1">{label}</span>
+        <span className="shrink my-auto mx-1 ">{label}</span>
       )}
     </button>
   );
