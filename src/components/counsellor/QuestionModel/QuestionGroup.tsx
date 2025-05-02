@@ -11,6 +11,11 @@ export default function QuestionGroup() {
    const handleSubmitQuestionGroup = async () => {
     if (questionGroupTitle) {
       try {
+        setToast({
+          open: true,
+          message: "Question group is being createing",
+          type: "info",
+        });
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/question-group`,
           {
@@ -76,6 +81,8 @@ export default function QuestionGroup() {
       >
         Submit Question Group
       </button>
+
+      <button className='bg-blue-600 mt-3 px-3 py-2 text-white rounded-[4px]'>Test Button</button>
 
 
       <Toast

@@ -58,7 +58,7 @@ export default function Counsellor() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="flex flex-wrap md:flex-row flex-col gap-4 justify-center">
           {patients.length > 0 ? (
             patients.map((patient) => (
               <PatientCard key={patient._id} patient={patient} />
