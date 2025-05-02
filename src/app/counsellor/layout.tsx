@@ -15,11 +15,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import Badge from "@mui/material/Badge";
 import { ToastProvider } from "@/contexts/ToastContext"; // Adjust the import path if necessary
 import Pusher from "pusher-js";
-
-
-
 import '../globals.css'
-import { Segment } from "@mui/icons-material";
 
 // Define the theme
 const demoTheme = createTheme({
@@ -78,7 +74,7 @@ function TopNav() {
             color="action"
             className="cursor-pointer"
             onClick={() => {
-              window.location.href = "counsellor/notifications";
+              window.location.href = "http://localhost:3000/counsellor/notifications";
             }}
           />
         </Badge>

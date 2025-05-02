@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CircularProgress, Card, CardContent, Typography, Button } from "@mui/material";
+import {
+  CircularProgress,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import { Alert } from "@mui/material";
 
 interface ShowAssignedQuizProps {
@@ -13,6 +23,7 @@ export default function ShowAssignedQuiz({ counsellor_id, patient_id }: ShowAssi
   const [assignedQuizzes, setAssignedQuizzes] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedQuiz, setSelectedQuiz] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchAssignedQuizzes = async () => {
@@ -23,7 +34,7 @@ export default function ShowAssignedQuiz({ counsellor_id, patient_id }: ShowAssi
         const data = await response.json();
 
         if (response.ok) {
-          setAssignedQuizzes(data);
+          setAssignedQuizzes(data.assignedQuizzes || []);
         } else {
           setError(data.message || "Failed to fetch assigned quizzes.");
         }
@@ -37,6 +48,14 @@ export default function ShowAssignedQuiz({ counsellor_id, patient_id }: ShowAssi
 
     fetchAssignedQuizzes();
   }, [counsellor_id, patient_id]);
+
+  const handleViewQuiz = (quiz: any) => {
+    setSelectedQuiz(quiz);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedQuiz(null);
+  };
 
   if (loading) {
     return (
@@ -78,9 +97,6 @@ export default function ShowAssignedQuiz({ counsellor_id, patient_id }: ShowAssi
               <Typography variant="body2" className="text-gray-500 mb-2">
                 <strong>Status:</strong> {quiz.status}
               </Typography>
-              <Typography variant="body2" className="text-gray-500 mb-2">
-                <strong>Marks:</strong> {quiz.marks}
-              </Typography>
               <Typography variant="body2" className="text-gray-500 mb-4">
                 <strong>Assigned At:</strong> {new Date(quiz.assignedAt).toLocaleDateString()}
               </Typography>
@@ -88,7 +104,7 @@ export default function ShowAssignedQuiz({ counsellor_id, patient_id }: ShowAssi
                 variant="contained"
                 color="primary"
                 className="w-full"
-                onClick={() => console.log(`View Quiz Details for Quiz ID: ${quiz.quiz_id._id}`)}
+                onClick={() => handleViewQuiz(quiz)}
               >
                 View Quiz
               </Button>
@@ -96,6 +112,47 @@ export default function ShowAssignedQuiz({ counsellor_id, patient_id }: ShowAssi
           </Card>
         ))}
       </div>
+
+      {/* Modal for Viewing Quiz Details */}
+      {selectedQuiz && (
+        <Dialog open={!!selectedQuiz} onClose={handleCloseModal} maxWidth="md" fullWidth>
+          <DialogTitle>{selectedQuiz.quiz_id.title}</DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" className="mb-4">
+              {selectedQuiz.quiz_id.description}
+            </Typography>
+            <div className="space-y-4">
+              {selectedQuiz.questions.map((question: any, index: number) => (
+                <div key={index} className="p-4 border rounded-lg shadow-sm">
+                  <Typography variant="h6" className="font-bold mb-2">
+                    Q{index + 1}: {question.question}
+                  </Typography>
+                  <div className="space-y-2">
+                    {question.choices.map((choice: string, choiceIndex: number) => (
+                      <Typography
+                        key={choiceIndex}
+                        variant="body2"
+                        className={`p-2 rounded-lg ${
+                          choice === question.correctAnswer
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100"
+                        }`}
+                      >
+                        {choice}
+                      </Typography>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseModal} color="secondary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </div>
   );
 }

@@ -50,16 +50,21 @@ export default function Home() {
     };
   }, []);
 
-  const markAsRead = async (id: string) => {
+    const markAsRead = async (id: string) => {
     try {
-      await fetch("http://localhost:3000/api/notification-temp", {
+      console.log("Marking as read:", id); // Debug log
+      const response = await fetch("http://localhost:3000/api/notification-temp", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id, is_read: true }),
       });
-
+  
+      if (!response.ok) {
+        throw new Error(`Failed to mark as read: ${response.statusText}`);
+      }
+  
       setNotifications((prev) =>
         prev.map((notification) =>
           notification.id === id ? { ...notification, read: true } : notification
@@ -69,13 +74,21 @@ export default function Home() {
       console.error("Error marking notification as read:", error);
     }
   };
-
+  
   const deleteNotification = async (id: string) => {
     try {
-      await fetch(`http://localhost:3000/api/notification-temp?id=${id}`, {
-        method: "DELETE",
-      });
-
+      console.log("Deleting notification:", id); // Debug log
+      const response = await fetch(
+        `http://localhost:3000/api/notification-temp?id=${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error(`Failed to delete notification: ${response.statusText}`);
+      }
+  
       setNotifications((prev) =>
         prev.filter((notification) => notification.id !== id)
       );
@@ -83,7 +96,6 @@ export default function Home() {
       console.error("Error deleting notification:", error);
     }
   };
-
   return (
     <div className="p-10 bg-gray-100 min-h-screen">
       <h1 className="text-2xl font-bold mb-4">Notifications</h1>

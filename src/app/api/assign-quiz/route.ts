@@ -60,3 +60,46 @@ export async function POST(req: Request) {
   }
 }
 
+export async function GET(req: Request) {
+  try {
+    await dbConnect();
+
+    const { searchParams } = new URL(req.url!);
+    const counsellor_id = searchParams.get("counsellor_id");
+    const patient_id = searchParams.get("patient_id");
+
+    if (!counsellor_id && !patient_id) {
+      return NextResponse.json(
+        { message: "Missing required fields: counsellor_id or patient_id" },
+        { status: 400 }
+      );
+    }
+
+    const query: any = {};
+    if (counsellor_id) query.counsellor_id = counsellor_id;
+    if (patient_id) query.patient_id = patient_id;
+
+    const assignedQuizzes = await AssignedQuiz.find(query)
+      .populate("quiz_id", "title description")
+      .populate("patient_id", "name email")
+      .populate("counsellor_id", "name email");
+
+    if (!assignedQuizzes || assignedQuizzes.length === 0) {
+      return NextResponse.json(
+        { message: "No assigned quizzes found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: "Assigned quizzes retrieved successfully", assignedQuizzes },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error retrieving assigned quizzes:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}

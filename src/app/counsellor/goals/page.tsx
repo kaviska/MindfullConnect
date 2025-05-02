@@ -3,12 +3,13 @@ import PatientCard from "@components/counsellor/PatientCard";
 import QuestionModel from "@components/counsellor/QuestionModel";
 import GoalModel from "@components/counsellor/GoalModel";
 import MileStoneModel from "@components/counsellor/MileStoneModel";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function Counsellor() {
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false);
   const [goalOpen, setGoalOpen] = useState(false);
   const [milestoneOpen, setMilestoneOpen] = useState(false);
+
   interface Patient {
     _id: string;
     name: string;
@@ -16,34 +17,22 @@ export default function Counsellor() {
     status: string;
   }
 
-  const [patients, setPatients] = useState<Patient[]>([]);
-
-  // Dummy counsellor ID
-  const counsellorId = "6811c012122428543028f1e4";
-
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const response = await fetch(`/api/counsellors?id=${counsellorId}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch patients");
-        }
-        const data = await response.json();
-        setPatients(data);
-      } catch (error) {
-        console.error("Error fetching patients:", error);
-      }
-    };
-
-    fetchPatients();
-  }, [counsellorId]);
+  // Dummy patient data
+  const patients: Patient[] = [
+    { _id: "1", name: "John Doe", age: 30, status: "healthy" },
+    { _id: "2", name: "Jane Smith", age: 25, status: "danger" },
+    { _id: "3", name: "Alice Johnson", age: 40, status: "healthy" },
+    { _id: "4", name: "Bob Brown", age: 35, status: "danger" },
+  ];
 
   return (
-    <div className="container mx-auto ">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 p-4">
-        <div className="flex justify-between">
-          <h1 className="text-2xl font-bold">Counsellor Dashboard</h1>
-          <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row justify-between items-center">
+          <h1 className="text-2xl font-bold text-center sm:text-left">
+            Counsellor Dashboard
+          </h1>
+          <div className="flex flex-wrap gap-3 mt-4 sm:mt-0">
             <button
               className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200"
               onClick={() => setQuestionnaireOpen(true)}
@@ -69,13 +58,13 @@ export default function Counsellor() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {patients.length > 0 ? (
             patients.map((patient) => (
               <PatientCard key={patient._id} patient={patient} />
             ))
           ) : (
-            <p className="text-gray-500 col-span-4 text-center">
+            <p className="text-gray-500 col-span-full text-center">
               No patients found.
             </p>
           )}

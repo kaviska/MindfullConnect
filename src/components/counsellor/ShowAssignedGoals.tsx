@@ -9,6 +9,13 @@ import {
   Button,
   Box,
   Alert,
+  Modal,
+  Backdrop,
+  Fade,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
 } from "@mui/material";
 
 interface ShowAssignedGoalsProps {
@@ -20,6 +27,8 @@ export default function ShowAssignedGoals({ counsellor_id, patient_id }: ShowAss
   const [assignedGoals, setAssignedGoals] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedGoal, setSelectedGoal] = useState<any | null>(null);
+  const [openModal, setOpenModal] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchAssignedGoals = async () => {
@@ -44,6 +53,16 @@ export default function ShowAssignedGoals({ counsellor_id, patient_id }: ShowAss
 
     fetchAssignedGoals();
   }, [counsellor_id, patient_id]);
+
+  const handleOpenModal = (goal: any) => {
+    setSelectedGoal(goal);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedGoal(null);
+    setOpenModal(false);
+  };
 
   if (loading) {
     return (
@@ -98,7 +117,7 @@ export default function ShowAssignedGoals({ counsellor_id, patient_id }: ShowAss
                 variant="contained"
                 color="primary"
                 fullWidth
-                onClick={() => console.log(`View Milestones for Goal ID: ${goal.goal_id._id}`)}
+                onClick={() => handleOpenModal(goal)}
                 sx={{ marginTop: 2 }}
               >
                 View Milestones
@@ -107,6 +126,66 @@ export default function ShowAssignedGoals({ counsellor_id, patient_id }: ShowAss
           </Card>
         ))}
       </Box>
+
+      {/* Modal for Milestones */}
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={openModal}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "80%",
+              maxWidth: "600px",
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 4,
+              borderRadius: 2,
+            }}
+          >
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              Milestones for: {selectedGoal?.goal_id.title}
+            </Typography>
+            {selectedGoal?.breakdown && selectedGoal.breakdown.length > 0 ? (
+              <List>
+                {selectedGoal.breakdown.map((milestone: any) => (
+                  <React.Fragment key={milestone._id}>
+                    <ListItem>
+                      <ListItemText
+                        primary={milestone.description}
+                        secondary={`Time: ${milestone.time} | Status: ${milestone.status}`}
+                      />
+                    </ListItem>
+                    <Divider />
+                  </React.Fragment>
+                ))}
+              </List>
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                No milestones available for this goal.
+              </Typography>
+            )}
+            <Button
+              variant="contained"
+              color="secondary"
+              fullWidth
+              onClick={handleCloseModal}
+              sx={{ marginTop: 2 }}
+            >
+              Close
+            </Button>
+          </Box>
+        </Fade>
+      </Modal>
     </Box>
   );
 }

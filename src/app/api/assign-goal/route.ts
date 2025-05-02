@@ -57,6 +57,14 @@ export async function POST(req: Request) {
       );
     }
 
+       
+    if (goal.counsellor_id.toString() !== counsellor_id) {
+      return respond(
+        { message: "This goal was not created by the specified counsellor" },
+        400
+      );
+    }
+    
     // Get the milestones for the goal
     const milestones = await Milestone.find({ goal_id: goal._id });
 

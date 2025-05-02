@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
 
     const questionDoc = new Question(body);
     await questionDoc.save();
+    
     return respond(questionDoc, 201);
   } catch (error) {
     console.error("Error creating question:", error);

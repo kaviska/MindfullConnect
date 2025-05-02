@@ -1,6 +1,7 @@
 import Quiz from "@/models/Quiz";
 import { NextResponse, NextRequest } from "next/server";
 import dbConnect from "@/lib/mongodb";
+import { createNotification } from "@/utility/backend/notificationService";
 
 function respond(data: object, status: number = 200) {
   return NextResponse.json(data, { status });
@@ -37,6 +38,11 @@ export async function POST(req: NextRequest) {
 
     const quiz = new Quiz({ title: title.trim(), description: description.trim(), question_group_id });
     await quiz.save();
+       const notification = await createNotification({
+            type: "quiz",
+            message: `New quiz created`,
+            user_id: "68120f0abdb0b2d10474be42", // Replace with actual user ID
+            });
     
     return respond({ message: "Quiz created successfully", data: quiz }, 201);
   } catch (error) {

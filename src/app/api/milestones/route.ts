@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Milestone from "@/models/MileStone";
+import { createNotification } from "@/utility/backend/notificationService";
 
 // Add a new milestone
 export async function POST(req: NextRequest) {
@@ -40,6 +41,11 @@ export async function POST(req: NextRequest) {
 
         const milestone = new Milestone(body);
         await milestone.save();
+           const notification = await createNotification({
+                type: "question_group",
+                message: `New Milestone created: ${body.goal_id}`,
+                user_id: "68120f0abdb0b2d10474be42", // Replace with actual user ID
+                });
         return NextResponse.json(milestone, { status: 201 });
     } catch (error) {
         console.error("Error creating milestone:", error);
