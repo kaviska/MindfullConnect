@@ -10,12 +10,12 @@ import { useToast } from "@/contexts/ToastContext";
 import Toast from "@/components/main/Toast";
 
 export default function Question() {
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState<String>("");
   const [answers, setAnswers] = useState<string[]>([""]);
   const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(
     null
   );
-  const [questionGroups, setQuestionGroups] = useState([]);
+  const [questionGroups, setQuestionGroups] = useState<{ title: string; _id: string }[]>([]);
   const [selectedQuestionGroup, setSelectedQuestionGroup] = useState("");
   const { toast, setToast } = useToast();
 
@@ -64,6 +64,11 @@ export default function Question() {
       selectedQuestionGroup
     ) {
       try {
+        setToast({
+          open: true,
+          message: "Creating question...",
+          type: "info",
+        });
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/questions`,
           {
@@ -93,12 +98,12 @@ export default function Question() {
         });
 
       } catch (error) {
-        console.error("Error creating question:", error);
+        console.error("Error creating question group:", error);
         setToast({
-          open: true,
-          message: "Something went wrong!",
-          type: "error",
-        });
+          open:true,
+          message: error instanceof Error ? error.message : "Something went wrong!",
+          type:"error"
+        })
       }
     } else {
       setToast({
@@ -169,7 +174,7 @@ export default function Question() {
         <MenuItem value="" disabled>
           Select Question Group
         </MenuItem>
-        {questionGroups.map((group: any) => (
+        {questionGroups.map((group: { title: string; _id: string }) => (
           <MenuItem key={group._id} value={group._id}>
             {group.title}
           </MenuItem>

@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -8,10 +7,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Slide from "@mui/material/Slide";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-
 import { TransitionProps } from "@mui/material/transitions";
 import QuestionGroup from "./QuestionModel/QuestionGroup";
 import Question from "./QuestionModel/Question";
@@ -44,23 +41,16 @@ export default function QuestionModel({ open, setOpen }: QuestionModelProps) {
     setOpen(false);
   };
 
- 
- 
-
-  
-
- 
   return (
     <Dialog
       open={open}
-      TransitionComponent={Transition}
+      slots={{ transition: Transition }}
       keepMounted
       onClose={handleClose}
       aria-labelledby="dialog-title"
       sx={{
         "& .MuiDialog-paper": {
           width: "100%",
-          maxHeight: 600,
         },
       }}
     >
@@ -100,9 +90,12 @@ export default function QuestionModel({ open, setOpen }: QuestionModelProps) {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} color="secondary">
+        <button
+          onClick={handleClose}
+          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+        >
           Close
-        </Button>
+        </button>
       </DialogActions>
     </Dialog>
   );

@@ -5,10 +5,9 @@ import Toast from "@/components/main/Toast"
 import { useToast } from "@/contexts/ToastContext";
 
 export default function QuestionGroup() {
-  const [questionGroupTitle, setQuestionGroupTitle] = useState("");
+  const [questionGroupTitle, setQuestionGroupTitle] = useState<String>("");
   const { toast, setToast } = useToast();
  
-
   const handleSubmitQuestionGroup = async () => {
     if (questionGroupTitle) {
       try {
@@ -34,13 +33,32 @@ export default function QuestionGroup() {
 
       } catch (error) {
         console.error("Error creating question group:", error);
-        //dispatch(showToast({ message: "Something went wrong!", severity: "error" }));
-
+      
+        let errorMessage = "Something went wrong!";
+        if (error instanceof Response) {
+          try {
+            const errorData = await error.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (parseError) {
+            console.error("Error parsing error response:", parseError);
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+      
+        setToast({
+          open: true,
+          message: errorMessage,
+          type: "error",
+        });
       }
-
       setQuestionGroupTitle("");
     } else {
-      alert("Please provide a title for the question group.");
+      setToast({
+        open:true,
+        message:"Please fill in the question group title",
+        type:"error"
+      })
     }
   };
   return (
@@ -63,11 +81,11 @@ export default function QuestionGroup() {
 
 
       <Toast
-              open={toast.open}
-              message={toast.message}
-              type={toast.type}
-              onClose={() => setToast({ ...toast, open: false })}
-            />
+        open={toast.open}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, open: false })}
+        />
     </div>
   );
 }
