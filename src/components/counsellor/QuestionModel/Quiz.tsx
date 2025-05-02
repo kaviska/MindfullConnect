@@ -29,50 +29,79 @@ export default function Quiz() {
     fetchQuestionGroups();
   }, []);
 
-  const handleSubmitQuiz = async () => {
-    if (quizTitle && quizDescription && selectedQuestionGroup) {
-      try {
-        const newQuiz = {
-          title: quizTitle,
-          description: quizDescription,
-          question_group_id: selectedQuestionGroup,
-        };
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/quiz`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(newQuiz),
-          }
-        );
-
-        const data = await response.json();
-        console.log("New Quiz created:", data);
-
-        // Reset form
-        setQuizTitle("");
-        setQuizDescription("");
-        setSelectedQuestionGroup("");
-        setToast({
-          open: true,
-          message: "Quiz Created Successfully",
-          type: "success",
-        });
-      } catch (error) {
-        console.error("Error creating quiz:", error);
-        setToast({
-          open: true,
-          message: "Something went wrong!",
-          type: "error",
-        });
-      }
-    } else {
+    const handleSubmitQuiz = async () => {
+    if (!quizTitle) {
       setToast({
         open: true,
-        message: "Please fill all fields!",
+        message: "Quiz Title is required!",
+        type: "error",
+      });
+      return;
+    }
+  
+    if (!quizDescription) {
+      setToast({
+        open: true,
+        message: "Quiz Description is required!",
+        type: "error",
+      });
+      return;
+    }
+  
+    if (!selectedQuestionGroup) {
+      setToast({
+        open: true,
+        message: "Please select a Question Group!",
+        type: "error",
+      });
+      return;
+    }
+  
+    try {
+      const newQuiz = {
+        title: quizTitle,
+        description: quizDescription,
+        question_group_id: selectedQuestionGroup,
+      };
+  
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/quiz`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newQuiz),
+        }
+      );
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        setToast({
+          open: true,
+          message: errorData.message || "Failed to create quiz!",
+          type: "error",
+        });
+        return;
+      }
+  
+      const data = await response.json();
+      console.log("New Quiz created:", data);
+  
+      // Reset form
+      setQuizTitle("");
+      setQuizDescription("");
+      setSelectedQuestionGroup("");
+      setToast({
+        open: true,
+        message: "Quiz Created Successfully",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error creating quiz:", error);
+      setToast({
+        open: true,
+        message: "Something went wrong! Please try again.",
         type: "error",
       });
     }

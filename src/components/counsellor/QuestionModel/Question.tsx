@@ -56,7 +56,7 @@ export default function Question() {
     }
   };
 
-  const handleSubmit = async () => {
+   const handleSubmit = async () => {
     if (
       question &&
       answers.length > 0 &&
@@ -69,6 +69,7 @@ export default function Question() {
           message: "Creating question...",
           type: "info",
         });
+  
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/questions`,
           {
@@ -84,26 +85,34 @@ export default function Question() {
             }),
           }
         );
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create question");
+        }
+  
         const data = await response.json();
         console.log("Question created:", data);
+  
         // Reset form
         setQuestion("");
         setAnswers([""]);
         setCorrectAnswerIndex(null);
         setSelectedQuestionGroup("");
+  
         setToast({
           open: true,
           message: "Question Added Successfully",
           type: "success",
         });
-
       } catch (error) {
-        console.error("Error creating question group:", error);
+        console.error("Error creating question:", error);
+  
         setToast({
-          open:true,
+          open: true,
           message: error instanceof Error ? error.message : "Something went wrong!",
-          type:"error"
-        })
+          type: "error",
+        });
       }
     } else {
       setToast({

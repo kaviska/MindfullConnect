@@ -1,204 +1,160 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Question from "@/models/Question";
-import QuestionGroup from "@/models/QuestionGroup";
 
 function respond(data: object, status: number = 200) {
   return NextResponse.json(data, { status });
 }
 
-// Add a new question
+// Create a new question
 export async function POST(req: NextRequest) {
+  await dbConnect();
   try {
-    await dbConnect();
     const body = await req.json();
-    const { question, answers, correctAnswerIndex, selectedQuestionGroup } = body;
+    const { question, options, correct_answer_index, question_group_id } = body;
 
-    // Validate required fields
-    if (!question || !answers || correctAnswerIndex === undefined || !selectedQuestionGroup) {
-      return respond({ message: "Missing required fields" }, 400);
-    }
-
-    // Validate question
-    if (typeof question !== "string" || question.trim().length < 2) {
+    // Validation
+    if (
+      !question ||
+      typeof question !== "string" ||
+      question.trim().length < 5
+    ) {
       return respond(
-        { message: "Question must be a non-empty string with at least 2 characters" },
+        { message: "Question must be a non-empty string with at least 5 characters" },
         400
       );
     }
 
-    // Validate answers
-    if (!Array.isArray(answers) || answers.length < 2) {
+    if (!Array.isArray(options) || options.length < 2) {
       return respond(
-        { message: "Answers must be an array with at least 2 items" },
+        { message: "Options must be an array with at least 2 items" },
         400
       );
     }
 
-    // Validate correct answer index
-    if (correctAnswerIndex < 0 || correctAnswerIndex >= answers.length) {
-      return respond({ message: "Invalid correct answer index" }, 400);
+    if (
+      typeof correct_answer_index !== "number" ||
+      correct_answer_index < 0 ||
+      correct_answer_index >= options.length
+    ) {
+      return respond(
+        { message: "Correct answer index must be a valid index of the options array" },
+        400
+      );
     }
 
-    // Validate question group
-    if (!selectedQuestionGroup || typeof selectedQuestionGroup !== "string") {
-      return respond({ message: "Invalid question group" }, 400);
+    if (!question_group_id) {
+      return respond(
+        { message: "Question group ID is required" },
+        400
+      );
     }
 
-    // Check if the question already exists
-    const existingQuestion = await Question.findOne({ question: question.trim() });
-    if (existingQuestion) {
-      return respond({ message: "Question already exists" }, 400);
-    }
-
-    // Check if the question group exists
-    const questionGroup = await QuestionGroup.findById(selectedQuestionGroup);
-    if (!questionGroup) {
-      return respond({ message: "Invalid question group ID" }, 400);
-    }
-
-    // Create and save the question
-    const newQuestion = new Question({
-      question: question.trim(),
-      options: answers,
-      correct_answer_index: correctAnswerIndex,
-      question_group_id: selectedQuestionGroup,
-    });
-    await newQuestion.save();
-
-    return respond(
-      { message: "Question created successfully", data: newQuestion },
-      201
-    );
+    const questionDoc = new Question(body);
+    await questionDoc.save();
+    return respond(questionDoc, 201);
   } catch (error) {
     console.error("Error creating question:", error);
-    return respond(
-      { message: "Internal Server Error" },
-      500
-    );
+    return respond({ message: "Internal Server Error" }, 500);
   }
 }
 
 // Get all questions
 export async function GET() {
+  await dbConnect();
   try {
-    await dbConnect();
     const questions = await Question.find({});
-    return respond(questions, 200);
+    return respond(questions);
   } catch (error) {
     console.error("Error fetching questions:", error);
-    return respond(
-      { message: "Error fetching questions" },
-      500
-    );
+    return respond({ message: "Error fetching questions" }, 500);
   }
 }
 
+// Update a question
 export async function PUT(req: NextRequest) {
+  await dbConnect();
   try {
-    await dbConnect();
     const body = await req.json();
-    const { id, question, answers, correctAnswerIndex, selectedQuestionGroup } = body;
+    const { id, question, options, correct_answer_index, question_group_id } = body;
 
-    // Validate required fields
+    // Validation
     if (!id) {
       return respond({ message: "Question ID is required" }, 400);
     }
 
-    // Validate question
-    if (question && (typeof question !== "string" || question.trim().length < 2)) {
-      return respond(
-        { message: "Question must be a non-empty string with at least 2 characters" },
-        400
-      );
-    }
-
-    // Validate answers
-    if (answers && (!Array.isArray(answers) || answers.length < 2)) {
-      return respond(
-        { message: "Answers must be an array with at least 2 items" },
-        400
-      );
-    }
-
-    // Validate correct answer index
     if (
-      correctAnswerIndex !== undefined &&
-      (correctAnswerIndex < 0 || (answers && correctAnswerIndex >= answers.length))
+      question &&
+      (typeof question !== "string" || question.trim().length < 5)
     ) {
-      return respond({ message: "Invalid correct answer index" }, 400);
+      return respond(
+        { message: "Question must be a non-empty string with at least 5 characters" },
+        400
+      );
     }
 
-    // Validate question group
-    if (selectedQuestionGroup && typeof selectedQuestionGroup !== "string") {
-      return respond({ message: "Invalid question group" }, 400);
+    if (options && (!Array.isArray(options) || options.length < 2)) {
+      return respond(
+        { message: "Options must be an array with at least 2 items" },
+        400
+      );
     }
 
-    // Check if the question exists
-    const existingQuestion = await Question.findById(id);
-    if (!existingQuestion) {
+    if (
+      correct_answer_index !== undefined &&
+      (typeof correct_answer_index !== "number" ||
+        correct_answer_index < 0 ||
+        (options && correct_answer_index >= options.length))
+    ) {
+      return respond(
+        { message: "Correct answer index must be a valid index of the options array" },
+        400
+      );
+    }
+
+    const updatedQuestion = await Question.findByIdAndUpdate(
+      id,
+      { question, options, correct_answer_index, question_group_id },
+      { new: true }
+    );
+
+    if (!updatedQuestion) {
       return respond({ message: "Question not found" }, 404);
     }
 
-    // Check if the question group exists (if provided)
-    if (selectedQuestionGroup) {
-      const questionGroup = await QuestionGroup.findById(selectedQuestionGroup);
-      if (!questionGroup) {
-        return respond({ message: "Invalid question group ID" }, 400);
-      }
-    }
-
-    // Update the question
-    if (question) existingQuestion.question = question.trim();
-    if (answers) existingQuestion.options = answers;
-    if (correctAnswerIndex !== undefined) existingQuestion.correct_answer_index = correctAnswerIndex;
-    if (selectedQuestionGroup) existingQuestion.question_group_id = selectedQuestionGroup;
-
-    await existingQuestion.save();
-
     return respond(
-      { message: "Question updated successfully", data: existingQuestion },
+      { message: "Question updated successfully", data: updatedQuestion },
       200
     );
   } catch (error) {
     console.error("Error updating question:", error);
-    return respond(
-      { message: "Internal Server Error" },
-      500
-    );
+    return respond({ message: "Internal Server Error" }, 500);
   }
 }
 
 // Delete a question
 export async function DELETE(req: NextRequest) {
+  await dbConnect();
   try {
-    await dbConnect();
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(req.url!);
     const id = searchParams.get("id");
 
-    // Validate required fields
     if (!id) {
-      return respond({ message: "Question ID is required" }, 400);
+      return respond({ message: "Question ID is required for deletion" }, 400);
     }
 
-    // Check if the question exists
-    const existingQuestion = await Question.findById(id);
-    if (!existingQuestion) {
+    const deletedQuestion = await Question.findByIdAndDelete(id);
+
+    if (!deletedQuestion) {
       return respond({ message: "Question not found" }, 404);
     }
 
-    // Delete the question
-    await Question.findByIdAndDelete(id);
-
     return respond(
-      { message: "Question deleted successfully" },
+      { message: "Question deleted successfully", data: deletedQuestion },
       200
     );
   } catch (error) {
     console.error("Error deleting question:", error);
-    return respond(
-      { message: "Internal Server Error" },
-      500
-    );
+    return respond({ message: "Internal Server Error" }, 500);
   }
 }

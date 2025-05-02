@@ -8,7 +8,7 @@ export default function QuestionGroup() {
   const [questionGroupTitle, setQuestionGroupTitle] = useState<String>("");
   const { toast, setToast } = useToast();
  
-  const handleSubmitQuestionGroup = async () => {
+   const handleSubmitQuestionGroup = async () => {
     if (questionGroupTitle) {
       try {
         const response = await fetch(
@@ -23,29 +23,27 @@ export default function QuestionGroup() {
             }),
           }
         );
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create question group");
+        }
+  
         const data = await response.json();
         console.log("Question group created:", data);
         setToast({
-          open:true,
-          message:"Question Group Added Successfully",
-          type:"success"
-        })
-
+          open: true,
+          message: "Question Group Added Successfully",
+          type: "success",
+        });
       } catch (error) {
         console.error("Error creating question group:", error);
-      
+  
         let errorMessage = "Something went wrong!";
-        if (error instanceof Response) {
-          try {
-            const errorData = await error.json();
-            errorMessage = errorData.message || errorMessage;
-          } catch (parseError) {
-            console.error("Error parsing error response:", parseError);
-          }
-        } else if (error instanceof Error) {
+        if (error instanceof Error) {
           errorMessage = error.message;
         }
-      
+  
         setToast({
           open: true,
           message: errorMessage,
@@ -55,10 +53,10 @@ export default function QuestionGroup() {
       setQuestionGroupTitle("");
     } else {
       setToast({
-        open:true,
-        message:"Please fill in the question group title",
-        type:"error"
-      })
+        open: true,
+        message: "Please fill in the question group title",
+        type: "error",
+      });
     }
   };
   return (

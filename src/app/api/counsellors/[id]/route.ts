@@ -4,10 +4,10 @@ import Counsellor from "@/models/Counsellor";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   await dbConnect();
-  const counsellorId = params.id;
+  const counsellorId = context.params?.id; // Access params directly from context
 
   if (!counsellorId) {
     return NextResponse.json({ error: "Counsellor ID is required" }, { status: 400 });

@@ -54,7 +54,7 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
     }
   };
 
-  const handleSubmit = async () => {
+   const handleSubmit = async () => {
     if (goalTitle && goalDescription && selectedCounsellor) {
       try {
         const response = await fetch(
@@ -71,15 +71,20 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
             }),
           }
         );
-
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create goal");
+        }
+  
         const data = await response.json();
         console.log("Goal created:", data);
-
+  
         // Reset form
         setGoalTitle("");
         setGoalDescription("");
         setSelectedCounsellor("");
-        
+  
         setToast({
           open: true,
           message: "Goal Created Successfully",
@@ -89,12 +94,11 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
         console.error("Error creating goal:", error);
         setToast({
           open: true,
-          message: "Something went wrong!",
+          message: error instanceof Error ? error.message : "Something went wrong!",
           type: "error",
         });
       }
     } else {
-    
       setToast({
         open: true,
         message: "Please fill all fields!",
@@ -102,7 +106,6 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
       });
     }
   };
-
   return (
     <Dialog
       open={open}

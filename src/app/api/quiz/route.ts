@@ -1,6 +1,4 @@
 import Quiz from "@/models/Quiz";
-import QuestionGroup from "@/models/QuestionGroup";
-import Question from "@/models/Question";
 import { NextResponse, NextRequest } from "next/server";
 import dbConnect from "@/lib/mongodb";
 
@@ -8,57 +6,38 @@ function respond(data: object, status: number = 200) {
   return NextResponse.json(data, { status });
 }
 
+// Add a new quiz
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
     const body = await req.json();
-    const { title, questionGroupId, questionIds } = body;
+    const { title, description, question_group_id } = body;
 
-    // Validate required fields
-    if (!title || typeof title !== "string" || title.trim().length < 2) {
+    // Validation
+    if (!title || typeof title !== "string" || title.trim().length < 3) {
       return respond(
-        {
-          message:
-            "Title must be a non-empty string with at least 2 characters",
-        },
+        { message: "Title must be a non-empty string with at least 3 characters" },
         400
       );
     }
 
-    if (!questionGroupId || typeof questionGroupId !== "string") {
-      return respond({ message: "A valid Question Group ID is required" }, 400);
-    }
-
-    if (!Array.isArray(questionIds) || questionIds.length === 0) {
+    if (!description || typeof description !== "string" || description.trim().length < 5) {
       return respond(
-        { message: "At least one valid Question ID is required" },
+        { message: "Description must be a non-empty string with at least 5 characters" },
         400
       );
     }
 
-    // Validate Question Group
-    const questionGroup = await QuestionGroup.findById(questionGroupId);
-    if (!questionGroup) {
-      return respond({ message: "Invalid Question Group ID" }, 400);
-    }
-
-    // Validate Questions
-    const questions = await Question.find({ _id: { $in: questionIds } });
-    if (questions.length !== questionIds.length) {
+    if (!question_group_id) {
       return respond(
-        { message: "Some Question IDs are invalid or do not exist" },
+        { message: "Question group ID is required" },
         400
       );
     }
 
-    // Create and save the Quiz
-    const quiz = new Quiz({
-      title: title.trim(),
-      question_group_id: questionGroupId,
-      questions: questionIds,
-    });
+    const quiz = new Quiz({ title: title.trim(), description: description.trim(), question_group_id });
     await quiz.save();
-
+    
     return respond({ message: "Quiz created successfully", data: quiz }, 201);
   } catch (error) {
     console.error("Error creating quiz:", error);
@@ -70,10 +49,11 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   try {
     await dbConnect();
-    const quizzes = await Quiz.find({});
+    const quizzes = await Quiz.find({}).populate("question_group_id");
     return respond(quizzes, 200);
   } catch (error) {
-    return respond({ message: "Error fetching quizzes", error: error }, 500);
+    console.error("Error fetching quizzes:", error);
+    return respond({ message: "Error fetching quizzes" }, 500);
   }
 }
 
@@ -82,70 +62,38 @@ export async function PUT(req: NextRequest) {
   try {
     await dbConnect();
     const body = await req.json();
-    const { id, title, questionGroupId, questionIds } = body;
+    const { id, title, description, question_group_id } = body;
 
-    // Validate required fields
+    // Validation
     if (!id) {
       return respond({ message: "Quiz ID is required" }, 400);
     }
 
-    if (title && (typeof title !== "string" || title.trim().length < 2)) {
+    if (title && (typeof title !== "string" || title.trim().length < 3)) {
       return respond(
-        {
-          message:
-            "Title must be a non-empty string with at least 2 characters",
-        },
+        { message: "Title must be a non-empty string with at least 3 characters" },
         400
       );
     }
 
-    if (questionGroupId && typeof questionGroupId !== "string") {
-      return respond({ message: "A valid Question Group ID is required" }, 400);
-    }
-
-    if (
-      questionIds &&
-      (!Array.isArray(questionIds) || questionIds.length === 0)
-    ) {
+    if (description && (typeof description !== "string" || description.trim().length < 5)) {
       return respond(
-        { message: "At least one valid Question ID is required" },
+        { message: "Description must be a non-empty string with at least 5 characters" },
         400
       );
     }
 
-    // Validate Quiz existence
-    const quiz = await Quiz.findById(id);
-    if (!quiz) {
+    const updatedQuiz = await Quiz.findByIdAndUpdate(
+      id,
+      { title: title?.trim(), description: description?.trim(), question_group_id },
+      { new: true }
+    );
+
+    if (!updatedQuiz) {
       return respond({ message: "Quiz not found" }, 404);
     }
 
-    // Validate Question Group if provided
-    if (questionGroupId) {
-      const questionGroup = await QuestionGroup.findById(questionGroupId);
-      if (!questionGroup) {
-        return respond({ message: "Invalid Question Group ID" }, 400);
-      }
-    }
-
-    // Validate Questions if provided
-    if (questionIds) {
-      const questions = await Question.find({ _id: { $in: questionIds } });
-      if (questions.length !== questionIds.length) {
-        return respond(
-          { message: "Some Question IDs are invalid or do not exist" },
-          400
-        );
-      }
-    }
-
-    // Update the Quiz
-    if (title) quiz.title = title.trim();
-    if (questionGroupId) quiz.question_group_id = questionGroupId;
-    if (questionIds) quiz.questions = questionIds;
-
-    await quiz.save();
-
-    return respond({ message: "Quiz updated successfully", data: quiz }, 200);
+    return respond({ message: "Quiz updated successfully", data: updatedQuiz }, 200);
   } catch (error) {
     console.error("Error updating quiz:", error);
     return respond({ message: "Internal Server Error" }, 500);
@@ -156,24 +104,20 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     await dbConnect();
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(req.url!);
     const id = searchParams.get("id");
 
-    // Validate required fields
     if (!id) {
-      return respond({ message: "Quiz ID is required" }, 400);
+      return respond({ message: "Quiz ID is required for deletion" }, 400);
     }
 
-    // Validate Quiz existence
-    const quiz = await Quiz.findById(id);
-    if (!quiz) {
+    const deletedQuiz = await Quiz.findByIdAndDelete(id);
+
+    if (!deletedQuiz) {
       return respond({ message: "Quiz not found" }, 404);
     }
 
-    // Delete the Quiz
-    await Quiz.findByIdAndDelete(id);
-
-    return respond({ message: "Quiz deleted successfully" }, 200);
+    return respond({ message: "Quiz deleted successfully", data: deletedQuiz }, 200);
   } catch (error) {
     console.error("Error deleting quiz:", error);
     return respond({ message: "Internal Server Error" }, 500);

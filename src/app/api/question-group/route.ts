@@ -2,6 +2,7 @@ import Question from "@/models/Question";
 import QuestionGroup from "@/models/QuestionGroup";
 import { NextResponse, NextRequest } from "next/server";
 import dbConnect from "@/lib/mongodb";
+import { createNotification } from "@/utility/backend/notificationService";
 
 function respond(data: object, status: number = 200) {
   return NextResponse.json(data, { status });
@@ -31,6 +32,12 @@ export async function POST(req: NextRequest) {
 
     const questionGroup = new QuestionGroup({ title: title.trim() });
     await questionGroup.save();
+
+      const notification = await createNotification({
+        type: "question_group",
+        message: `New question group created: ${title}`,
+        user_id: "68120f0abdb0b2d10474be42", // Replace with actual user ID
+        });
 
     return respond(
       { message: "Question group created successfully", data: questionGroup },

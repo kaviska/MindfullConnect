@@ -71,7 +71,7 @@ export default function MileStoneModel({ open, setOpen }: MileStoneModelProps) {
     setBreakdowns(updatedBreakdowns);
   };
 
-  const handleSubmit = async () => {
+   const handleSubmit = async () => {
     if (selectedGoal && breakdowns.every((b) => b.description && b.time)) {
       try {
         const response = await fetch(
@@ -87,14 +87,19 @@ export default function MileStoneModel({ open, setOpen }: MileStoneModelProps) {
             }),
           }
         );
-
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create milestone");
+        }
+  
         const data = await response.json();
         console.log("Milestone created:", data);
-
+  
         // Reset form
         setBreakdowns([{ description: "", time: "" }]);
         setSelectedGoal("");
-        
+  
         setToast({
           open: true,
           message: "Milestone Created Successfully",
@@ -104,12 +109,11 @@ export default function MileStoneModel({ open, setOpen }: MileStoneModelProps) {
         console.error("Error creating milestone:", error);
         setToast({
           open: true,
-          message: "Something went wrong!",
+          message: error instanceof Error ? error.message : "Something went wrong!",
           type: "error",
         });
       }
     } else {
-     
       setToast({
         open: true,
         message: "Please fill out all fields for the milestone.",
@@ -171,7 +175,7 @@ export default function MileStoneModel({ open, setOpen }: MileStoneModelProps) {
         {breakdowns.map((breakdown, index) => (
           <div
             key={index}
-            className="grid md:grid-cols-2 grid-cols-1 gap-3 mb-4"
+            className="grid md:grid-cols-3 grid-cols-1 gap-3 mb-4"
           >
             <TextField
               fullWidth
@@ -191,17 +195,18 @@ export default function MileStoneModel({ open, setOpen }: MileStoneModelProps) {
                 handleBreakdownChange(index, "time", e.target.value)
               }
             />
-            <Button
+            <button
               color="secondary"
               onClick={() => handleRemoveBreakdown(index)}
+              className="bg-red-500 text-white px-4 mt-2  h-[40px] flex justify-center items-center rounded-[4px] hover:bg-red-600 transition duration-200"
             >
               Remove
-            </Button>
+            </button>
           </div>
         ))}
-        <Button onClick={handleAddBreakdown} color="primary">
+        <button onClick={handleAddBreakdown} className="bg-blue-500 text-white px-4 py-2 rounded-[4px] hover:bg-blue-600 transition duration-200">
           Add Breakdown
-        </Button>
+        </button>
       </DialogContent>
 
       <DialogActions>
