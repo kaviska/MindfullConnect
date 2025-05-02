@@ -38,11 +38,20 @@ const userSchema = new mongoose.Schema({
     required: [true, "Please provide a password"],
     minlength: [6, "Password must be at least 6 characters"],
   },
-  isVerified: {
+ 
+  isAdmin: {
     type: Boolean,
     default: false,
   },
-  isAdmin: {
+  otp: {
+    type: String,
+    default: null,
+  },
+  otpExpiry: {
+    type: Date,
+    default: null,
+  },
+  isVerified: {
     type: Boolean,
     default: false,
   },
