@@ -54,7 +54,7 @@ export const ChatLayout: React.FC = () => {
     }
   }, [user, token, isLoading]);
 
-  const fetchConversations = useCallback(async () => {
+  const fetchConversations = useCallback(async () => {// fetch conversations from the server
     if (isLoading || !user || !token) {
       console.log("Skipping fetchConversations: AuthContext is loading or user/token is null");
       return;

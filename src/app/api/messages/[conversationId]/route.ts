@@ -4,7 +4,7 @@ import connectDB from '@/lib/db';
 import Message from '@/models/Message';
 import Conversation from '@/models/Conversation';
 
-const JWT_SECRET = 'your_jwt_secret';
+
 
 export async function GET(request: NextRequest, { params }: { params: { conversationId: string } }) {
   await connectDB();
@@ -15,7 +15,14 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
-    jwt.verify(token, JWT_SECRET);
+    if (!process.env.JWT_SECRET) {
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+    }
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
+    } catch (error) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
     const { conversationId } = params;
 
     const messages = await Message.find({ conversationId }).populate('sender', 'fullName');
@@ -34,7 +41,15 @@ export async function POST(request: NextRequest, { params }: { params: { convers
       return NextResponse.json({ error: 'No token provided' }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    if (!process.env.JWT_SECRET) {
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+    }
+    let decoded: { userId: string };
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
+    } catch (error) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
     const { conversationId } = params;
     const { content, attachment } = await request.json();
 
