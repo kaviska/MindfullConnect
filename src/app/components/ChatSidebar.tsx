@@ -9,28 +9,26 @@ interface ChatSidebarProps {
   onSelectConversation: (conversationId: string) => void;
   conversations: Conversation[];
   users: User[];
+  className?: string; // Add className as an optional property
 }
 
 export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, conversations, users }) => {
   const { user, token } = useAuth();
   const [otherUsers, setOtherUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(conversations[0]?._id || null); // Initially select the first conversation
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(conversations[0]?._id || null);
 
-  // Filter users for "Start a new conversation" section
   useEffect(() => {
     if (!users) {
       setIsLoadingUsers(false);
       return;
     }
 
-    // Get participant IDs from existing conversations (excluding the logged-in user)
     const conversationParticipantIds = conversations
       .flatMap((conv) => conv.participants)
       .map((p) => p._id)
       .filter((id) => id !== user?._id);
 
-    // Filter out users who are already in conversations
     const filteredUsers = users.filter(
       (u) => u._id !== user?._id && !conversationParticipantIds.includes(u._id)
     );
@@ -89,7 +87,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, 
       const data = await res.json();
       console.log("Response from POST /api/conversations:", data);
       if (res.ok) {
-        setSelectedConversationId(data.conversation._id); // Set the new conversation as active
+        setSelectedConversationId(data.conversation._id);
         onSelectConversation(data.conversation._id);
       } else {
         console.error("Failed to start conversation:", data.error);
@@ -100,13 +98,13 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, 
   };
 
   const handleSelectConversation = (conversationId: string) => {
-    setSelectedConversationId(conversationId); // Update the selected conversation ID
+    setSelectedConversationId(conversationId);
     onSelectConversation(conversationId);
   };
 
   return (
-    <aside className="flex gap-2.5 items-start bg-white min-h-[805px] min-w-60 w-[306px]">
-      <div className="bg-white rounded-2xl border-r border-solid border-r-[color:var(--Primary-P7,#E5EAFF)] min-h-[774px] min-w-60 w-[298px]">
+    <aside className="flex gap-2.5 items-start bg-white h-full min-w-60 w-[306px]">
+      <div className="flex flex-col bg-white rounded-2xl border-r border-solid border-r-[color:var(--Primary-P7,#E5EAFF)] h-full min-w-60 w-[298px]">
         <header className="w-full">
           <div className="flex gap-10 justify-between items-center px-5 pt-4 w-full rounded-xl">
             <img
@@ -158,7 +156,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, 
           </nav>
         </header>
 
-        <section className="mt-6 w-full bg-white rounded-xl">
+        <section className="mt-6 w-full bg-white rounded-xl flex-1 overflow-y-auto">
           {conversationUsers.length > 0 ? (
             <>
               <h3 className="px-5 text-sm font-semibold text-gray-700">Conversations</h3>
@@ -198,3 +196,5 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, 
     </aside>
   );
 };
+
+export default ChatSidebar;

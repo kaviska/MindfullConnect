@@ -15,6 +15,22 @@ export const ChatLayout: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isProfileSidebarVisible, setIsProfileSidebarVisible] = useState(false);
+  const [showProfileSidebar, setShowProfileSidebar] = useState(false);
+  const [layoutHeight, setLayoutHeight] = useState<number>(0);
+  const [showChatMain, setShowChatMain] = useState(false);
+
+  useEffect(() => {
+    const updateLayoutHeight = () => {
+      const navbarHeight = 64;
+      const windowHeight = window.innerHeight;
+      const calculatedHeight = windowHeight - navbarHeight;
+      setLayoutHeight(calculatedHeight);
+    };
+
+    updateLayoutHeight();
+    window.addEventListener("resize", updateLayoutHeight);
+    return () => window.removeEventListener("resize", updateLayoutHeight);
+  }, []);
 
   useEffect(() => {
     if (isLoading) {
@@ -54,7 +70,7 @@ export const ChatLayout: React.FC = () => {
     }
   }, [user, token, isLoading]);
 
-  const fetchConversations = useCallback(async () => {// fetch conversations from the server
+  const fetchConversations = useCallback(async () => {
     if (isLoading || !user || !token) {
       console.log("Skipping fetchConversations: AuthContext is loading or user/token is null");
       return;
@@ -94,16 +110,36 @@ export const ChatLayout: React.FC = () => {
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
+    setShowChatMain(true);
     fetchConversations();
   };
 
+  const handleBack = () => {
+    setShowChatMain(false);
+    setSelectedConversationId(null);
+    setShowProfileSidebar(false);
+    setIsProfileSidebarVisible(false); // Reset for consistency
+  };
+
   const toggleProfileSidebar = () => {
-    setIsProfileSidebarVisible((prev) => !prev);
+    // On small screens, if ChatMain is visible, toggle showProfileSidebar
+    // On larger screens, toggle isProfileSidebarVisible
+    if (showChatMain && !isProfileSidebarVisible) {
+      setShowProfileSidebar((prev) => !prev);
+    } else {
+      setIsProfileSidebarVisible((prev) => !prev);
+      setShowProfileSidebar(false); // Ensure small screen state is reset
+    }
+  };
+
+  const handleProfileBack = () => {
+    setShowProfileSidebar(false);
+    setIsProfileSidebarVisible(false); // Reset both states
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center h-screen">
         <p>Loading authentication...</p>
       </div>
     );
@@ -111,36 +147,49 @@ export const ChatLayout: React.FC = () => {
 
   if (!user || !token) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center h-screen">
         <p>Redirecting to login...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col w-full h-full"> {/* Adjusted styling */}
-      <div className="flex justify-center items-center text-xs font-medium text-blue-900 gap-2 my-4">
-        <div className="flex-1 h-px bg-indigo-100" />
-        <time>Chat Interface 
-          
-        </time>
-        <div className="flex-1 h-px bg-indigo-100" />
-      </div>
-
-      <div className="flex w-full h-full"> {/* Adjusted to fit within the section */}
-        <ChatSidebar
-          onSelectConversation={handleSelectConversation}
-          conversations={conversations}
-          users={users}
-        />
-        <ChatMain
-          conversationId={selectedConversationId}
-          user={user}
-          token={token}
-          conversation={conversations.find((conv) => conv._id === selectedConversationId)}
-          onToggleProfileSidebar={toggleProfileSidebar}
-        />
-        {isProfileSidebarVisible && <ProfileSidebar />}
+    <div className="flex flex-col w-full sm:max-w-8xl mt-5 mx-auto sm:px-4 overflow-x-auto" style={{ height: `${layoutHeight}px` }}>
+      <div className="flex w-full h-full">
+        <div className="flex w-full sm:flex sm:w-full sm:h-full">
+          <div className={`${showChatMain ? "hidden sm:flex" : "flex"} w-full sm:w-auto`}>
+            <div className="w-full sm:w-[306px] md:w-[306px] max-md:w-2/3">
+              <ChatSidebar
+                onSelectConversation={handleSelectConversation}
+                conversations={conversations}
+                users={users}
+                className="w-full sm:w-[306px] md:w-[306px] max-md:w-full sm:min-w-60"
+              />
+            </div>
+          </div>
+          <div className={`${showChatMain ? "flex" : "hidden sm:flex"} w-full sm:w-auto flex-1 md:flex-1 max-md:w-2/3`}>
+            <div className={`${showProfileSidebar ? "hidden sm:flex" : "flex"} w-full sm:w-auto flex-1 md:flex-1 max-md:w-1/3`}>
+              <ChatMain
+                conversationId={selectedConversationId}
+                user={user}
+                token={token}
+                conversation={conversations.find((conv) => conv._id === selectedConversationId)}
+                onToggleProfileSidebar={toggleProfileSidebar}
+                fetchConversations={fetchConversations}
+                onBack={handleBack}
+                className="w-full sm:flex-1 md:flex-1 max-md:w-full sm:min-w-60"
+              />
+            </div>
+            {(isProfileSidebarVisible || showProfileSidebar) && (
+              <div className={`${showProfileSidebar ? "flex" : "hidden sm:flex"} w-full sm:w-auto`}>
+                <ProfileSidebar
+                  onBack={handleProfileBack}
+                  className="w-full sm:w-[306px] md:w-[306px] max-md:w-full sm:min-w-60"
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

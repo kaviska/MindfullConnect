@@ -9,7 +9,10 @@ interface ChatMainProps {
   user: User | null;
   token: string | null;
   conversation?: Conversation;
-  onToggleProfileSidebar: () => void; // Add prop to toggle ProfileSidebar
+  onToggleProfileSidebar: () => void;
+  fetchConversations: () => Promise<void>;
+  onBack?: () => void; // Add onBack prop
+  className?: string;
 }
 
 export const ChatMain: React.FC<ChatMainProps> = ({
@@ -17,7 +20,10 @@ export const ChatMain: React.FC<ChatMainProps> = ({
   user,
   token,
   conversation,
-  onToggleProfileSidebar, // Destructure the new prop
+  onToggleProfileSidebar,
+  fetchConversations,
+  onBack,
+  className,
 }) => {
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -75,9 +81,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
     };
 
     fetchMessages();
-
     const interval = setInterval(fetchMessages, 5000);
-
     return () => clearInterval(interval);
   }, [conversationId, token, user]);
 
@@ -124,6 +128,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
             attachment: message.attachment,
           },
         ]);
+        fetchConversations();
       } else {
         const data = await res.json();
         console.error("Failed to send message:", data.error);
@@ -141,7 +146,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
   const otherParticipant = conversation?.participants.find((p) => p._id !== user?._id);
 
   return (
-    <main className="flex flex-col justify-between px-6 py-8 bg-white min-h-[805px] min-w-60 w-[653px] max-md:px-5 max-md:max-w-full">
+    <main className={`flex flex-col justify-between px-6 py-8 bg-white h-full ${className}`}>
       <div className="flex flex-col h-full w-full max-md:max-w-full">
         {!conversationId ? (
           <div className="flex flex-col items-center justify-center h-full">
@@ -154,6 +159,15 @@ export const ChatMain: React.FC<ChatMainProps> = ({
           <>
             <header className="flex flex-wrap gap-10 justify-between items-center py-3 pr-2 w-full border-b border-solid border-b-[color:var(--Primary-P7,#E5EAFF)]">
               <div className="flex gap-2.5 items-center self-stretch my-auto">
+                {onBack && (
+                  <button onClick={onBack} className="sm:hidden mr-2">
+                    <img
+                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/back-arrow-icon-url?placeholderIfAbsent=true&apiKey=your-api-key"
+                      className="object-contain w-6 aspect-square"
+                      alt="Back"
+                    />
+                  </button>
+                )}
                 <div className="flex gap-2 items-center self-stretch my-auto">
                   <div className="flex flex-col items-center self-stretch pt-1 pb-8 my-auto w-12 h-12 bg-red-200 rounded-[100.75px]">
                     <div className="flex shrink-0 bg-emerald-500 h-[11px] rounded-[100px] w-[11px]" />
@@ -191,10 +205,10 @@ export const ChatMain: React.FC<ChatMainProps> = ({
               </div>
             </header>
 
-            <div className="relative">
-              <section
+            <div className="relative flex-1">
+            <section
                 ref={messagesContainerRef}
-                className="mt-8 w-full bg-white rounded-xl overflow-y-auto max-h-[600px] min-h-[400px]"
+                className="mt-8 w-full bg-white rounded-xl overflow-y-auto max-h-[400px] min-h-[400px]"
               >
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
@@ -241,7 +255,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
                 className="flex gap-2.5 items-center self-stretch p-3 my-auto w-10 h-10 bg-blue-900 rounded-lg"
               >
                 <img
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/3f38d43167fc382dbd85341eabad86ddafabc14c?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/3f38d43167fc382dbd85341e1ce5fe591b8369?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
                   className="object-contain self-stretch my-auto w-4 aspect-square"
                   alt="Send"
                 />

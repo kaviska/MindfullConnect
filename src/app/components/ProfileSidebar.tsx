@@ -4,11 +4,24 @@ import React from "react";
 import ClientList from "./ClientList";
 import { useAuth } from "@/context/AuthContext";
 
-export const ProfileSidebar: React.FC = () => {
+interface ProfileSidebarProps {
+  className?: string;
+  onBack?: () => void; // Added onBack prop
+}
+
+export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ className, onBack }) => {
   const { user, logout } = useAuth();
 
   return (
-    <aside className="flex flex-col bg-white min-h-[805px] min-w-60 w-[306px] p-6">
+    <aside className={`flex flex-col bg-white h-full min-w-60 w-[306px] p-6 ${className || ""}`}>
+      <div className="flex items-center justify-between mb-4">
+        {onBack && (
+          <button onClick={onBack} className="sm:hidden text-blue-500">
+            Back
+          </button>
+        )}
+        <div className="flex-1" /> {/* Spacer to push content to the center */}
+      </div>
       <div className="flex flex-col items-center">
         <img
           src={user?.profileImageUrl || "/ava1.svg"}
@@ -30,3 +43,5 @@ export const ProfileSidebar: React.FC = () => {
     </aside>
   );
 };
+
+export default ProfileSidebar;
