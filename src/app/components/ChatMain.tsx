@@ -208,7 +208,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
             <div className="relative flex-1">
             <section
                 ref={messagesContainerRef}
-                className="mt-8 w-full bg-white rounded-xl overflow-y-auto max-h-[400px] min-h-[400px]"
+                className="mt-0 w-full bg-white rounded-xl overflow-y-auto max-h-[400px] min-h-[400px]"
               >
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
