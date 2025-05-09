@@ -51,13 +51,13 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) 
       {/* Dashboard Item */}
       <div
         className={`flex items-center gap-3 px-6 py-3 mt-5 ${
-          isSidebarOpen ? "justify-start bg-slate-400 rounded-lg ml-2" : "justify-center ml-[-18px] w-[90px]  "
+          isSidebarOpen ? "justify-start  rounded-lg ml-2" : "justify-center ml-[-6px] w-[90px]  "
         }`}
       >
         <img
           src="https://cdn.builder.io/api/v1/image/assets/TEMP/f73ff521328155843915869dd01f93747793ac7a?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
           alt="Dashboard Icon"
-          className="object-contain shrink-0 aspect-[1.05] w-[42px] ml-3.5"
+          className="object-contain shrink-0 aspect-[1.05] w-[42px] ml-[-18px]"
         />
         {isSidebarOpen && <span>Dashboard</span>}
       </div>
@@ -81,7 +81,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) 
         <NavigationItem
           icon="https://cdn.builder.io/api/v1/image/assets/TEMP/7ab067e1449b66771846141a779f689d9945be4b?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
           label="Messages"
-          className={`mt-2.5 ${isSidebarOpen ? "max-w-[215px] mx-2.5" : "max-w-[60px] justify-center mx-0"}`}
+          className={`mt-2.5 ${isSidebarOpen ? " object-contain max-w-[215px] ml-10 bg-slate-400 rounded-lg  " : "bg-slate-400 rounded-lg max-w-[60px] justify-center mx-0 "}`}
           isSidebarOpen={isSidebarOpen}
         />
 
