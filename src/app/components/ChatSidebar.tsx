@@ -16,18 +16,23 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, 
   const { user, token } = useAuth();
   const [otherUsers, setOtherUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(conversations[0]?._id || null);
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(conversations[0]?._id || null);  // Initially select the first conversation
 
+   // Filter users for "Start a new conversation" section
   useEffect(() => {
     if (!users) {
       setIsLoadingUsers(false);
       return;
     }
 
+        // Get participant IDs from existing conversations (excluding the logged-in user)
+
     const conversationParticipantIds = conversations
       .flatMap((conv) => conv.participants)
       .map((p) => p._id)
       .filter((id) => id !== user?._id);
+
+          // and filter out users who are already in conversations
 
     const filteredUsers = users.filter(
       (u) => u._id !== user?._id && !conversationParticipantIds.includes(u._id)
@@ -87,7 +92,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, 
       const data = await res.json();
       console.log("Response from POST /api/conversations:", data);
       if (res.ok) {
-        setSelectedConversationId(data.conversation._id);
+        setSelectedConversationId(data.conversation._id);// Set the new conversation as active
         onSelectConversation(data.conversation._id);
       } else {
         console.error("Failed to start conversation:", data.error);
@@ -98,7 +103,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ onSelectConversation, 
   };
 
   const handleSelectConversation = (conversationId: string) => {
-    setSelectedConversationId(conversationId);
+    setSelectedConversationId(conversationId);// Update the selected conversation ID
     onSelectConversation(conversationId);
   };
 
