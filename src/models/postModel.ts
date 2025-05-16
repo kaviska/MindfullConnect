@@ -14,16 +14,20 @@ const PostSchema: Schema = new Schema(
     title: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
     content: { type: String, required: true },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    author: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'User', 
+      required: true 
+    },
     category: {
-        type: String,
-        enum: ['wellbeing', 'mindfulness', 'self-care', 'stress-management', 'therapy', 'resilience', 'other'],
-        required: true,
-      },    
+      type: String,
+      enum: ['wellbeing', 'mindfulness', 'self-care', 'stress-management', 'therapy', 'resilience', 'other'],
+      required: true,
+    },        
     published: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-export const Post = models.Post || model<IPost>('Post', PostSchema);
+const Post = mongoose.models.Post || mongoose.model("Post", PostSchema);
 export default Post;

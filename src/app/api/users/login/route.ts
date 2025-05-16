@@ -48,16 +48,13 @@ export async function POST(request: NextRequest) {
       { expiresIn: "1d" }
     );
 
-    console.log("Generated token:", token);
-
     const response = NextResponse.json({
       message: "Login successful",
       success: true,
       user: { // Include basic user info in response
         id: user._id,
         username: user.username,
-        email: user.email,
-        jwt: token
+        email: user.email
       }
     });
 

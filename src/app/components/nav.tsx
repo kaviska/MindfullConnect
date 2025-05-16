@@ -25,7 +25,7 @@ const Navbar = () => {
             {/* Desktop menu items */}
             <div className="hidden md:ml-10 md:flex md:space-x-14 px-12">
               <NavLink href="/">Home</NavLink>
-              <NavLink href="/blog">Blog</NavLink>
+              <NavLink href="/blogMC">Blog</NavLink>
               <NavLink href="/find-counselor">Find a Counselor</NavLink>
               <NavLink href="/join-as-counselor">Join as a Counselor</NavLink>
             </div>

@@ -1,17 +1,31 @@
 import { NextResponse } from 'next/server';
 import { connect } from "@/dbConfig/dbConfig";
+
+import '@/models/userModel';
 import Post from '@/models/postModel';
 
-export async function GET() {
-    await connect();
-  
-    try {
-      const posts = await Post.find({}).populate('author', 'name email');
-      return NextResponse.json(posts);
-    } catch (error) {
-      return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
+// GET posts either all or by category
+export async function GET(request: Request) {
+  await connect();
+
+  const { searchParams } = new URL(request.url);
+  const category = searchParams.get('category');
+
+  try {
+    let posts;
+
+    if (category) {
+      posts = await Post.find({ category });
+    } else {
+      posts = await Post.find({});
     }
+
+    return NextResponse.json(posts);
+  } catch (error) {
+    console.error("API Error:", error);
+    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
   }
+}
 
 export async function POST(req: Request) {
     try {

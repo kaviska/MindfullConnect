@@ -9,7 +9,7 @@ export async function GET(
     await connect();
   
     try {
-      const post = await Post.findOne({ slug: params.slug }).populate('author', 'name email');
+      const post = await Post.findOne({ slug: params.slug })
       if (!post) {
         return NextResponse.json({ error: 'Post not found' }, { status: 404 });
       }
