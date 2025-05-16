@@ -1,3 +1,4 @@
+
 export default function Home() {
   return (
     <div>
@@ -5,4 +6,5 @@ export default function Home() {
       <p>This is the main content area of the dashboard.</p>
     </div>
   );
+
 }
