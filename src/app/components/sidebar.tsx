@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, BookOpen, FileText, Edit3 } from "lucide-react";
@@ -79,3 +80,4 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
+

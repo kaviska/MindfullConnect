@@ -1,30 +1,8 @@
-import React from 'react'
-import MultiActionAreaCard from "./MultiActionAreaCard"
-import AboutUs from "../components/aboutUs"
-
-
-import "./style.css";
-
-import WhyChooseUs from "../components/whyChooseUs"
-const page = () => {
+export default function PatientPage() {
   return (
-    <div>
-      {/* <WhyChooseUs/> */}
-      {/* <MultiActionAreaCard /> */}
-      {/* <AboutUs/> */}
-      
+    <div className="p-10 bg-gray-100 min-h-screen">
+      <h1 className="text-2xl font-bold mb-4">Patient Page</h1>
+      <p>This is the patient page.</p>
     </div>
-  )
+  );
 }
-
-export default page;
-
-
-
-
-
-
-
-
-
-
