@@ -9,32 +9,35 @@ import styles from './textEditor.module.css'
 
 const TextEditor = () => {
   const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
+  const [coverImage, setCoverImage] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId')
-    if (!userId) {
+    const storedUserId = localStorage.getItem('userId')
+    if (!storedUserId) {
       alert('User is not logged in.')
-      // Redirect to login page or handle it based on your logic
     }
-    setUserId(userId)
+    setUserId(storedUserId)
   }, [])
+
+  useEffect(() => {
+    if (error) {
+      alert(error)
+    }
+  }, [error])
 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         bulletList: {
-          HTMLAttributes: {
-            class: 'list-disc ml-3',
-          },
+          HTMLAttributes: { class: 'list-disc ml-3' },
         },
         listItem: {
-          HTMLAttributes: {
-            class: 'list-item',
-          },
+          HTMLAttributes: { class: 'list-item' },
         },
       }),
       Placeholder.configure({
@@ -50,10 +53,9 @@ const TextEditor = () => {
     },
   })
 
-  const handlePublish = async () => {
+  const handlePublish = async ( pubStatus: boolean ) => {
     try {
       if (!editor) return
-
       if (!category) {
         alert('Please select a category.')
         return
@@ -74,32 +76,32 @@ const TextEditor = () => {
           title: postTitle,
           slug,
           content,
-          author: '6813edd499737df9ab64764d',
+          description,
           category,
-          published: true,
+          author: '6813edd499737df9ab64764d',
+          coverImage: coverImage ? coverImage.name : null, // Placeholder
+          published: pubStatus,
         }),
       })
 
       if (!res.ok) {
         const errorData = await res.json()
-        console.error('Error response:', errorData)
         throw new Error(errorData.message || 'Failed to publish')
       }
 
       const data = await res.json()
-      console.log('Post published:', data)
       alert('Post published successfully!')
     } catch (error: any) {
-      console.error('Error during publish:', error)
       setError(error.message || 'An error occurred')
-      alert('Failed to publish')
+      //alert('Failed to publish')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 max-w-6xl mx-auto flex flex-col justify-center">
+      {/* Title and Category */}
       <div className="flex items-center gap-4">
         <input
           type="text"
@@ -115,7 +117,7 @@ const TextEditor = () => {
           className="flex-4 border border-gray-300 rounded-md px-3 py-2 min-w-[320px]"
           required
         >
-          <option value="" disabled className="styles.placeholder">
+          <option value="" disabled>
             Article category...
           </option>
           <option value="wellbeing">Wellbeing</option>
@@ -127,18 +129,52 @@ const TextEditor = () => {
         </select>
       </div>
 
+      {/* Description */}
+      <textarea
+        placeholder="Post description..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[100px]"
+      />
+
+      {/* Cover Image */}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setCoverImage(e.target.files?.[0] || null)}
+        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+      />
+
+      {/* Editor and Publish */}
       <div className="flex items-center justify-between">
+
+        {/* Editor Menu */}
         <MenuBar editor={editor} />
-        <button
-          onClick={handlePublish}
-          disabled={loading}
-          className="bg-amber-400 text-white text-sm px-4 py-2 rounded-md hover:bg-amber-500 disabled:opacity-50 transition"
-        >
-          {loading ? 'Publishing...' : 'Publish'}
-        </button>
+
+        {/* Buttons Set */}
+        <div className="flex items-center justify-end gap-4">
+          {/* Publish Button*/}
+          <button
+            onClick={ () => handlePublish(true) }
+            disabled={loading}
+            className="bg-amber-400 text-black text-sm px-4 py-2 rounded-md hover:bg-amber-500 hover:text-white disabled:opacity-50 transition"
+          >
+            {loading ? 'Publishing...' : 'Publish'}
+          </button>
+
+          {/* Save as Draft Button */}
+          <button
+            onClick={ () => handlePublish(false) }
+            disabled={loading}
+            className="bg-gray-400 text-black text-sm px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white  disabled:opacity-50 transition"
+          >
+            {loading ? 'Saving...' : 'Save Draft'}
+          </button>
+
+        </div>
       </div>
 
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} className="bg-white" />
 
       {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
     </div>

@@ -15,9 +15,9 @@ export async function GET(request: Request) {
     let posts;
 
     if (category) {
-      posts = await Post.find({ category });
+      posts = await Post.find({ category, published: true });
     } else {
-      posts = await Post.find({});
+      posts = await Post.find({ published: true });
     }
 
     return NextResponse.json(posts);
