@@ -78,7 +78,7 @@ const TextEditor = () => {
           content,
           description,
           category,
-          author: '6813edd499737df9ab64764d',
+          author: '68130a30cedf32c7425dfccf',
           coverImage: coverImage ? coverImage.name : null, // Placeholder
           published: pubStatus,
         }),
