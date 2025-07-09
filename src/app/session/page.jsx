@@ -1,17 +1,19 @@
-"use client"
+"use client";
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Navbar from '../components/sessions/Navbar';
 import SearchFilters from '../components/sessions/SearchFilters';
 import CounselorsGrid from '../components/sessions/CounselorsGrid';
 import BookingModal from '../components/sessions/BookingModal';
+import MyBookingsModal from '../components/sessions/MyBookingModal';
 import Snackbar from '../components/sessions/Snackbar';
 
-export default function Home() {
+export default function Session() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isMyBookingsModalOpen, setIsMyBookingsModalOpen] = useState(false);
   const [selectedCounselor, setSelectedCounselor] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -53,16 +55,26 @@ export default function Home() {
 
   const timeSlots = ['9:00 AM', '10:30 AM', '12:00 PM', '2:30 PM', '4:00 PM', '5:30 PM'];
 
-  const openModal = (counselor) => {
+  const openBookingModal = (counselor) => {
     setSelectedCounselor(counselor);
-    setIsModalOpen(true);
+    setIsBookingModalOpen(true);
     document.body.style.overflow = 'hidden';
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const closeBookingModal = () => {
+    setIsBookingModalOpen(false);
     setSelectedTimeSlot(null);
     setSelectedCounselor(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  const openMyBookingsModal = () => {
+    setIsMyBookingsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeMyBookingsModal = () => {
+    setIsMyBookingsModalOpen(false);
     document.body.style.overflow = 'auto';
   };
 
@@ -72,7 +84,7 @@ export default function Home() {
 
   const bookSession = () => {
     if (!selectedTimeSlot || !selectedCounselor) return;
-    closeModal();
+    closeBookingModal();
     setShowSnackbar(true);
     setTimeout(() => setShowSnackbar(false), 4000);
   };
@@ -91,10 +103,12 @@ export default function Home() {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </Head>
 
-      <Navbar />
+      <Navbar openMyBookingsModal={openMyBookingsModal} />
       <main className="max-w-[1200px] mx-auto px-5 py-10">
         <h1 className="text-3xl sm:text-4xl font-bold text-[#0f172a] text-center mb-2">Book Your Session</h1>
-        <p className="text-lg text-[#64748b] text-center mb-10">Find the perfect counselor for your needs and schedule your appointment</p>
+        <p className="text-lg text-[#64748b] text-center mb-10">
+          Find the perfect counselor for your needs and schedule your appointment
+        </p>
 
         <SearchFilters
           searchTerm={searchTerm}
@@ -105,18 +119,20 @@ export default function Home() {
           setDate={setDate}
         />
 
-        <CounselorsGrid counselors={filteredCounselors} openModal={openModal} />
+        <CounselorsGrid counselors={filteredCounselors} openModal={openBookingModal} />
       </main>
 
       <BookingModal
-        isOpen={isModalOpen}
-        closeModal={closeModal}
+        isOpen={isBookingModalOpen}
+        closeModal={closeBookingModal}
         selectedCounselor={selectedCounselor}
         timeSlots={timeSlots}
         selectTimeSlot={selectTimeSlot}
         selectedTimeSlot={selectedTimeSlot}
         bookSession={bookSession}
       />
+
+      <MyBookingsModal isOpen={isMyBookingsModalOpen} closeModal={closeMyBookingsModal} />
 
       <Snackbar
         show={showSnackbar}
