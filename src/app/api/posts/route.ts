@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { connect } from "@/dbConfig/dbConfig";
 import '@/models/userModel';
 import Post from '@/models/postModel';
-import { getUserIdFromToken } from "@/lib/getUserFromId";
+import { getUserIdFromToken } from "@/lib/getUserFromToken";
 
 
 // GET posts either all or by category

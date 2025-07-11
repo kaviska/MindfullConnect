@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connect } from "@/dbConfig/dbConfig";
 import Post from "@/models/postModel";
-import { getUserIdFromToken } from "@/lib/getUserFromId";
+import { getUserIdFromToken } from "@/lib/getUserFromToken";
 
 export async function GET() {
   await connect();

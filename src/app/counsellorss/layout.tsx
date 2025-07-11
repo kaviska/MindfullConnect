@@ -91,11 +91,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [selectedPage, setSelectedPage] = useState("dashboard"); // Default page
-  
 
-  
-
-  
   // Define navigation menu with click handlers
   const NAVIGATION = [
     { kind: "header", title: "Main items" },
@@ -105,8 +101,40 @@ export default function RootLayout({
       icon: <DashboardIcon onClick={() => setSelectedPage("dashboard")} />,
     },
     {
+      segment: "manage-profile",
+      title: "Manage Profile",
+      icon: <EngineeringIcon onClick={() => setSelectedPage("manage-profile")} />,
+    },
+    {
+      segment: "sessions",
+      title: "Sessions",
+      icon: <CategoryIcon onClick={() => setSelectedPage("sessions")} />,
+      children: [
+        {
+          segment: "",
+          title: "Total Sessions",
+          icon: <AddIcon onClick={() => setSelectedPage("counsellor/goals")} />,
+        },
+        {
+          segment: "upcoming-sessions",
+          title: "Upcoming Sessions",
+          icon: <VisibilityIcon onClick={() => setSelectedPage("counsellor/goals/view")} />,
+        },
+        {
+          segment: "previous-sessions",
+          title: "Previous Sessions",
+          icon: <DashboardIcon onClick={() => setSelectedPage("counsellor/goals")} />,
+        },
+      ],
+    },
+    {
+      segment: "messages",
+      title: "Messages",
+      icon: <VisibilityIcon onClick={() => setSelectedPage("messages")} />,
+    },
+    {
       segment: "counsellor/goals",
-      title: "Golas",
+      title: "Progress Tracking",
       icon: <CategoryIcon onClick={() => setSelectedPage("counsellor/goals")} />,
       children: [
         {
@@ -122,16 +150,39 @@ export default function RootLayout({
       ],
     },
     {
-      segment: "patient",
-      title: "Patient",
-      icon: <EngineeringIcon onClick={() => setSelectedPage("patient")} />,
+      segment: "feedback",
+      title: "Feedback",
+      icon: <DashboardIcon onClick={() => setSelectedPage("feedback")} />,
+    },
+    {
+      segment: "patient-details",
+      title: "Patient Details",
+      icon: <EngineeringIcon onClick={() => setSelectedPage("patient-details")} />,
+    },
+    {
+      segment: "manage",
+      title: "Manage Blogs",
+      icon: <CategoryIcon onClick={() => setSelectedPage("manage")} />,
+      children: [
+        {
+          segment: "read-blogs",
+          title: "Read Blogs",
+          icon: <VisibilityIcon onClick={() => setSelectedPage("manage/read-blogs")} />,
+        },
+        {
+          segment: "my-blogs",
+          title: "My Blogs",
+          icon: <DashboardIcon onClick={() => setSelectedPage("manage/my-blogs")} />,
+        },
+        {
+          segment: "write-blog",
+          title: "Write a Blog",
+          icon: <AddIcon onClick={() => setSelectedPage("manage/write-blog")} />,
+        },
+      ],
     },
   ];
 
-
-
-  
-  
   return (
     <html lang="en">
       <body>
@@ -152,10 +203,12 @@ export default function RootLayout({
                 }}
                 sx={{ ".MuiStack-root": { padding: "0px 10px" } }}
               >
-                <div className="p-10">{children}</div>
+                <div className="bg-blue-50 min-h-full p-10">{children}</div>
               </DashboardLayout>
             </NextAppProvider>
           </Suspense>
         </ToastProvider>
       </body>
     </html>
+  );
+}
