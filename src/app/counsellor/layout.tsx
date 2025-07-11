@@ -1,5 +1,6 @@
 "use client";
 
+'use client'
 import * as React from "react";
 import { useState,useEffect } from "react";
 import { createTheme } from "@mui/material/styles";
@@ -159,3 +160,6 @@ export default function RootLayout({
         </ToastProvider>
       </body>
     </html>
+  )
+}
+
