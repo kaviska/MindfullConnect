@@ -1,19 +1,28 @@
 import mongoose from "mongoose";
 
-// 1. Define the interface for TypeScript support
 interface IUser extends mongoose.Document {
   username: string;
   email: string;
-  password: string; // You're missing this crucial field!
+  password?: string;
+  googleId?: string;
+  profileImage?: string;
+  firstName?: string;
+  lastName?: string;
+  nic?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  role?: "patient" | "counselor";
   isVerified: boolean;
   isAdmin: boolean;
+  otp?: string;
+  otpExpiry?: Date;
   forgotPasswordToken?: string;
   forgotPasswordTokenExpiry?: Date;
   verifyToken?: string;
   verifyTokenExpiry?: Date;
 }
 
-// 2. Create the schema with proper validation
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -35,10 +44,50 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, "Please provide a password"],
+    required: false,
     minlength: [6, "Password must be at least 6 characters"],
   },
- 
+  googleId: {
+    type: String,
+    default: null,
+  },
+  profileImage: {
+    type: String,
+    default: null,
+  },
+  firstName: {
+    type: String,
+    default: null,
+  },
+  lastName: {
+    type: String,
+    default: null,
+  },
+  nic: {
+    type: String,
+    default: null,
+  },
+  address: {
+    type: String,
+    default: null,
+  },
+  city: {
+    type: String,
+    default: null,
+  },
+  postalCode: {
+    type: String,
+    default: null,
+  },
+  role: {
+    type: String,
+    enum: ["patient", "counselor"],
+    default: null,
+  },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
   isAdmin: {
     type: Boolean,
     default: false,
@@ -51,19 +100,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
   forgotPasswordToken: String,
   forgotPasswordTokenExpiry: Date,
   verifyToken: String,
   verifyTokenExpiry: Date,
 }, {
-  timestamps: true // Adds createdAt and updatedAt fields automatically
+  timestamps: true
 });
 
-// 3. Better model definition with type checking
 const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema);
 
 export default User;
