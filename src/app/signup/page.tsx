@@ -4,38 +4,59 @@ import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { useToast } from '@/contexts/ToastContext';
+import Toast from '@/components/main/Toast';
+
 export default function SignupPage() {
   const router = useRouter();
+  const { toast, setToast } = useToast();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({
     email: "",
     password: "",
-    username: "",
+    fullName: "",
+    role: "User",
   });
   
   useEffect(() => {
-    setButtonDisabled(!(user.email && user.password && user.username));
+    setButtonDisabled(!(user.email && user.password && user.fullName));
   }, [user]);
 
   const onSignup = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     try {
       setLoading(true);
-      const response = await axios.post("/api/users/signup", user);
+      const response = await axios.post("/api/auth/register", user);
       console.log("Signup success", response.data);
-      toast.success("Account created successfully!");
-      router.push("/login");
+      
+      setToast({
+        open: true,
+        message: "Account created successfully!",
+        type: "success"
+      });
+      
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
     } catch (error: any) {
       console.error("Signup failed", error);
       const errorMessage = error.response?.data?.error || error.message;
-      toast.error(errorMessage || "Signup failed");
+      
+      setToast({
+        open: true,
+        message: errorMessage || "Signup failed",
+        type: "error"
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleToastClose = () => {
+    setToast({ ...toast, open: false });
   };
 
   //password visibility
@@ -45,6 +66,12 @@ export default function SignupPage() {
 
   return (
     <div className="flex h-screen">
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        type={toast.type}
+        onClose={handleToastClose}
+      />
 
       {/* Login page image box */}
       <div
@@ -56,32 +83,36 @@ export default function SignupPage() {
       {/* credentials section */}
       <div className="w-1/2 flex flex-col justify-center items-center bg-white text-slate-500">
         <div className='flex justify-end'>
-          <button
-            type="submit"
-            className="w-full ml-80 mt-4 py-2 px-6 bg-blue-600 text-white rounded-3xl shadow-sm bg hover:bg-blue-700"
-          >
-            Back
-          </button>
+          <Link href="/">
+            <button
+              type="button"
+              className="w-full ml-80 mt-4 py-2 px-6 bg-blue-600 text-white rounded-3xl shadow-sm hover:bg-blue-700"
+            >
+              Back
+            </button>
+          </Link>
         </div>
         <div className="w-full max-w-md px-6 py-12">
         <h1 className="text-4xl font-semibold mb-14 mt-6 text-blue-500">MindfulConnect</h1>
           <h2 className="text-xl font-semibold mb-6 text-slate-700">Hello,here's to hope and healing !</h2>
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={onSignup}>
 
           <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                User Name
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                Full Name
               </label>
               <input
                 type="text"
-                id="username"
-                value={user.username}
-                onChange={(e)=>setUser({...user,username:e.target.value})}
-                placeholder="Username"
+                id="fullName"
+                value={user.fullName}
+                onChange={(e)=>setUser({...user,fullName:e.target.value})}
+                placeholder="Enter your full name"
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                required
               />
             </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email
@@ -91,8 +122,9 @@ export default function SignupPage() {
                 id="email"
                 value={user.email}
                 onChange={(e)=>setUser({...user,email:e.target.value})}
-                placeholder="Email or phone number"
+                placeholder="Enter your email"
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                required
               />
             </div>
 
@@ -154,22 +186,38 @@ export default function SignupPage() {
               </div>
             </div>
 
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                I want to register as
+              </label>
+              <select
+                id="role"
+                value={user.role}
+                onChange={(e)=>setUser({...user,role:e.target.value})}
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="User">User (Seeking Support)</option>
+                <option value="counselor">Counselor (Providing Support)</option>
+              </select>
+            </div>
+
             <div className="flex items-center justify-between">
               <label className="flex items-center text-sm text-gray-600">
                 <input type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500" />
-                <span className="ml-2">Remember me</span>
+                <span className="ml-2">I agree to the Terms & Conditions</span>
               </label>
-              <a href="#" className="text-sm text-blue-600 hover:underline">
-                Forgot password?
-              </a>
             </div>
 
             <button
               type="submit"
-              onClick={onSignup}
-              className="w-full py-2 px-4 bg-blue-600 text-white rounded-3xl shadow-sm bg hover:bg-blue-700"
+              disabled={buttonDisabled || loading}
+              className={`w-full py-2 px-4 text-white rounded-3xl shadow-sm ${
+                buttonDisabled || loading 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              Sign up
+              {loading ? 'Creating Account...' : 'Sign up'}
             </button>
           </form>
 
@@ -185,7 +233,7 @@ export default function SignupPage() {
           </div>
 
           <div className="mt-14 text-center text-sm text-black">
-            Don’t have an account? <a href="/register" className="text-blue-500 hover:underline">Sign up now</a>
+            Already have an account? <Link href="/login" className="text-blue-500 hover:underline">Sign in now</Link>
           </div>
         </div>
       </div>
