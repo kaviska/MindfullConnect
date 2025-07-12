@@ -65,10 +65,18 @@ export default function QuestionGroup() {
     }
   };
   return (
-    <div>
+    <div className="space-y-6">
       <TextField
         fullWidth
-        sx={{ height: "50px" }}
+        sx={{ 
+          height: "60px",
+          '& .MuiInputBase-input': {
+            fontSize: '1.125rem',
+          },
+          '& .MuiInputLabel-root': {
+            fontSize: '1.125rem',
+          }
+        }}
         margin="normal"
         label="Question Group Title"
         variant="outlined"
@@ -76,21 +84,18 @@ export default function QuestionGroup() {
         onChange={(e) => setQuestionGroupTitle(e.target.value)}
       />
       <button
-        className="mt-3 px-3 py-2 rounded-[4px] text-white bg-blue-500 "
+        className="px-6 py-3 text-lg font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors"
         onClick={handleSubmitQuestionGroup}
       >
         Submit Question Group
       </button>
-
-     
-
 
       <Toast
         open={toast.open}
         message={toast.message}
         type={toast.type}
         onClose={() => setToast({ ...toast, open: false })}
-        />
+      />
     </div>
   );
 }
