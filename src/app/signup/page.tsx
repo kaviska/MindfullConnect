@@ -6,23 +6,19 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { Alert, AlertTitle, IconButton, Collapse } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { GoogleLogin } from '@react-oauth/google';
 
 export default function SignupPage() {
   const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [otpStage, setOtpStage] = useState(false);
+  const [otpStage, setOtpStage] = useState(false); // Track OTP verification stage
   const [otp, setOtp] = useState('');
   const [user, setUser] = useState({
     email: '',
     password: '',
     username: '',
   });
-  const [successAlertOpen, setSuccessAlertOpen] = useState(false);
 
   useEffect(() => {
     setButtonDisabled(!(user.email && user.password && user.username));
@@ -35,7 +31,7 @@ export default function SignupPage() {
       const response = await axios.post('/api/users/signup', user);
       console.log('OTP sent', response.data);
       toast.success('OTP sent to your email!');
-      setOtpStage(true);
+      setOtpStage(true); // Move to OTP verification stage
     } catch (error: any) {
       console.error('Signup failed', error);
       const errorMessage = error.response?.data?.error || 'Signup failed. Please try again.';
@@ -54,11 +50,8 @@ export default function SignupPage() {
         otp,
       });
       console.log('Signup success', response.data);
-      setSuccessAlertOpen(true);
-      setTimeout(() => {
-        setSuccessAlertOpen(false);
-        router.push(`/profile/${response.data.savedUser._id}`);
-      }, 3000);
+      toast.success('Account created successfully!');
+      router.push('/login');
     } catch (error: any) {
       console.error('OTP verification failed', error);
       const errorMessage = error.response?.data?.error || 'OTP verification failed. Please try again.';
@@ -66,32 +59,6 @@ export default function SignupPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const onGoogleSuccess = async (credentialResponse: any) => {
-    try {
-      setLoading(true);
-      const response = await axios.post('/api/users/google-auth', {
-        idToken: credentialResponse.credential,
-      });
-      console.log('Google signup success', response.data);
-      setSuccessAlertOpen(true);
-      setTimeout(() => {
-        setSuccessAlertOpen(false);
-        router.push(`/profile/${response.data.user.id}`);
-      }, 3000);
-    } catch (error: any) {
-      console.error('Google signup failed', error);
-      const errorMessage = error.response?.data?.error || 'Google signup failed. Please try again.';
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onGoogleError = () => {
-    console.error('Google signup failed');
-    toast.error('Google signup failed. Please try again.');
   };
 
   const togglePasswordVisibility = () => {
@@ -112,9 +79,8 @@ export default function SignupPage() {
       <div className="w-1/2 flex flex-col justify-center items-center bg-white text-slate-500">
         <div className="flex justify-end">
           <button
-            type="button"
-            onClick={() => router.push('/')}
-            className="w-full ml-80 mt-4 py-2 px-6 bg-blue-600 text-white rounded-3xl shadow-sm hover:bg-blue-700"
+            type="submit"
+            className="w-full ml-80 mt-4 py-2 px-6 bg-blue-600 text-white rounded-3xl shadow-sm bg hover:bg-blue-700"
           >
             Back
           </button>
@@ -124,33 +90,6 @@ export default function SignupPage() {
           <h2 className="text-xl font-semibold mb-6 text-slate-700">
             Hello, here's to hope and healing!
           </h2>
-
-          <Collapse in={successAlertOpen}>
-            <Alert
-              severity="success"
-              action={
-                <IconButton
-                  aria-label="close"
-                  color="inherit"
-                  size="small"
-                  onClick={() => setSuccessAlertOpen(false)}
-                >
-                  <CloseIcon fontSize="inherit" />
-                </IconButton>
-              }
-              sx={{
-                mb: 2,
-                backgroundColor: '#3B82F6',
-                color: 'white',
-                borderRadius: '8px',
-                '& .MuiAlert-icon': { color: 'white' },
-                fontFamily: 'Geist Sans, sans-serif',
-              }}
-            >
-              <AlertTitle>Success</AlertTitle>
-              User successfully signed up!
-            </Alert>
-          </Collapse>
 
           {!otpStage ? (
             <form className="space-y-6" onSubmit={onSignup}>
@@ -283,20 +222,44 @@ export default function SignupPage() {
           <hr className="border-t-2 border-gray-300 my-4 mt-8" />
 
           <div className="mt-8">
-            <GoogleLogin
-              onSuccess={onGoogleSuccess}
-              onError={onGoogleError}
-              text="signup_with"
-              theme="filled_blue"
-              shape="pill"
-            />
+            <button
+              className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-3xl shadow-sm flex items-center justify-center hover:bg-gray-200"
+              disabled={otpStage}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                x="0px"
+                y="0px"
+                width="35"
+                height="20"
+                viewBox="0 0 48 48"
+              >
+                <path
+                  fill="#FFC107"
+                  d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
+                ></path>
+                <path
+                  fill="#FF3D00"
+                  d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
+                ></path>
+                <path
+                  fill="#4CAF50"
+                  d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
+                ></path>
+                <path
+                  fill="#1976D2"
+                  d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
+                ></path>
+              </svg>
+              Sign in with Google
+            </button>
           </div>
 
           <div className="mt-14 text-center text-sm text-black">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-500 hover:underline">
-              Sign in now
-            </Link>
+            Don’t have an account?{' '}
+            <a href="/register" className="text-blue-500 hover:underline">
+              Sign up now
+            </a>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 import { sendEmail } from "@/utils/sendEmail";
 
+// Ensure connection is established
 connect().catch((err) => console.error("MongoDB connection error:", err));
 
 export async function POST(request: NextRequest) {
@@ -12,6 +13,7 @@ export async function POST(request: NextRequest) {
     reqBody = await request.json();
     const { username, email, password } = reqBody;
 
+    // Validate request body
     if (!username || !email || !password) {
       console.error("Missing fields in request body:", reqBody);
       return NextResponse.json({ error: "Username, email, and password are required" }, { status: 400 });
@@ -19,28 +21,32 @@ export async function POST(request: NextRequest) {
 
     console.log("Request body:", reqBody);
 
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       console.error(`User already exists for email: ${email}`);
       return NextResponse.json({ error: "User already exists" }, { status: 400 });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
 
+    // Hash password
     const salt = await bcryptjs.genSalt(10);
     const hashedPassword = await bcryptjs.hash(password, salt);
 
+    // Create new user (not verified yet)
     const newUser = new User({
       username,
       email,
       password: hashedPassword,
-      otp: String(otp),
+      otp,
       otpExpiry,
       isVerified: false,
-      isAdmin: false,
     });
 
+    // Log user before saving
     console.log(`User before save for email: ${email}`, {
       username: newUser.username,
       email: newUser.email,
@@ -49,6 +55,7 @@ export async function POST(request: NextRequest) {
       isVerified: newUser.isVerified,
     });
 
+    // Save user and verify OTP was saved
     const savedUser = await newUser.save();
     console.log(`User after save for email: ${email}`, {
       username: savedUser.username,
@@ -66,6 +73,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`Temporary user saved for email: ${email}, OTP: ${otp}, Saved OTP: ${savedUser.otp}`);
+
+    // Send OTP email only after successful save
     await sendEmail({
       to: email,
       subject: "MindfulConnect - Verify Your Email",
@@ -75,7 +85,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: "OTP sent to your email",
       success: true,
-      userId: savedUser._id,
     }, { status: 200 });
 
   } catch (error: any) {
