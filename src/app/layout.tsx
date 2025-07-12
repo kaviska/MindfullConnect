@@ -27,18 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="https://source.zoom.us/2.18.0/css/bootstrap.css"
-        />
-        <link
-          rel="stylesheet"
-          type="text/css"
-          href="https://source.zoom.us/2.18.0/css/react-select.css"
-        />
-      </head>
+      
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ToastProvider>
           <AuthProvider>

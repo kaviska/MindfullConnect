@@ -98,68 +98,68 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
         
         <div className="inline-block w-full max-w-lg my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between p-8 border-b border-gray-200">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-100 rounded-xl">
-                <Target className="w-7 h-7 text-green-600" />
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Target className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">Create New Goal</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Create New Goal</h3>
             </div>
             <button
               onClick={() => setOpen(false)}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-8 space-y-8">
+          <div className="p-6 space-y-6">
             {/* Goal Title */}
-            <div className="space-y-3">
-              <label className="block text-lg font-medium text-gray-700">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Goal Title
               </label>
               <div className="relative">
-                <Target className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Target className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type="text"
                   value={goalTitle}
                   onChange={(e) => setGoalTitle(e.target.value)}
                   placeholder="Enter goal title"
-                  className="w-full pl-12 pr-4 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
             </div>
 
             {/* Goal Description */}
-            <div className="space-y-3">
-              <label className="block text-lg font-medium text-gray-700">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Goal Description
               </label>
               <div className="relative">
-                <FileText className="absolute left-4 top-4 text-gray-400" size={20} />
+                <FileText className="absolute left-3 top-3 text-gray-400" size={18} />
                 <textarea
                   value={goalDescription}
                   onChange={(e) => setGoalDescription(e.target.value)}
                   placeholder="Describe the goal in detail..."
                   rows={4}
-                  className="w-full pl-12 pr-4 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                 />
               </div>
             </div>
 
             {/* Counsellor Selection */}
-            <div className="space-y-3">
-              <label className="block text-lg font-medium text-gray-700">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
                 Assign Counsellor
               </label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <select
                   value={selectedCounsellor}
                   onChange={(e) => setSelectedCounsellor(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">Select Counsellor</option>
                   {counsellors.map((counsellor: any) => (
@@ -173,17 +173,17 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-4 p-8 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
             <button
               onClick={() => setOpen(false)}
-              className="px-6 py-3 text-lg text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="px-8 py-3 text-lg bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? "Creating..." : "Create Goal"}
             </button>
