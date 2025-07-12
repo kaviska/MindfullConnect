@@ -12,13 +12,10 @@ import mongoose from 'mongoose';
   */
 
 
-const MONGODB_URI = process.env.MONGO_DB_URL || '';
-
+const MONGODB_URI = process.env.MONGO_URI || '';
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable");
 }
-
-
 
 // Extend global to include mongoose to understand the shpae of the global object
 let cached = (global as typeof globalThis & { mongoose: any }).mongoose;

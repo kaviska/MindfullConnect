@@ -1,105 +1,107 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Placeholder from '@tiptap/extension-placeholder'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import MenuBar from './menuBar'
-import styles from './textEditor.module.css'
+import { useState, useEffect } from 'react';
+import Placeholder from '@tiptap/extension-placeholder';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import MenuBar from './menuBar';
 
-const TextEditor = () => {
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
+interface TextEditorProps {
+  initialTitle?: string;
+  initialDescription?: string;
+  initialCategory?: string;
+  initialImage?: string;
+  initialContent?: any;
+  isEditing?: boolean;
+  slug?: string;
+}
 
-  useEffect(() => {
-    const userId = localStorage.getItem('userId')
-    if (!userId) {
-      alert('User is not logged in.')
-      // Redirect to login page or handle it based on your logic
-    }
-    setUserId(userId)
-  }, [])
+const TextEditor = ({
+  initialTitle = '',
+  initialDescription = '',
+  initialCategory = '',
+  initialImage = '',
+  initialContent = '',
+  isEditing = false,
+  slug = '',
+}: TextEditorProps) => {
+  const [title, setTitle] = useState(initialTitle);
+  const [description, setDescription] = useState(initialDescription);
+  const [category, setCategory] = useState(initialCategory);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         bulletList: {
-          HTMLAttributes: {
-            class: 'list-disc ml-3',
-          },
+          HTMLAttributes: { class: 'list-disc ml-3' },
         },
         listItem: {
-          HTMLAttributes: {
-            class: 'list-item',
-          },
+          HTMLAttributes: { class: 'list-item' },
         },
       }),
       Placeholder.configure({
         placeholder: 'Write the blog content here...',
       }),
     ],
-    content: '',
-    immediatelyRender: false,
+    content: initialContent,
     editorProps: {
       attributes: {
         class: 'min-h-[500px] border-2 border-amber-300 rounded-lg p-4',
       },
     },
-  })
+  });
 
-  const handlePublish = async () => {
+  useEffect(() => {
+    if (error) alert(error);
+  }, [error]);
+
+  const handlePublish = async (pubStatus: boolean) => {
+    if (!editor || !category) return alert('Please fill all fields.');
+
+    const postTitle = title.trim() || 'Untitled Post';
+    const content = JSON.stringify(editor.getJSON());
+
+    const body = {
+      title: postTitle,
+      slug: isEditing
+        ? slug
+        : `${postTitle.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+      content,
+      description,
+      category,
+      coverImage: coverImage ? coverImage.name : initialImage || null,
+      published: pubStatus,
+      author: '681bcecb2a399b0e3c35e3d6', // TODO: Replace with actual user ID from context or token
+    };
+
     try {
-      if (!editor) return
+      setLoading(true);
+      const response = await fetch(
+        isEditing ? `/api/posts/${slug}` : '/api/posts',
+        {
+          method: isEditing ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }
+      );
 
-      if (!category) {
-        alert('Please select a category.')
-        return
-      }
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to save');
 
-      const postTitle = title.trim() || 'Untitled Post'
-      const slug = `${postTitle.toLowerCase().replace(/\s+/g, '-')}-${userId}-${Date.now()}`
-      const content = JSON.stringify(editor.getJSON())
-
-      setLoading(true)
-
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: postTitle,
-          slug,
-          content,
-          author: '6813edd499737df9ab64764d',
-          category,
-          published: true,
-        }),
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        console.error('Error response:', errorData)
-        throw new Error(errorData.message || 'Failed to publish')
-      }
-
-      const data = await res.json()
-      console.log('Post published:', data)
-      alert('Post published successfully!')
-    } catch (error: any) {
-      console.error('Error during publish:', error)
-      setError(error.message || 'An error occurred')
-      alert('Failed to publish')
+      alert(isEditing ? 'Blog updated successfully!' : 'Post published successfully!');
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 max-w-6xl mx-auto flex flex-col justify-center">
+      {/* Title and Category */}
       <div className="flex items-center gap-4">
         <input
           type="text"
@@ -115,7 +117,7 @@ const TextEditor = () => {
           className="flex-4 border border-gray-300 rounded-md px-3 py-2 min-w-[320px]"
           required
         >
-          <option value="" disabled className="styles.placeholder">
+          <option value="" disabled>
             Article category...
           </option>
           <option value="wellbeing">Wellbeing</option>
@@ -127,22 +129,49 @@ const TextEditor = () => {
         </select>
       </div>
 
+      {/* Description */}
+      <textarea
+        placeholder="Post description..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="w-full border border-gray-300 rounded-md px-3 py-2 min-h-[100px]"
+      />
+
+      {/* Cover Image */}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setCoverImage(e.target.files?.[0] || null)}
+        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+      />
+
+      {/* Editor and Publish */}
       <div className="flex items-center justify-between">
         <MenuBar editor={editor} />
-        <button
-          onClick={handlePublish}
-          disabled={loading}
-          className="bg-amber-400 text-white text-sm px-4 py-2 rounded-md hover:bg-amber-500 disabled:opacity-50 transition"
-        >
-          {loading ? 'Publishing...' : 'Publish'}
-        </button>
+        <div className="flex items-center justify-end gap-4">
+          <button
+            onClick={() => handlePublish(true)}
+            disabled={loading}
+            className="bg-amber-400 text-black text-sm px-4 py-2 rounded-md hover:bg-amber-500 hover:text-white disabled:opacity-50 transition"
+          >
+            {loading ? 'Publishing...' : isEditing ? 'Update' : 'Publish'}
+          </button>
+
+          <button
+            onClick={() => handlePublish(false)}
+            disabled={loading}
+            className="bg-gray-400 text-black text-sm px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white  disabled:opacity-50 transition"
+          >
+            {loading ? 'Saving...' : 'Save Draft'}
+          </button>
+        </div>
       </div>
 
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} className="bg-white" />
 
       {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
     </div>
-  )
-}
+  );
+};
 
-export default TextEditor
+export default TextEditor;
