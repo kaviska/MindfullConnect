@@ -9,7 +9,7 @@ export default function Refund() {
   useEffect(() => {
     // Check on mount + resize
     const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1070);
+      setIsLargeScreen(window.innerWidth >= 1070);git checkout B
     };
 
     checkScreenSize();
