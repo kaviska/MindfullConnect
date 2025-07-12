@@ -10,6 +10,13 @@
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
+     "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@formkit/auto-animate": "^0.8.2",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
+    "@mui/material-nextjs": "^6.3.0",
+    "@radix-ui/react-toggle": "^1.1.6",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
     "@formkit/auto-animate": "^0.8.2",
