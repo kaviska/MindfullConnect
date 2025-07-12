@@ -1,4 +1,16 @@
-export default function TimeSlotSelector({ timeSlots, selectedTimeSlot, selectTimeSlot }) {
+// TimeSlotSelector Component
+// IMPORT: No types needed for this component
+interface TimeSlotSelectorProps {
+  timeSlots: string[];
+  selectedTimeSlot: string | null;
+  selectTimeSlot: (timeSlot: string) => void;
+}
+
+export default function TimeSlotSelector({ timeSlots, selectedTimeSlot, selectTimeSlot }: TimeSlotSelectorProps) {
+  const handleTimeSlotClick = (slot: string): void => {
+    selectTimeSlot(slot);
+  };
+
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-4">
@@ -9,7 +21,7 @@ export default function TimeSlotSelector({ timeSlots, selectedTimeSlot, selectTi
       </div>
       <div className="bg-[#f8fafc] p-4 rounded-[12px] mb-4">
         <p className="text-sm text-[#64748b] italic">
-          You can book one time slot at a time. After attending your scheduled session, you’ll be able to book additional sessions if needed.
+          You can book one time slot at a time. After attending your scheduled session, you'll be able to book additional sessions if needed.
         </p>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -21,7 +33,7 @@ export default function TimeSlotSelector({ timeSlots, selectedTimeSlot, selectTi
                 ? 'border-[#0369a1] bg-[#0369a1] text-white'
                 : 'hover:border-[#0369a1] hover:bg-[#f0f9ff]'
             }`}
-            onClick={() => selectTimeSlot(slot)}
+            onClick={() => handleTimeSlotClick(slot)}
             aria-label={`Select time slot ${slot}`}
           >
             {slot}

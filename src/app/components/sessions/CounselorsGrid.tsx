@@ -1,4 +1,15 @@
-export default function CounselorsGrid({ counselors, openModal }) {
+// CounselorsGrid Component
+ import { Counselor } from '../types';
+interface CounselorsGridProps {
+  counselors: Counselor[];
+  openModal: (counselor: Counselor) => void;
+}
+
+export default function CounselorsGrid({ counselors, openModal }: CounselorsGridProps) {
+  const handleViewAvailability = (counselor: Counselor): void => {
+    openModal(counselor);
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 mb-10">
       {counselors.map((counselor) => (
@@ -24,7 +35,7 @@ export default function CounselorsGrid({ counselors, openModal }) {
           <p className="text-[#64748b] text-sm leading-relaxed mb-6">{counselor.description}</p>
           <button
             className="w-full py-3 px-6 bg-gradient-to-r from-[#0369a1] to-[#0284c7] text-white border-none rounded-[12px] font-semibold cursor-pointer hover:bg-gradient-to-r hover:from-[#0284c7] hover:to-[#0369a1] hover:-translate-y-[2px] hover:shadow-[0_4px_15px_rgba(3,105,161,0.3)] transition-all"
-            onClick={() => openModal(counselor)}
+            onClick={() => handleViewAvailability(counselor)}
           >
             View Availability
           </button>

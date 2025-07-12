@@ -1,20 +1,40 @@
+
+
+
+// BookingModal Component - Fixed for hydration issues
+ import { Counselor, BookedSession } from '../types';
 import { useState } from 'react';
+
 import TimeSlotSelector from './TimeSlotSelector';
 import SessionDurationNote from './SessionDurationNote';
 import BookedSessionList from './BookedSessionList';
 import BookingConfirmation from './BookingConfirmation';
+interface BookingModalProps {
+  isOpen: boolean;
+  closeModal: () => void;
+  selectedCounselor: Counselor | null;
+  timeSlots: string[];
+  selectTimeSlot: (timeSlot: string) => void;
+  selectedTimeSlot: string | null;
+  bookSession: () => void;
+  bookedSessions: BookedSession[]; // Move this to props instead of hardcoding
+}
 
-export default function BookingModal({ isOpen, closeModal, selectedCounselor, timeSlots, selectTimeSlot, selectedTimeSlot, bookSession }) {
-  const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
+export default function BookingModal({ 
+  isOpen, 
+  closeModal, 
+  selectedCounselor, 
+  timeSlots, 
+  selectTimeSlot, 
+  selectedTimeSlot, 
+  bookSession,
+  bookedSessions // Now comes from props
+}: BookingModalProps) {
+  const [isPolicyAccepted, setIsPolicyAccepted] = useState<boolean>(false);
 
   if (!isOpen) return null;
 
-  const bookedSessions = [
-    { date: 'July 10, 2025', time: '09:00 AM', counselor: 'Dr. Priya' },
-    { date: 'July 12, 2025', time: '04:00 PM', counselor: 'Dr. Alex' },
-  ];
-
-  const handleBookSession = () => {
+  const handleBookSession = (): void => {
     if (!selectedTimeSlot || !isPolicyAccepted) return;
     bookSession();
   };

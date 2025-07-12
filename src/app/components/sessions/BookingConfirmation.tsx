@@ -1,4 +1,24 @@
-export default function BookingConfirmation({ isPolicyAccepted, setIsPolicyAccepted, handleBookSession, isDisabled }) {
+// BookingConfirmation Component
+// IMPORT: No types needed for this component
+import { ChangeEvent } from 'react';
+
+interface BookingConfirmationProps {
+  isPolicyAccepted: boolean;
+  setIsPolicyAccepted: (accepted: boolean) => void;
+  handleBookSession: () => void;
+  isDisabled: boolean;
+}
+
+export default function BookingConfirmation({ 
+  isPolicyAccepted, 
+  setIsPolicyAccepted, 
+  handleBookSession, 
+  isDisabled 
+}: BookingConfirmationProps) {
+  const handlePolicyChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setIsPolicyAccepted(e.target.checked);
+  };
+
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-4">
@@ -6,7 +26,7 @@ export default function BookingConfirmation({ isPolicyAccepted, setIsPolicyAccep
           type="checkbox"
           id="policy"
           checked={isPolicyAccepted}
-          onChange={(e) => setIsPolicyAccepted(e.target.checked)}
+          onChange={handlePolicyChange}
           className="w-5 h-5 text-[#0369a1] border-[#e2e8f0] rounded focus:ring-[#0369a1]"
           aria-label="Accept session booking policy"
         />

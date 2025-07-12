@@ -1,3 +1,5 @@
+// SessionDurationNote Component
+// IMPORT: No types needed for this component
 export default function SessionDurationNote() {
   return (
     <div className="mb-6">

@@ -1,10 +1,16 @@
+// Navbar Component
+// IMPORT: No types needed for this component
 import { useState } from 'react';
 import Link from 'next/link';
 
-export default function Navbar({ openMyBookingsModal }) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+interface NavbarProps {
+  openMyBookingsModal: () => void;
+}
 
-  const toggleMobileMenu = () => {
+export default function Navbar({ openMyBookingsModal }: NavbarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+
+  const toggleMobileMenu = (): void => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 

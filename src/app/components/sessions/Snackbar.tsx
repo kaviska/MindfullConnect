@@ -1,4 +1,12 @@
-export default function Snackbar({ show, counselorName, timeSlot }) {
+// Snackbar Component
+// IMPORT: No types needed for this component
+interface SnackbarProps {
+  show: boolean;
+  counselorName: string;
+  timeSlot: string;
+}
+
+export default function Snackbar({ show, counselorName, timeSlot }: SnackbarProps) {
   return (
     <div
       className={`fixed bottom-7 right-7 bg-gradient-to-r from-[#10b981] to-[#059669] text-white p-4 rounded-[12px] shadow-[0_4px_25px_rgba(0,0,0,0.15)] max-w-[400px] transition-all duration-300 z-[1100] ${

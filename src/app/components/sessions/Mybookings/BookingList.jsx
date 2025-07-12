@@ -34,7 +34,7 @@ export default function BookingList({ bookings, activeTab, handleCancel, handleR
             You haven’t booked any sessions yet. Start your wellness journey now.
           </p>
           <a
-            href="/book-session"
+            href="/session"
             className="inline-block py-3 px-6 bg-gradient-to-r from-[#0369a1] to-[#0284c7] text-white rounded-[12px] font-semibold hover:bg-gradient-to-r hover:from-[#0284c7] hover:to-[#0369a1] transition-all"
             aria-label="Book a session"
           >

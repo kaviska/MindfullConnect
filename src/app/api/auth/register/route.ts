@@ -3,8 +3,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
+import Counselor from '@/models/Counselor'; // ✅ NEW
 
-const JWT_SECRET = 'your_jwt_secret'; // Replace with an environment variable in production
+const JWT_SECRET = 'your_jwt_secret'; // Replace with environment variable in production
 
 export async function POST(request: NextRequest) {
   await connectDB();
@@ -32,10 +33,29 @@ export async function POST(request: NextRequest) {
 
     await user.save();
 
+    // ✅ If counselor, create their profile
+    if (role === 'counselor') {
+      const counselorProfile = new Counselor({
+        userId: user._id,
+        specialty: 'General Counseling',
+        description: 'Certified counselor',
+        rating: 4.8,
+        reviews: 0,
+        avatar: '/ava2.svg', // Default or pass from request
+      });
+
+      await counselorProfile.save();
+    }
+
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
-    return NextResponse.json({ token, user: { id: user._id, fullName, email, role } }, { status: 201 });
+    return NextResponse.json({
+      token,
+      user: { id: user._id, fullName, email, role }
+    }, { status: 201 });
+
   } catch (error) {
+    console.error("Register error:", error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
