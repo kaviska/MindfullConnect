@@ -1,26 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import Slide from "@mui/material/Slide";
-import TextField from "@mui/material/TextField";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import { TransitionProps } from "@mui/material/transitions";
+import { X, Target, User, FileText } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Toast from "@/components/main/Toast";
-
-const Transition = React.forwardRef(function Transition(
-  props: TransitionProps & {
-    children: React.ReactElement<any, any>;
-  },
-  ref: React.Ref<unknown>
-) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
 
 interface GoalModelProps {
   open: boolean;
@@ -32,6 +14,7 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
   const [goalDescription, setGoalDescription] = useState("");
   const [counsellors, setCounsellors] = useState([]);
   const [selectedCounsellor, setSelectedCounsellor] = useState("");
+  const [loading, setLoading] = useState(false);
   const { toast, setToast } = useToast();
 
   const handleClose = () => {
@@ -54,8 +37,9 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
     }
   };
 
-   const handleSubmit = async () => {
+  const handleSubmit = async () => {
     if (goalTitle && goalDescription && selectedCounsellor) {
+      setLoading(true);
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/goals`,
@@ -67,36 +51,34 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
             body: JSON.stringify({
               title: goalTitle,
               description: goalDescription,
-              counsellor_id: selectedCounsellor, // Use the selected counsellor's _id
+              counsellor_id: selectedCounsellor,
             }),
           }
         );
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to create goal");
         }
-  
-        const data = await response.json();
-        console.log("Goal created:", data);
-  
-        // Reset form
+
         setGoalTitle("");
         setGoalDescription("");
         setSelectedCounsellor("");
-  
+        setOpen(false);
+
         setToast({
           open: true,
           message: "Goal Created Successfully",
           type: "success",
         });
       } catch (error) {
-        console.error("Error creating goal:", error);
         setToast({
           open: true,
           message: error instanceof Error ? error.message : "Something went wrong!",
           type: "error",
         });
+      } finally {
+        setLoading(false);
       }
     } else {
       setToast({
@@ -106,96 +88,108 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
       });
     }
   };
+
+  if (!open) return null;
+
   return (
-    <Dialog
-      open={open}
-      TransitionComponent={Transition}
-      keepMounted
-      onClose={handleClose}
-      aria-labelledby="dialog-title"
-      sx={{
-        "& .MuiDialog-paper": {
-          width: "100%",
-          maxHeight: 600,
-        },
-      }}
-    >
-      <DialogTitle id="dialog-title">
-        Add Goal
-        <IconButton
-          aria-label="close"
-          onClick={handleClose}
-          sx={{
-            position: "absolute",
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={() => setOpen(false)} />
+        
+        <div className="inline-block w-full max-w-lg my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Target className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Create New Goal</h3>
+            </div>
+            <button
+              onClick={() => setOpen(false)}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
 
-      <DialogContent>
-        <div className="grid md:grid-cols-2 grid-cols-1 gap-3">
-          <TextField
-            fullWidth
-            sx={{
-              "& .MuiInputBase-input": {
-                height: "20px",
-              },
-            }}
-            margin="normal"
-            label="Goal Title"
-            variant="outlined"
-            value={goalTitle}
-            onChange={(e) => setGoalTitle(e.target.value)}
-          />
-          <TextField
-            fullWidth
-            sx={{
-              "& .MuiInputBase-input": {
-                height: "20px",
-              },
-            }}
-            margin="normal"
-            label="Goal Description"
-            variant="outlined"
-            value={goalDescription}
-            onChange={(e) => setGoalDescription(e.target.value)}
-          />
-          <TextField
-            fullWidth
-            select
-            label="Select Counsellor"
-            value={selectedCounsellor} // Bind the selected value
-            SelectProps={{
-              native: true,
-            }}
-            variant="outlined"
-            margin="normal"
-            onChange={(e) => setSelectedCounsellor(e.target.value)} // Set the selected counsellor's _id
-          >
-            <option value="" disabled>
-              Select Counsellor
-            </option>
-            {counsellors.map((counsellor: any) => (
-              <option key={counsellor._id} value={counsellor._id}>
-                {counsellor.name}
-              </option>
-            ))}
-          </TextField>
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Goal Title */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Goal Title
+              </label>
+              <div className="relative">
+                <Target className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  type="text"
+                  value={goalTitle}
+                  onChange={(e) => setGoalTitle(e.target.value)}
+                  placeholder="Enter goal title"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Goal Description */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Goal Description
+              </label>
+              <div className="relative">
+                <FileText className="absolute left-3 top-3 text-gray-400" size={18} />
+                <textarea
+                  value={goalDescription}
+                  onChange={(e) => setGoalDescription(e.target.value)}
+                  placeholder="Describe the goal in detail..."
+                  rows={4}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Counsellor Selection */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Assign Counsellor
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <select
+                  value={selectedCounsellor}
+                  onChange={(e) => setSelectedCounsellor(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Select Counsellor</option>
+                  {counsellors.map((counsellor: any) => (
+                    <option key={counsellor._id} value={counsellor._id}>
+                      {counsellor.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+            <button
+              onClick={() => setOpen(false)}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? "Creating..." : "Create Goal"}
+            </button>
+          </div>
         </div>
-      </DialogContent>
-
-      <DialogActions>
-        <Button onClick={handleClose} color="secondary">
-          Close
-        </Button>
-        <Button onClick={handleSubmit} color="primary">
-          Submit
-        </Button>
-      </DialogActions>
+      </div>
 
       <Toast
         open={toast.open}
@@ -203,6 +197,6 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
         type={toast.type}
         onClose={() => setToast({ ...toast, open: false })}
       />
-    </Dialog>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
-const Navbar = () => {
+const Nav = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -128,4 +128,4 @@ const MobileNavLink = ({
   </Link>
 );
 
-export default Navbar;
+export default Nav;
