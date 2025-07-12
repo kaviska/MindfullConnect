@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAvailableSlots } from '@/app/hooks/useAvailableSlots';
 import TimeSlotSelector from './TimeSlotSelector';
+
 // ...other imports
 
 interface BookingModalProps {
