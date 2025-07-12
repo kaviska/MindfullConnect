@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useAvailableSlots } from '@/app/hooks/useAvailableSlots';
 import TimeSlotSelector from './TimeSlotSelector';
-
+import SessionDurationNote from './SessionDurationNote';
+import BookedSessionList from './BookedSessionList';
+import BookingConfirmation from './BookingConfirmation';
 // ...other imports
 
 interface BookingModalProps {
@@ -25,7 +27,7 @@ export default function BookingModal({
 
  // Add console logs here
   console.log('🎯 BookingModal props:', { 
-    selectedCounselor: selectedCounselor?.id, 
+    selectedCounselor: selectedCounselor?._id, 
     selectedDate 
   });
 
@@ -46,34 +48,76 @@ export default function BookingModal({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[1000]">
-      <div className="bg-white rounded-[20px] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Date Selector */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-[#0f172a] mb-2">
-            Select Date:
-          </label>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => handleDateChange(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
-            className="w-full p-3 border border-[#e2e8f0] rounded-[12px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
-          />
-        </div>
+  function handleBookSession(): void {
+    throw new Error('Function not implemented.');
+  }
 
-        {/* Time Slot Selector */}
-        <TimeSlotSelector
-          timeSlots={timeSlots}
-          selectedTimeSlot={selectedTimeSlot}
-          selectTimeSlot={setSelectedTimeSlot}
-          loading={loading}
-          error={error}
-        />
+ return (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[1000]">
+    <div className="bg-white rounded-[20px] p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+      
+      {/* Close Button */}
+      <button
+        onClick={closeModal}
+        className="absolute top-4 right-4 text-[#64748b] hover:text-[#0f172a] transition-colors z-10"
+        aria-label="Close modal"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
 
-        {/* Other components... */}
+      {/* Modal Header */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-[#0f172a] mb-2">
+          Book Session with {selectedCounselor?.name || 'Counselor'}
+        </h2>
+        <p className="text-[#64748b]">
+          Select your preferred date and time slot
+        </p>
       </div>
+
+      {/* Date Selector */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-[#0f172a] mb-2">
+          Select Date:
+        </label>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => handleDateChange(e.target.value)}
+          min={new Date().toISOString().split('T')[0]}
+          className="w-full p-3 border border-[#e2e8f0] rounded-[12px] focus:outline-none focus:ring-2 focus:ring-[#0369a1]"
+        />
+      </div>
+
+      {/* Time Slot Selector */}
+      <TimeSlotSelector
+        timeSlots={timeSlots}
+        selectedTimeSlot={selectedTimeSlot}
+        selectTimeSlot={setSelectedTimeSlot}
+        loading={loading}
+        error={error}
+      />
+
+      {/* Section 2: Session Duration Note */}
+      <SessionDurationNote />
+
+      <hr className="my-6 border-[#e2e8f0]" />
+
+      {/* Section 3: Your Booked Sessions Overview */}
+      <BookedSessionList bookedSessions={bookedSessions} />
+
+      <hr className="my-6 border-[#e2e8f0]" />
+
+      {/* Section 4: Booking Confirmation */}
+      <BookingConfirmation
+        isPolicyAccepted={isPolicyAccepted}
+        setIsPolicyAccepted={setIsPolicyAccepted}
+        handleBookSession={handleBookSession}
+        isDisabled={!selectedTimeSlot || !isPolicyAccepted}
+      />
     </div>
-  );
+  </div>
+);
 }

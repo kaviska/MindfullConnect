@@ -9,8 +9,12 @@ import BookingModal from "../components/sessions/BookingModal";
 import MyBookingsModal from "../components/sessions/Mybookings/MyBookingModal";
 import Snackbar from "../components/sessions/Snackbar";
 import { BookedSession, Counselor } from "../components/types";
+// import { useAuth } from "@/context/AuthContext";
+
+
 
 export default function Session() {
+  // const { token } = useAuth();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   const [date, setDate] = useState<string>("");
@@ -27,6 +31,37 @@ export default function Session() {
   }, []);
 
   const [counselors, setCounselors] = useState<Counselor[]>([]);
+
+//   useEffect(() => {
+//   const fetchBookedSessions = async () => {
+//     if (!token || !isBookingModalOpen) return;
+
+//     try {
+//       const res = await fetch("/api/sessions/my", {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       });
+
+//       const data = await res.json();
+//       if (res.ok) {
+//         const mapped = data.sessions.map((s: any) => ({
+//           date: s.date,
+//           time: s.time,
+//           counselor: s.counselor, // already flattened
+//         }));
+//         setBookedSessions(mapped);
+//       } else {
+//         console.error("❌ Error loading booked sessions:", data.error);
+//       }
+//     } catch (err) {
+//       console.error("❌ Network error loading sessions:", err);
+//     }
+//   };
+
+//   fetchBookedSessions();
+// }, [isBookingModalOpen, token]);
+
   
   useEffect(() => {
     if (!date) return;
