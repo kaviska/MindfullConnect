@@ -102,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(normalizedUser));
         console.log("Login successful, user:", normalizedUser);
-        window.location.href = "/chatinterface";
+        window.location.href = "/TempDash";
       } else {
         throw new Error(data.error || "Login failed");
       }
