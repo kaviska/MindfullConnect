@@ -82,7 +82,7 @@ export default function QuestionGroup() {
         Submit Question Group
       </button>
 
-      <button className='bg-blue-600 mt-3 px-3 py-2 text-white rounded-[4px]'>Test Button</button>
+     
 
 
       <Toast
