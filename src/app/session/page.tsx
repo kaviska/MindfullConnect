@@ -17,10 +17,9 @@ export default function Session() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState<boolean>(false);
   const [isMyBookingsModalOpen, setIsMyBookingsModalOpen] = useState<boolean>(false);
   const [selectedCounselor, setSelectedCounselor] = useState<Counselor | null>(null);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
   const [showSnackbar, setShowSnackbar] = useState<boolean>(false);
-  // const [bookedSessions, setBookedSessions] = useState<any[]>([]);
-const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
+  const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
+  const [lastBookedSession, setLastBookedSession] = useState<{ slot: string; counselorName: string } | null>(null);
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -28,39 +27,29 @@ const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
   }, []);
 
   const [counselors, setCounselors] = useState<Counselor[]>([]);
+  
   useEffect(() => {
-  if (!date) return;
+    if (!date) return;
 
-  const fetchCounselors = async () => {
-    try {
-      const res = await fetch(`/api/counselors?date=${date}`);
-      const data = await res.json();
-      if (res.ok) {
-        setCounselors(data.counselors || []);
-      } else {
-        console.error("Error fetching counselors:", data.error);
+    const fetchCounselors = async () => {
+      try {
+        const res = await fetch(`/api/counselors?date=${date}`);
+        const data = await res.json();
+        if (res.ok) {
+          setCounselors(data.counselors || []);
+        } else {
+          console.error("Error fetching counselors:", data.error);
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
       }
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
+    };
 
-  fetchCounselors();
-}, [date]);
-
-
-
-
-  const timeSlots: string[] = [
-    "9:00 AM",
-    "10:30 AM",
-    "12:00 PM",
-    "2:30 PM",
-    "4:00 PM",
-    "5:30 PM",
-  ];
+    fetchCounselors();
+  }, [date]);
 
   const openBookingModal = (counselor: Counselor) => {
+    console.log('📋 Opening modal with counselor:', counselor); // Add this
     setSelectedCounselor(counselor);
     setIsBookingModalOpen(true);
     document.body.style.overflow = "hidden";
@@ -68,7 +57,6 @@ const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
 
   const closeBookingModal = () => {
     setIsBookingModalOpen(false);
-    setSelectedTimeSlot(null);
     setSelectedCounselor(null);
     document.body.style.overflow = "auto";
   };
@@ -83,22 +71,54 @@ const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
     document.body.style.overflow = "auto";
   };
 
-  const selectTimeSlot = (slot: string) => {
-    setSelectedTimeSlot(slot);
+  // Updated bookSession function with correct signature
+  const bookSession = async (slot: string, date: string) => {
+    if (!selectedCounselor) return;
+
+    try {
+      // Here you would call your booking API
+      const response = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          counselorId: selectedCounselor._id,
+          timeSlot: slot,
+          date: date,
+          // Add other necessary fields like patientId
+        }),
+      });
+
+      if (response.ok) {
+        // Store session info for snackbar
+        setLastBookedSession({
+          slot: slot,
+          counselorName: selectedCounselor.name || ""
+        });
+
+        // Close modal and show success
+        closeBookingModal();
+        setShowSnackbar(true);
+        setTimeout(() => setShowSnackbar(false), 4000);
+
+        // Optionally refresh booked sessions or counselors list
+        // You might want to refetch data here
+      } else {
+        const errorData = await response.json();
+        console.error('Booking failed:', errorData.error);
+        // Handle error (show error message to user)
+      }
+    } catch (error) {
+      console.error('Error booking session:', error);
+      // Handle error (show error message to user)
+    }
   };
 
-  const bookSession = () => {
-    if (!selectedTimeSlot || !selectedCounselor) return;
-    closeBookingModal();
-    setShowSnackbar(true);
-    setTimeout(() => setShowSnackbar(false), 4000);
-  };
-
- const filteredCounselors = counselors.filter((counselor) =>
-  counselor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  counselor.specialty?.toLowerCase().includes(searchTerm.toLowerCase())
-);
-
+  const filteredCounselors = counselors.filter((counselor) =>
+    counselor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    counselor.specialty?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fcff] to-[#e3f2fd] text-[#334155] font-inter">
@@ -131,17 +151,14 @@ const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
 
         <CounselorsGrid counselors={filteredCounselors} openModal={openBookingModal} />
       </main>
+      
       <BookingModal
         isOpen={isBookingModalOpen}
         closeModal={closeBookingModal}
         selectedCounselor={selectedCounselor}
-        timeSlots={timeSlots}
-        selectTimeSlot={selectTimeSlot}
-        selectedTimeSlot={selectedTimeSlot}
         bookSession={bookSession}
-        bookedSessions={bookedSessions} // ✅ FIXED: This must be defined in your state or fetched
+        bookedSessions={bookedSessions}
       />
-      
 
       <MyBookingsModal
         isOpen={isMyBookingsModalOpen}
@@ -150,8 +167,8 @@ const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
 
       <Snackbar
         show={showSnackbar}
-        counselorName={selectedCounselor?.name || ""}
-        timeSlot={selectedTimeSlot || ""}
+        counselorName={lastBookedSession?.counselorName || ""}
+        timeSlot={lastBookedSession?.slot || ""}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 // Types and Interfaces
 export interface Counselor {
+   _id: string;
   name: string;
   specialty: string;
   rating: number;
