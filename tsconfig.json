@@ -19,9 +19,16 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@models/*": ["./src/models/*"],
+      "@public/*": ["/public/*"],
+      "@components/*": ["./src/components/*"],
+      "@stores/*": ["./src/lib/frontend/store*"],
     }
   },
+
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/components/ManageProfile.tsx", "src/app/patient/patientreg.jsx", "src/app/session/page.tsx"],
+
   "exclude": ["node_modules"]
 }

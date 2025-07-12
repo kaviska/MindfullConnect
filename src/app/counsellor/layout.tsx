@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
-import Header from "@/app/nav_user/page";
-import Sidebar from "@/app/sidebar/page";
+import Header from "../components/Header";
+import Sidebar from "../components/sidebar";
 
 export default function DashboardLayout({
   children,
@@ -15,10 +15,9 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen gap-0">
       {/* Navbar */}
       <div className="w-full bg-sky-100">
-        <Header />
       </div>
 
       {/* Sidebar and Main Content */}
