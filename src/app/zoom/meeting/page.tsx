@@ -13,7 +13,7 @@ export default function ZoomMeetingPage() {
   useEffect(() => {
     const meetingNumber = localStorage.getItem('zoom_meeting_id') || '';
     const signature = localStorage.getItem('zoom_signature') || '';
-    const sdkKey = process.env.ZOOM_SDK_KEY;
+    const sdkKey = process.env.ZOOM_CLIENT_ID;
 
     if (!meetingNumber || !signature || !sdkKey) {
       setError('Missing Zoom credentials. Please rejoin from session table.');

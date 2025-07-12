@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 
-// ✅ Import ZoomMtg only inside useEffect (not top-level)
 type ZoomLoaderProps = {
   sdkKey: string;
   signature: string;
@@ -11,16 +10,25 @@ type ZoomLoaderProps = {
   userName: string;
 };
 
-export default function ZoomLoader({ sdkKey, signature, meetingNumber, password, userName }: ZoomLoaderProps) {
+export default function ZoomLoader({
+  sdkKey,
+  signature,
+  meetingNumber,
+  password,
+  userName,
+}: ZoomLoaderProps) {
   useEffect(() => {
     const initZoom = async () => {
       const { ZoomMtg } = await import('@zoomus/websdk');
 
+      // ✅ Set the SDK library path BEFORE using anything else
+      ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.0/lib', '/av');
       ZoomMtg.preLoadWasm();
       ZoomMtg.prepareWebSDK();
 
       ZoomMtg.init({
-        leaveUrl: 'https://yourdomain.com/leave',
+        leaveUrl: window.location.origin,
+        isSupportAV: true,
         success: () => {
           ZoomMtg.join({
             sdkKey,
@@ -28,7 +36,7 @@ export default function ZoomLoader({ sdkKey, signature, meetingNumber, password,
             meetingNumber,
             passWord: password,
             userName,
-            success: () => console.log('Joined Zoom successfully'),
+            success: () => console.log('✅ Joined Zoom successfully'),
             error: (err: any) => console.error('Zoom Join Error', err),
           });
         },
@@ -39,5 +47,5 @@ export default function ZoomLoader({ sdkKey, signature, meetingNumber, password,
     initZoom();
   }, [sdkKey, signature, meetingNumber, password, userName]);
 
-  return <div id="zmmtg-root" />;
+  return <div id="zmmtg-root" className="w-full h-screen z-[999]" />;
 }

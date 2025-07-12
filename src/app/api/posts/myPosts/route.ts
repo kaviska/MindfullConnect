@@ -16,7 +16,7 @@ export async function GET() {
 
   // TODO: Replace this hardcoded user with the actual logic commented above
   const user = {
-    id: '6812f2edcedf32c7425dfccc',
+    id: '681bcecb2a399b0e3c35e3d6',
     username: '681bcecb2a399b0e3c35e3d6',
     email: 'jane@gmail.com',
   };

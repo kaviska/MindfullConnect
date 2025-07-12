@@ -9,6 +9,10 @@ export default {
     ],
     theme: {
         extend: {
+            screens: {
+                // Custom breakpoint at 1001px
+                'gt1000': '501px',
+            },
             colors: {
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',

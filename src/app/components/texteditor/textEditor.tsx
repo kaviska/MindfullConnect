@@ -1,34 +1,36 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Placeholder from '@tiptap/extension-placeholder'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import MenuBar from './menuBar'
-import styles from './textEditor.module.css'
+import { useState, useEffect } from 'react';
+import Placeholder from '@tiptap/extension-placeholder';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import MenuBar from './menuBar';
 
-const TextEditor = () => {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('')
-  const [coverImage, setCoverImage] = useState<File | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
+interface TextEditorProps {
+  initialTitle?: string;
+  initialDescription?: string;
+  initialCategory?: string;
+  initialImage?: string;
+  initialContent?: any;
+  isEditing?: boolean;
+  slug?: string;
+}
 
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('userId')
-    if (!storedUserId) {
-      alert('User is not logged in.')
-    }
-    setUserId(storedUserId)
-  }, [])
-
-  useEffect(() => {
-    if (error) {
-      alert(error)
-    }
-  }, [error])
+const TextEditor = ({
+  initialTitle = '',
+  initialDescription = '',
+  initialCategory = '',
+  initialImage = '',
+  initialContent = '',
+  isEditing = false,
+  slug = '',
+}: TextEditorProps) => {
+  const [title, setTitle] = useState(initialTitle);
+  const [description, setDescription] = useState(initialDescription);
+  const [category, setCategory] = useState(initialCategory);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -44,60 +46,58 @@ const TextEditor = () => {
         placeholder: 'Write the blog content here...',
       }),
     ],
-    content: '',
-    immediatelyRender: false,
+    content: initialContent,
     editorProps: {
       attributes: {
         class: 'min-h-[500px] border-2 border-amber-300 rounded-lg p-4',
       },
     },
-  })
+  });
 
-  const handlePublish = async ( pubStatus: boolean ) => {
+  useEffect(() => {
+    if (error) alert(error);
+  }, [error]);
+
+  const handlePublish = async (pubStatus: boolean) => {
+    if (!editor || !category) return alert('Please fill all fields.');
+
+    const postTitle = title.trim() || 'Untitled Post';
+    const content = JSON.stringify(editor.getJSON());
+
+    const body = {
+      title: postTitle,
+      slug: isEditing
+        ? slug
+        : `${postTitle.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+      content,
+      description,
+      category,
+      coverImage: coverImage ? coverImage.name : initialImage || null,
+      published: pubStatus,
+      author: '681bcecb2a399b0e3c35e3d6', // TODO: Replace with actual user ID from context or token
+    };
+
     try {
-      if (!editor) return
-      if (!category) {
-        alert('Please select a category.')
-        return
-      }
+      setLoading(true);
+      const response = await fetch(
+        isEditing ? `/api/posts/${slug}` : '/api/posts',
+        {
+          method: isEditing ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }
+      );
 
-      const postTitle = title.trim() || 'Untitled Post'
-      const slug = `${postTitle.toLowerCase().replace(/\s+/g, '-')}-${userId}-${Date.now()}`
-      const content = JSON.stringify(editor.getJSON())
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to save');
 
-      setLoading(true)
-
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: postTitle,
-          slug,
-          content,
-          description,
-          category,
-          author: '68130a30cedf32c7425dfccf',
-          coverImage: coverImage ? coverImage.name : null, // Placeholder
-          published: pubStatus,
-        }),
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.message || 'Failed to publish')
-      }
-
-      const data = await res.json()
-      alert('Post published successfully!')
-    } catch (error: any) {
-      setError(error.message || 'An error occurred')
-      //alert('Failed to publish')
+      alert(isEditing ? 'Blog updated successfully!' : 'Post published successfully!');
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-4 max-w-6xl mx-auto flex flex-col justify-center">
@@ -147,30 +147,23 @@ const TextEditor = () => {
 
       {/* Editor and Publish */}
       <div className="flex items-center justify-between">
-
-        {/* Editor Menu */}
         <MenuBar editor={editor} />
-
-        {/* Buttons Set */}
         <div className="flex items-center justify-end gap-4">
-          {/* Publish Button*/}
           <button
-            onClick={ () => handlePublish(true) }
+            onClick={() => handlePublish(true)}
             disabled={loading}
             className="bg-amber-400 text-black text-sm px-4 py-2 rounded-md hover:bg-amber-500 hover:text-white disabled:opacity-50 transition"
           >
-            {loading ? 'Publishing...' : 'Publish'}
+            {loading ? 'Publishing...' : isEditing ? 'Update' : 'Publish'}
           </button>
 
-          {/* Save as Draft Button */}
           <button
-            onClick={ () => handlePublish(false) }
+            onClick={() => handlePublish(false)}
             disabled={loading}
             className="bg-gray-400 text-black text-sm px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white  disabled:opacity-50 transition"
           >
             {loading ? 'Saving...' : 'Save Draft'}
           </button>
-
         </div>
       </div>
 
@@ -178,7 +171,7 @@ const TextEditor = () => {
 
       {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
     </div>
-  )
-}
+  );
+};
 
-export default TextEditor
+export default TextEditor;

@@ -9,13 +9,13 @@ const nextConfig: NextConfig = {
       ...config.resolve.fallback,
       fs: false,
       path: false,
-      crypto: false,
+      crypto: false, net: false, tls: false
     };
     return config;
   },
   experimental: {
     // Required for Zoom Web SDK compatibility with Next.js
-    //esmExternals: false,
+    esmExternals: false,
   },
 };
 

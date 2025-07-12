@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
-
-const ZoomLoader = dynamic(() => import('@/components/zoom/ZoomLoader'), { ssr: false });
+import { useRouter } from 'next/navigation';
 
 type JoinWithSDKButtonProps = {
   meetingId: string | number;
@@ -12,11 +9,11 @@ type JoinWithSDKButtonProps = {
 };
 
 export function JoinWithSDKButton({ meetingId, sdkKey, password }: JoinWithSDKButtonProps) {
-  const [signature, setSignature] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleJoin = async () => {
     try {
-      const res = await fetch('/api/zoom/sdk-signature', {
+      const res = await fetch('/api/zoom/sdkSignature', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ meetingNumber: meetingId, role: 0 }),
@@ -28,7 +25,12 @@ export function JoinWithSDKButton({ meetingId, sdkKey, password }: JoinWithSDKBu
         return;
       }
 
-      setSignature(data.signature);
+      const userName = 'Praveesha'; // Or dynamically set this
+
+      // ✅ Redirect to Zoom meeting page
+      router.push(
+        `/zoom/${meetingId}?signature=${encodeURIComponent(data.signature)}&sdkKey=${sdkKey}&password=${password ?? ''}&user=${userName}`
+      );
     } catch (error) {
       alert('Network error while fetching signature');
       console.error(error);
@@ -36,19 +38,8 @@ export function JoinWithSDKButton({ meetingId, sdkKey, password }: JoinWithSDKBu
   };
 
   return (
-    <>
-      <button onClick={handleJoin} className="btn">
-        Join via SDK
-      </button>
-      {signature && (
-        <ZoomLoader
-          signature={signature}
-          meetingNumber={String(meetingId)}
-          password={password ?? ''}
-          userName="Praveesha" // Replace with actual user name if available
-          sdkKey={sdkKey}
-        />
-      )}
-    </>
+    <button onClick={handleJoin} className="btn">
+      Join via SDK
+    </button>
   );
 }

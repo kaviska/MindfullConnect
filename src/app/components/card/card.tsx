@@ -1,8 +1,11 @@
+'use client';
+
 import Image from 'next/image';
 import styles from './card.module.css';
 import Link from 'next/link';
 import BlogPostViewer from '@/app/components/blogPostViewer/render';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const Card = ({ item, showActions = false, onDelete }: any) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,9 +33,10 @@ const Card = ({ item, showActions = false, onDelete }: any) => {
     }
   }
 
+  const router = useRouter();
+
   const handleEdit = () => {
-    alert(`Edit blog ${item._id}`);
-    // You can replace this with routing logic or modal
+    router.push(`/write/${item.slug}`);
   };
 
   const handleDelete = async () => {
