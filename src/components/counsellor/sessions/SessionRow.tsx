@@ -1,4 +1,8 @@
+'use client';
+
+import { JoinWithSDKButton } from '@/components/ui/JoinWithSDKButton';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const statusColors: Record<string, string> = {
   waiting: 'bg-yellow-100 text-yellow-600',
@@ -23,14 +27,25 @@ export default function SessionRow({
   joinUrl,
   status,
 }: SessionProps) {
+  const [formattedTime, setFormattedTime] = useState<string>('');
+
+  useEffect(() => {
+    setFormattedTime(new Date(startTime).toLocaleString());
+  }, [startTime]);
+
   return (
     <tr className="text-center border-b border-gray-200 hover:bg-gray-50 transition">
       <td className="py-3 px-2 font-mono">{meetingId}</td>
       <td className="py-3 px-2">{patientId}</td>
-      <td className="py-3 px-2">{new Date(startTime).toLocaleString()}</td>
+      <td className="py-3 px-2">{formattedTime || '-'}</td>
       <td className="py-3 px-2">{duration} min</td>
       <td className="py-3 px-2">
-        <a href={joinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+        <a
+          href={joinUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline"
+        >
           Join
         </a>
       </td>
@@ -44,6 +59,7 @@ export default function SessionRow({
         </span>
       </td>
       <td className="py-3 px-2 flex justify-center gap-4">
+        <JoinWithSDKButton meetingId={meetingId} />
         <Pencil className="text-purple-600 hover:text-purple-800 cursor-pointer" />
         <Trash2 className="text-red-500 hover:text-red-700 cursor-pointer" />
       </td>

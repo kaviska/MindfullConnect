@@ -1,131 +1,91 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { MoreVertical } from 'lucide-react'
+import { useEffect, useState } from 'react';
+import Card from '../components/card/card';
 
-type Blog = {
-  _id: string
-  title: string
-  slug: string
-  image?: string
-  createdAt: string
-  author: {
-    name: string
-    email: string
-  }
+interface BlogPost {
+  _id: string;
+  img?: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  category: string;
+  slug: string;
 }
 
 export default function MyBlogs() {
-  const [blogs, setBlogs] = useState<Blog[]>([])
-  const [loading, setLoading] = useState(true)
-  const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchBlogs = async () => {
+    const fetchMyBlogs = async () => {
       try {
-        const res = await fetch('/api/posts')
-        const data = await res.json()
-        setBlogs(data)
+        const res = await fetch('/api/posts/myPosts');
+        const data = await res.json();
+
+        if (!Array.isArray(data)) {
+          setError(data.message || data.error || 'Unexpected response from server.');
+          setBlogs([]);
+        } else {
+          setBlogs(data);
+        }
       } catch (err) {
-        console.error('Failed to fetch blogs:', err)
+        setError('Failed to fetch blogs.');
+        setBlogs([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchBlogs()
-  }, [])
+    fetchMyBlogs();
+  }, []);
 
-  // Close menu on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement).closest('.menu-container')) {
-        setMenuOpenId(null)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
-
-  const handleDelete = async (id: string) => {
-    const confirmed = confirm('Are you sure you want to delete this blog?')
-    if (!confirmed) return
-
-    const previousBlogs = [...blogs]
-    setBlogs(blogs.filter((blog) => blog._id !== id)) // Optimistic UI
-
-    try {
-      const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error()
-    } catch (err) {
-      alert('Delete failed. Please try again.')
-      setBlogs(previousBlogs)
-    }
-  }
+  // New handler to remove deleted blog from UI
+  const handleDelete = (slug: string) => {
+    setBlogs((prevBlogs) => prevBlogs.filter(blog => blog.slug !== slug));
+  };
 
   return (
-    <div className="w-full space-y-6">
-      <h1 className="text-2xl font-semibold mb-4">My Blogs</h1>
+    <div className="min-h-screen bg-white px-6 py-10 text-gray-900">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-4xl font-extrabold mb-8 text-center tracking-tight">
+          Your Published Blogs
+        </h1>
 
-      {loading ? (
-        <p>Loading blogs...</p>
-      ) : blogs.length === 0 ? (
-        <p>No blogs found.</p>
-      ) : (
-        blogs.map((blog) => (
-          <div
-            key={blog._id}
-            className="w-full bg-white rounded-lg border border-gray-200 shadow-sm flex items-center justify-between px-4 py-3 hover:shadow-md transition"
-          >
-            <div className="flex items-center gap-4">
-              <img
-                src={blog.image || '/placeholder.jpg'}
-                alt={blog.title}
-                className="w-24 h-24 object-cover rounded-md border"
-              />
-              <div>
-                <h2 className="text-lg font-medium">{blog.title}</h2>
-                <p className="text-sm text-gray-500">
-                  Published on {new Date(blog.createdAt).toLocaleDateString()}
-                </p>
-                <p className="text-sm text-gray-600">By {blog.author.name}</p>
-              </div>
-            </div>
+        {loading && (
+          <div className="text-center text-gray-500 text-lg">Loading your blogs...</div>
+        )}
 
-            <div className="relative menu-container">
-              <button
-                onClick={() =>
-                  setMenuOpenId(menuOpenId === blog._id ? null : blog._id)
-                }
-                aria-haspopup="true"
-                aria-expanded={menuOpenId === blog._id}
-              >
-                <MoreVertical className="w-5 h-5 text-gray-500 hover:text-gray-700" />
-              </button>
+        {error && (
+          <div className="text-center text-red-500 text-lg">{error}</div>
+        )}
 
-              {menuOpenId === blog._id && (
-                <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-md shadow-md z-10">
-                  <Link href={`/blog/${blog.slug}`}>
-                    <span className="block px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">
-                      View
-                    </span>
-                  </Link>
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                    onClick={() => handleDelete(blog._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
+        {!loading && !error && blogs.length === 0 && (
+          <div className="text-center text-gray-500 text-lg">
+            You haven’t written any blogs yet. Start sharing your thoughts!
           </div>
-        ))
-      )}
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mt-6">
+          {blogs.map((blog) => (
+            <Card
+              key={blog._id}
+              item={{
+                img: blog.img || '/CoupleTherapy.png',
+                title: blog.title,
+                desc: blog.content.slice(0, 100),
+                createdAt: blog.createdAt,
+                catSlug: blog.category,
+                slug: blog.slug,
+                _id: blog._id,
+              }}
+              showActions={true}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      </div>
     </div>
-  )
+  );
 }

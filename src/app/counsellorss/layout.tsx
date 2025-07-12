@@ -160,24 +160,24 @@ export default function RootLayout({
       icon: <EngineeringIcon onClick={() => setSelectedPage("patient-details")} />,
     },
     {
-      segment: "manage",
+      segment: "",
       title: "Manage Blogs",
-      icon: <CategoryIcon onClick={() => setSelectedPage("manage")} />,
+      icon: <CategoryIcon onClick={() => setSelectedPage("")} />,
       children: [
         {
-          segment: "read-blogs",
+          segment: "blogMC",
           title: "Read Blogs",
-          icon: <VisibilityIcon onClick={() => setSelectedPage("manage/read-blogs")} />,
+          icon: <VisibilityIcon onClick={() => setSelectedPage("blogMC")} />,
         },
         {
-          segment: "my-blogs",
+          segment: "myBlogs",
           title: "My Blogs",
-          icon: <DashboardIcon onClick={() => setSelectedPage("manage/my-blogs")} />,
+          icon: <DashboardIcon onClick={() => setSelectedPage("myBlogs")} />,
         },
         {
-          segment: "write-blog",
+          segment: "write",
           title: "Write a Blog",
-          icon: <AddIcon onClick={() => setSelectedPage("manage/write-blog")} />,
+          icon: <AddIcon onClick={() => setSelectedPage("write")} />,
         },
       ],
     },
