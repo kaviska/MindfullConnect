@@ -1,27 +1,17 @@
+import Hero from "@/components/home/Hero";
+import Nav from "@/components/home/Nav";
+import Counselloer from "@/components/home/Counsellor";
+import Footer from "@/components/home/Footer";
 
+export default function Main(){
+  return(
+    <div>
+      <Nav/>
+      <Hero/>
 
-"use client";
+      <Counselloer/>
+      <Footer/>
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-
-export default function Home() {
-  const { user, token } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!user || !token) {
-      router.push("/login");
-    } else {
-      router.push("/chatinterface");
-    }
-  }, [user, token, router]);
-
-  return (
-    <div className="flex justify-center items-center min-h-screen">
-      <p>Redirecting...</p>
     </div>
-  );
+  )
 }
-

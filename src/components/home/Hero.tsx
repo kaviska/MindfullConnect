@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Refund() {
+export default function Hero() {
     return (
         <div className="relative min-h-screen bg-[#E1F3FD] px-6">
             <div className="absolute left-0 w-3/5 flex items-center justify-start h-full px-6 pl-20">
