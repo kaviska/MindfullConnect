@@ -40,7 +40,7 @@ export default function SignupPage() {
     });
 
     setTimeout(() => {
-      router.push(/verify-otp?email=${user.email});
+      router.push("/verify-otp?email=" + user.email);
     }, 1500);
   } catch (error: any) {
     console.error("Signup failed", error);

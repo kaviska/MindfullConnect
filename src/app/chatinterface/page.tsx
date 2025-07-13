@@ -1,19 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { ChatMain } from "@/app/components/ChatMain";
 import { ChatSidebar } from "@/app/components/ChatSidebar";
 import { ProfileSidebar } from "@/app/components/ProfileSidebar";
-import { useAuth } from "@/context/AuthContext";
 import { Conversation } from "@/app/components/types";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
 
 export const ChatLayout: React.FC = () => {
   const { user, token, isLoading } = useAuth();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    string | null
+  >(null);
   const [isProfileSidebarVisible, setIsProfileSidebarVisible] = useState(false);
   const [showProfileSidebar, setShowProfileSidebar] = useState(false);
   const [layoutHeight, setLayoutHeight] = useState<number>(0);
@@ -45,15 +47,21 @@ export const ChatLayout: React.FC = () => {
   }, [user, token, isLoading, router]);
 
   const fetchUsers = useCallback(async () => {
-    if (isLoading || !user || !token) {
-      console.log("Skipping fetchUsers: AuthContext is loading or user/token is null");
+    if (isLoading || !user) {
+      // Remove token dependency
+      console.log(
+        "Skipping fetchUsers: AuthContext is loading or user/token is null"
+      );
       return;
     }
 
     try {
-      console.log("Fetching users with token:", token);
+      console.log("Fetching users with cookies");
       const res = await fetch("/api/users", {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include", // ✅ Include cookies
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
       console.log("Response status from /api/users:", res.status);
       const data = await res.json();
@@ -68,18 +76,24 @@ export const ChatLayout: React.FC = () => {
     } catch (error) {
       console.error("Error fetching users:", error);
     }
-  }, [user, token, isLoading]);
+  }, [user, isLoading]); // Remove token dependency
 
   const fetchConversations = useCallback(async () => {
-    if (isLoading || !user || !token) {
-      console.log("Skipping fetchConversations: AuthContext is loading or user/token is null");
+    if (isLoading || !user) {
+      // Remove token dependency
+      console.log(
+        "Skipping fetchConversations: AuthContext is loading or user/token is null"
+      );
       return;
     }
 
     try {
-      console.log("Fetching conversations with token:", token);
+      console.log("Fetching conversations with cookies");
       const res = await fetch("/api/conversations", {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include", // ✅ Include cookies
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
       console.log("Response status from /api/conversations:", res.status);
       const data = await res.json();
@@ -93,7 +107,7 @@ export const ChatLayout: React.FC = () => {
     } catch (error) {
       console.error("Error fetching conversations:", error);
     }
-  }, [user, token, isLoading]);
+  }, [user, isLoading]); // Remove token dependency
 
   useEffect(() => {
     fetchConversations();
@@ -154,10 +168,15 @@ export const ChatLayout: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col w-full sm:max-w-8xl mt-5 mx-auto sm:px-4 overflow-x-auto" style={{ height: `${layoutHeight}px` }}>
+    <div
+      className="flex flex-col w-full sm:max-w-8xl mt-5 mx-auto sm:px-4 overflow-x-auto"
+      style={{ height: `${layoutHeight}px` }}
+    >
       <div className="flex w-full h-full">
         <div className="flex w-full sm:flex sm:w-full sm:h-full">
-          <div className={`${showChatMain ? "hidden sm:flex" : "flex"} w-full sm:w-auto`}>
+          <div
+            className={`${showChatMain ? "hidden sm:flex" : "flex"} w-full sm:w-auto`}
+          >
             <div className="w-full sm:w-[306px] md:w-[306px] max-md:w-2/3">
               <ChatSidebar
                 onSelectConversation={handleSelectConversation}
@@ -167,13 +186,19 @@ export const ChatLayout: React.FC = () => {
               />
             </div>
           </div>
-          <div className={`${showChatMain ? "flex" : "hidden sm:flex"} w-full sm:w-auto flex-1 md:flex-1 max-md:w-2/3`}>
-            <div className={`${showProfileSidebar ? "hidden sm:flex" : "flex"} w-full sm:w-auto flex-1 md:flex-1 max-md:w-1/3`}>
+          <div
+            className={`${showChatMain ? "flex" : "hidden sm:flex"} w-full sm:w-auto flex-1 md:flex-1 max-md:w-2/3`}
+          >
+            <div
+              className={`${showProfileSidebar ? "hidden sm:flex" : "flex"} w-full sm:w-auto flex-1 md:flex-1 max-md:w-1/3`}
+            >
               <ChatMain
                 conversationId={selectedConversationId}
                 user={user}
                 token={token}
-                conversation={conversations.find((conv) => conv._id === selectedConversationId)}
+                conversation={conversations.find(
+                  (conv) => conv._id === selectedConversationId
+                )}
                 onToggleProfileSidebar={toggleProfileSidebar}
                 fetchConversations={fetchConversations}
                 onBack={handleBack}
@@ -181,7 +206,9 @@ export const ChatLayout: React.FC = () => {
               />
             </div>
             {(isProfileSidebarVisible || showProfileSidebar) && (
-              <div className={`${showProfileSidebar ? "flex" : "hidden sm:flex"} w-full sm:w-auto`}>
+              <div
+                className={`${showProfileSidebar ? "flex" : "hidden sm:flex"} w-full sm:w-auto`}
+              >
                 <ProfileSidebar
                   onBack={handleProfileBack}
                   className="w-full sm:w-[306px] md:w-[306px] max-md:w-full sm:min-w-60"
