@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/contexts/ToastContext";
+import Head from "next/head";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <Head>
+        <link
+          type="text/css"
+          rel="stylesheet"
+          href="https://source.zoom.us/3.13.2/css/bootstrap.css"
+        />
+        <link
+          type="text/css"
+          rel="stylesheet"
+          href="https://source.zoom.us/3.13.2/css/react-select.css"
+        />
+      </Head>
       
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ToastProvider>

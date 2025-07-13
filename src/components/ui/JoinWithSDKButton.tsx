@@ -1,17 +1,34 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 type JoinWithSDKButtonProps = {
-  meetingId: string | number;
-  sdkKey: string;
+  meetingId: string;
+  sdkKey?: string;
   password?: string;
+  userName?: string;
 };
 
-export function JoinWithSDKButton({ meetingId, sdkKey, password }: JoinWithSDKButtonProps) {
+export function JoinWithSDKButton({ 
+  meetingId = '85733644491', 
+  sdkKey = 'dhyhywQQlm1AqxTlNBpiw', 
+  password='', 
+  userName='Guest' 
+}: JoinWithSDKButtonProps) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleJoin = async () => {
+
+    console.log('Joining with SDK:', { meetingId, sdkKey, password, userName });
+
+    if (!meetingId || !sdkKey) {
+      alert('Meeting ID and SDK Key are required');
+      return;
+    }
+    setIsLoading(true);
+
     try {
       const res = await fetch('/api/zoom/sdkSignature', {
         method: 'POST',
@@ -21,25 +38,33 @@ export function JoinWithSDKButton({ meetingId, sdkKey, password }: JoinWithSDKBu
 
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Failed to get Zoom signature');
+        alert(data.error || `Failed to get Zoom signature: ${res.status}`);
         return;
       }
 
-      const userName = 'Praveesha'; // Or dynamically set this
-
-      // ✅ Redirect to Zoom meeting page
+      //Redirect to Zoom meeting page
       router.push(
-        `/zoom/${meetingId}?signature=${encodeURIComponent(data.signature)}&sdkKey=${sdkKey}&password=${password ?? ''}&user=${userName}`
+        `/zoom/${encodeURIComponent(meetingId)}?signature=${encodeURIComponent(data.signature)}&sdkKey=${encodeURIComponent(sdkKey)}&password=${encodeURIComponent(password)}&user=${encodeURIComponent(userName)}`
       );
+
     } catch (error) {
       alert('Network error while fetching signature');
       console.error(error);
+    } 
+    finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <button onClick={handleJoin} className="btn">
-      Join via SDK
+    <button
+      onClick={handleJoin}
+      className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+      disabled={isLoading}
+    >
+      
+      {isLoading ? 'Joining...' : 'Join via SDK'}
+
     </button>
   );
 }

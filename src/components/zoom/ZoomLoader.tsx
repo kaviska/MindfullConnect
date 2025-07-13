@@ -19,24 +19,32 @@ export default function ZoomLoader({
 }: ZoomLoaderProps) {
   useEffect(() => {
     const initZoom = async () => {
-      const { ZoomMtg } = await import('@zoomus/websdk');
+      const { ZoomMtg } = await import('@zoom/meetingsdk');
 
-      ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.0/lib', '/av');
+      ZoomMtg.setZoomJSLib('https://source.zoom.us/3.13.2/lib', '/av');
       ZoomMtg.preLoadWasm();
       ZoomMtg.prepareWebSDK();
+      ZoomMtg.i18n.load('en-US');
 
       ZoomMtg.init({
         leaveUrl: window.location.origin,
         isSupportAV: true,
+        patchJsMedia: true,
         success: () => {
           ZoomMtg.join({
-            sdkKey,
             signature,
             meetingNumber,
-            passWord: password,
             userName,
-            success: () => console.log('✅ Joined Zoom successfully'),
-            error: (err: any) => console.error('Zoom Join Error', err),
+            sdkKey,
+            userEmail: '',
+            passWord: password,
+            success: () => {
+              console.log('Joined Zoom successfully')
+            },
+            error: (err: any) => {
+              console.error('Zoom Join Error', err);
+              alert(`Failed to join meeting: ${err.errorCode} - ${err.reason}`);
+            }
           });
         },
         error: (err: any) => console.error('Zoom Init Error', err),
@@ -46,5 +54,7 @@ export default function ZoomLoader({
     initZoom();
   }, [sdkKey, signature, meetingNumber, password, userName]);
 
-  return <div id="zmmtg-root" className="w-full h-screen z-[999]" />;
+  return (
+    <div id="zmmtg-root" className="w-full h-screen" style={{ position: 'relative', zIndex: 999 }} />
+  );
 }
