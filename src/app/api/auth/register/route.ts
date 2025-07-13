@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
     if (role === 'counselor') {
       const counselorProfile = new Counselor({
         userId: user._id,
+        name:fullName,
         specialty: 'General Counseling',
         description: 'Certified counselor',
         rating: 4.8,
