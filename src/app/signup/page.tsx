@@ -67,14 +67,6 @@ const onSignup = async (e: React.FormEvent) => {
   }
 };
 
-  const handleToastClose = () => {
-    setToast({ ...toast, open: false });
-  };
-
-  //password visibility
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(prevState => !prevState);
-  };
 
   return (
     <div className="flex h-screen">
