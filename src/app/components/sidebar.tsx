@@ -59,8 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { href: "/counsellor/goals", label: "Goals & Milestones", icon: Target },
     { href: "/counsellor/notifications", label: "Notifications", icon: Bell },
     { href: "#", label: "Manage Profile", icon: User },
-    { href: "#", label: "Sessions", icon: Calendar },
-    { href: "#", label: "Messages", icon: MessageSquare },
+    { href: "/counsellor/sessions", label: "Sessions", icon: Calendar },
+    { href: "/chatinterface", label: "Messages", icon: MessageSquare },
     { href: "#", label: "Progress Tracking", icon: TrendingUp },
     { href: "#", label: "Feedbacks", icon: Star },
     { href: "#", label: "Patient Details", icon: Users },
@@ -68,8 +68,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
   const blogItems = [
     { href: "/blogMC", label: "Read Blogs", icon: BookOpen },
-    { href: "/myBlogs", label: "My Blogs", icon: FileText },
-    { href: "/write", label: "Write a Blog", icon: Edit3 },
+    { href: "/counsellor/manageBlog/myBlogs", label: "My Blogs", icon: FileText },
+    { href: "/counsellor/manageBlog/write", label: "Write a Blog", icon: Edit3 },
   ];
 
   const isActive = (href: string) => pathname === href;

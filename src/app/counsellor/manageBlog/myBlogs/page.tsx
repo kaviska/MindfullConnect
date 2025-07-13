@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Card from '../components/card/card';
+import Card from '@/app/components/card/card';
 
 interface BlogPost {
   _id: string;

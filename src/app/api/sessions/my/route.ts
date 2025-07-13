@@ -1,3 +1,4 @@
+// /app/api/sessions/my/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
@@ -17,11 +18,17 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
 
     const sessions = await Session.find({ patientId: decoded.userId })
-      .sort({ date: 1, time: 1 }) // upcoming first
-      .populate("counselorId", "fullName profileImageUrl")
-      .select("date time status counselorId");
+      .sort({ date: 1, time: 1 }) // earliest first
+      .populate("counselorId", "fullName"); // Only get fullName of counselor
 
-    return NextResponse.json({ sessions });
+    // ✨ Map result to frontend-friendly shape
+    const result = sessions.map((s) => ({
+      date: s.date,
+      time: s.time,
+      counselor: s.counselorId?.fullName || "Counselor"
+    }));
+
+    return NextResponse.json({ sessions: result });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -59,13 +59,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
         } else {
           const parsedUser = JSON.parse(storedUser);
-          if (!parsedUser._id) {
-            throw new Error("Stored user is missing _id");
-          }
-          console.log("Loaded user from localStorage:", parsedUser);
-          setUser(parsedUser);
-          setToken(storedToken);
-          fetchUser(storedToken);
+           // ✅ Normalize user data to ensure _id exists
+        const normalizedUser = {
+          ...parsedUser,
+          _id: parsedUser._id || parsedUser.id // Handle both cases
+        };
+        
+        if (!normalizedUser._id) {
+          throw new Error("Stored user is missing both _id and id");
+        }
+        
+        console.log("Loaded user from localStorage:", normalizedUser);
+        setUser(normalizedUser);
+        setToken(storedToken);
+        fetchUser(storedToken);
         }
       } catch (error) {
         console.error("Invalid token or user:", error);

@@ -59,7 +59,7 @@ export default function SessionRow({
         </span>
       </td>
       <td className="py-3 px-2 flex justify-center gap-4">
-        <JoinWithSDKButton meetingId={meetingId} />
+        <JoinWithSDKButton meetingId={meetingId} sdkKey={"#"} />
         <Pencil className="text-purple-600 hover:text-purple-800 cursor-pointer" />
         <Trash2 className="text-red-500 hover:text-red-700 cursor-pointer" />
       </td>
