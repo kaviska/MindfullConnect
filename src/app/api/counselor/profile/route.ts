@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import Counselor from '@/models/Counselor';
 import dbconfig from '@/lib/db';
+import Stripe from 'stripe';
 
 const JWT_SECRET = 'your_jwt_secret';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 export async function POST(request: NextRequest) {
   await dbconfig();
@@ -27,20 +29,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Counselor profile not found' }, { status: 404 });
     }
 
+    // Create Stripe Connect account if not exists
+    let stripeAccountId = existingCounselor.stripeAccountId;
+    let onboardingUrl = null;
+
+    if (!stripeAccountId) {
+      try {
+        const account = await stripe.accounts.create({
+          type: "express",
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
+          metadata: {
+            counselorId: existingCounselor._id.toString(),
+            userId: userId
+          }
+        });
+
+        stripeAccountId = account.id;
+
+        // Create onboarding link with proper URLs
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const accountLink = await stripe.accountLinks.create({
+          account: account.id,
+          refresh_url: `${baseUrl}/counsellor/payment/reauth`,
+          return_url: `${baseUrl}/counsellor/payment/onboarded`,
+          type: "account_onboarding",
+        });
+
+        onboardingUrl = accountLink.url;
+      } catch (stripeError) {
+        console.error('Stripe account creation error:', stripeError);
+        // Continue with profile update even if Stripe fails
+      }
+    }
+
     // Update counselor profile with new data
     const updatedCounselor = await Counselor.findOneAndUpdate(
       { userId },
       {
         ...profileData,
         profileCompleted: true,
-        status: 'active'
+        status: 'active',
+        ...(stripeAccountId && { stripeAccountId })
       },
       { new: true }
     );
 
     return NextResponse.json({
       message: 'Profile updated successfully',
-      counselor: updatedCounselor
+      counselor: updatedCounselor,
+      ...(onboardingUrl && { stripeOnboardingUrl: onboardingUrl })
     }, { status: 200 });
 
   } catch (error) {
