@@ -4,7 +4,7 @@ import Counselor from "@/models/Counselor";
 import dbconfig from "@/lib/db";
 import Stripe from "stripe";
 
-const JWT_SECRET = "your_jwt_secret";
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 export async function GET(request: NextRequest) {
   await dbconfig();

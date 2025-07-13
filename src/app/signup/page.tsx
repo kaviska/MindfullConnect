@@ -25,23 +25,35 @@ export default function SignupPage() {
     setButtonDisabled(!(user.email && user.password && user.fullName));
   }, [user]);
 
-  const onSignup = async (e: React.FormEvent) => {
+const onSignup = async (e: React.FormEvent) => {
   e.preventDefault();
   try {
     setLoading(true);
     const response = await axios.post("/api/auth/register", user);
-    console.log(response);
     console.log("Signup success", response.data);
 
     setToast({
       open: true,
-      message: "Account created! Please verify your email.",
+      message: "Account created successfully! Please verify your email.",
       type: "success"
     });
 
+    // Store token in localStorage if needed for client-side access
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+
+    // Redirect based on role and verification status
     setTimeout(() => {
-      router.push(/verify-otp?email=${user.email});
+      if (response.data?.user?.role === "counselor") {
+        // If counselor needs to complete profile
+        router.push("/counsellor-register");
+      } else {
+        // Regular user goes to verification
+        router.push(`/verify-otp?email=${user.email}`);
+      }
     }, 1500);
+
   } catch (error: any) {
     console.error("Signup failed", error);
     const errorMessage = error.response?.data?.error || error.message;
@@ -54,28 +66,6 @@ export default function SignupPage() {
     setLoading(false);
   }
 };
-
-      
-      setTimeout(() => {
-        if (response.data?.user?.role === "counselor") {
-          router.push("/counsellor-register");
-        } else {
-          router.push("/");
-        }
-      }, 1500);
-    } catch (error: any) {
-      console.error("Signup failed", error);
-      const errorMessage = error.response?.data?.error || error.message;
-      
-      setToast({
-        open: true,
-        message: errorMessage || "Signup failed",
-        type: "error"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleToastClose = () => {
     setToast({ ...toast, open: false });

@@ -10,7 +10,7 @@ export async function sendOtpEmail(email: string, otp: string) {
   });
 
   const mailOptions = {
-    from: MindfulConnect <${process.env.EMAIL_USER}>,
+    from: `"MindfulConnect" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: 'Your OTP Code - MindfulConnect',
     html: `

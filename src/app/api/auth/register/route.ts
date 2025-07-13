@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import User from '@/models/User';
 import Counselor from '@/models/Counselor';
 import dbconfig from '@/lib/db';
 import { sendOtpEmail } from '@/lib/mailer';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 export async function POST(request: NextRequest) {
   await dbconfig();
@@ -57,24 +59,24 @@ export async function POST(request: NextRequest) {
     // If counselor, create profile
     if (role === 'counselor') {
       const counselorProfile = new Counselor({
-        userId: user._id,
+        userId: newUser._id,
         name: fullName,
-        specialty: 'General Counseling',
-        yearsOfExperience: 0,
-        highestQualification: '',
-        availabilityType: 'online',
-        availableTimeSlots: [],
-        therapeuticModalities: [],
-        languagesSpoken: [],
-        description: 'Certified counselor',
-        rating: 4.8,
+        description: 'New counselor - profile pending completion',
+        rating: 0,
         reviews: 0,
         avatar: '/ava2.svg',
-        status: 'active',
+        status: 'pending',
         profileCompleted: false
       });
 
       await counselorProfile.save();
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
     // Send OTP via email
     try {
       await sendOtpEmail(email, otp);
@@ -83,24 +85,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 });
     }
 
-    // Create Counselor profile if needed
-    if (role === 'counselor') {
-      await new Counselor({
-    userId: newUser._id,
-    name: fullName,
-    specialty: 'General Counseling',
-    description: 'Certified counselor',
-    rating: 4.8,
-    reviews: 0,
-    avatar: '/ava2.svg',
-    status: 'inactive',
-  }).save();
-}
-
-    return NextResponse.json({
-      message: 'User registered. OTP sent to email.',
-      user: { email, role },
+    // Create response with token and user data
+    const response = NextResponse.json({
+      message: 'User registered successfully. OTP sent to email.',
+      token: token,
+      user: {
+        id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        role: newUser.role,
+        isVerified: newUser.isVerified
+      },
     }, { status: 201 });
+
+    // Set JWT token in httpOnly cookie
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60, // 1 hour
+      path: "/",
+    });
+
+    // Optional: set userId cookie if you want client access
+    response.cookies.set("userId", newUser._id.toString(), {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60,
+      path: "/",
+    });
+
+    return response;
 
   } catch (error) {
     console.error("Register error:", error);

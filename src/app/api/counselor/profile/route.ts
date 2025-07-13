@@ -4,7 +4,7 @@ import Counselor from '@/models/Counselor';
 import dbconfig from '@/lib/db';
 import Stripe from 'stripe';
 
-const JWT_SECRET = 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 export async function POST(request: NextRequest) {
@@ -48,11 +48,18 @@ export async function POST(request: NextRequest) {
         });
 
         stripeAccountId = account.id;
+      } catch (stripeError) {
+        console.error('Stripe account creation error:', stripeError);
+        // Continue with profile update even if Stripe fails
+      }
+    }
 
-        // Create onboarding link with proper URLs
+    // Always create onboarding link if account exists but onboarding not completed
+    if (stripeAccountId && !existingCounselor.stripeOnboardingCompleted) {
+      try {
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
         const accountLink = await stripe.accountLinks.create({
-          account: account.id,
+          account: stripeAccountId,
           refresh_url: `${baseUrl}/counsellor/payment/reauth`,
           return_url: `${baseUrl}/counsellor/payment/onboarded`,
           type: "account_onboarding",
@@ -60,8 +67,7 @@ export async function POST(request: NextRequest) {
 
         onboardingUrl = accountLink.url;
       } catch (stripeError) {
-        console.error('Stripe account creation error:', stripeError);
-        // Continue with profile update even if Stripe fails
+        console.error('Stripe onboarding link creation error:', stripeError);
       }
     }
 
