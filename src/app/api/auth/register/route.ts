@@ -1,73 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import User from '@/models/User';
 import Counselor from '@/models/Counselor';
 import dbconfig from '@/lib/db';
-
-const JWT_SECRET = 'your_jwt_secret'; // ⚠️ Use environment variable in production
+import { sendOtpEmail } from '@/lib/mailer';
 
 export async function POST(request: NextRequest) {
   await dbconfig();
 
   try {
-    const { fullName, email, password, role } = await request.json();
+    const body = await request.json();
+    const fullName = body.fullName?.trim();
+    const email = body.email?.toLowerCase().trim();
+    const password = body.password;
+    const role = body.role || 'User';
 
+    // Validate input
     if (!fullName || !email || !password) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+    // Create user
+    const newUser = new User({
       fullName,
       email,
       password: hashedPassword,
-      role: role || 'User',
+      role,
       lastSeen: new Date(),
+      isVerified: false,
+      otp,
+      otpExpiry,
     });
 
-    await user.save();
+    await newUser.save();
 
-    // If counselor, create profile
-    if (role === 'counselor') {
-      const counselorProfile = new Counselor({
-        userId: user._id,
-        name:fullName,
-        specialty: 'General Counseling',
-        description: 'Certified counselor',
-        rating: 4.8,
-        reviews: 0,
-        avatar: '/ava2.svg',
-        status: 'inactive',
-      });
-
-      await counselorProfile.save();
+    // Send OTP via email
+    try {
+      await sendOtpEmail(email, otp);
+    } catch (emailErr) {
+      console.error("Email error:", emailErr);
+      return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 });
     }
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+    // Create Counselor profile if needed
+    if (role === 'counselor') {
+      await new Counselor({
+    userId: newUser._id,
+    name: fullName,
+    specialty: 'General Counseling',
+    description: 'Certified counselor',
+    rating: 4.8,
+    reviews: 0,
+    avatar: '/ava2.svg',
+    status: 'inactive',
+  }).save();
+}
 
-    // ✅ Create response and set cookies
-    const response = NextResponse.json({
-      message: 'User registered successfully',
-      token:token,
-      user: { id: user._id, fullName, email, role }
+    return NextResponse.json({
+      message: 'User registered. OTP sent to email.',
+      user: { email, role },
     }, { status: 201 });
-
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60, // 1 hour
-      path: '/',
-    });
-
-   
-    return response;
 
   } catch (error) {
     console.error("Register error:", error);

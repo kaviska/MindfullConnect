@@ -26,44 +26,35 @@ export default function SignupPage() {
   }, [user]);
 
   const onSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      const response = await axios.post("/api/auth/register", user);
-      console.log("Signup success", response.data);
-      
-      setToast({
-        open: true,
-        message: "Account created successfully!",
-        type: "success"
-      });
+  e.preventDefault();
+  try {
+    setLoading(true);
+    const response = await axios.post("/api/auth/register", user);
+    console.log(response);
+    console.log("Signup success", response.data);
 
-      //save the user in localstorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', response.data.user);
+    setToast({
+      open: true,
+      message: "Account created! Please verify your email.",
+      type: "success"
+    });
 
+    setTimeout(() => {
+      router.push(/verify-otp?email=${user.email});
+    }, 1500);
+  } catch (error: any) {
+    console.error("Signup failed", error);
+    const errorMessage = error.response?.data?.error || error.message;
+    setToast({
+      open: true,
+      message: errorMessage || "Signup failed",
+      type: "error"
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
-      
-      setTimeout(() => {
-        if (response.data?.user?.role === "counselor") {
-          router.push("/counselor-register");
-        } else {
-          router.push("/");
-        }
-      }, 1500);
-    } catch (error: any) {
-      console.error("Signup failed", error);
-      const errorMessage = error.response?.data?.error || error.message;
-      
-      setToast({
-        open: true,
-        message: errorMessage || "Signup failed",
-        type: "error"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleToastClose = () => {
     setToast({ ...toast, open: false });

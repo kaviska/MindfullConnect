@@ -1,52 +1,72 @@
 import { connect } from "@/dbConfig/dbConfig";
-import User from "@/models/userModel";
+import User from "@/models/User";
 import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 
-// Ensure connection is established
+// Ensure MongoDB connection
 connect().catch(err => console.error("MongoDB connection error:", err));
 
 export async function POST(request: NextRequest) {
-    try {
-        const reqBody = await request.json();
-        const { username, email, password } = reqBody;
+  try {
+    const reqBody = await request.json();
+    const { email, password, fullName, role } = reqBody;
 
-        console.log("Request body:", reqBody);
+    console.log("Request body:", reqBody);
 
-        // Check if user already exists
-        const user = await User.findOne({ email });
-
-        if (user) {
-            return NextResponse.json(
-                { error: "User already exists" },
-                { status: 400 }
-            );
-        }
-
-        // Hash password
-        const salt = await bcryptjs.genSalt(10);
-        const hashedPassword = await bcryptjs.hash(password, salt);
-
-        const newUser = new User({
-            username,
-            email,
-            password: hashedPassword
-        });
-
-        const savedUser = await newUser.save();
-        console.log("Saved user:", savedUser);
-
-        return NextResponse.json({
-            message: "User created successfully",
-            success: true,
-            savedUser
-        }, { status: 201 });
-
-    } catch (error: any) {
-        console.error("Signup error:", error);
-        return NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-        );
+    // Validate required fields
+    if (!email || !password || !fullName) {
+      return NextResponse.json(
+        { error: "Email, password, and full name are required." },
+        { status: 400 }
+      );
     }
+
+    // Check if user already exists by email
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User already exists" },
+        { status: 400 }
+      );
+    }
+
+    // Hash the password
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(password, salt);
+
+    // Create and save the user
+    const newUser = new User({
+      fullName,
+      email,
+      password: hashedPassword,
+      role: role || "User",
+      isVerified: false,
+      lastSeen: new Date()
+    });
+
+    const savedUser = await newUser.save();
+
+    console.log("Saved user:", savedUser);
+
+    return NextResponse.json(
+      {
+        message: "User created successfully",
+        success: true,
+        user: {
+          id: savedUser._id,
+          email: savedUser.email,
+          fullName: savedUser.fullName,
+          role: savedUser.role
+        }
+      },
+      { status: 201 }
+    );
+
+  } catch (error: any) {
+    console.error("Signup error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
