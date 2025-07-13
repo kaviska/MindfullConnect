@@ -113,13 +113,20 @@ export default function CounselorRegisterPage() {
       
       setToast({
         open: true,
-        message: 'Profile completed successfully! Welcome to MindfullConnect!',
+        message: 'Profile completed successfully! Setting up payment processing...',
         type: 'success'
       });
 
-      setTimeout(() => {
-        router.push('/counsellor');
-      }, 2000);
+      // If Stripe onboarding URL is provided, redirect to it
+      if (response.data.stripeOnboardingUrl) {
+        setTimeout(() => {
+          window.location.href = response.data.stripeOnboardingUrl;
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          router.push('/counsellor');
+        }, 2000);
+      }
     } catch (error: any) {
       console.error('Profile creation failed:', error);
       setToast({

@@ -25,6 +25,11 @@ const counselorSchema = new Schema({
   therapeuticModalities: [{ type: String }],
   sessionDuration: { type: Number, default: 60 }, // in minutes
   
+  // Stripe Connect fields
+  stripeAccountId: { type: String },
+  stripeOnboardingCompleted: { type: Boolean, default: false },
+  stripeAccountStatus: { type: String, enum: ["pending", "active", "restricted"], default: "pending" },
+  
   // ...existing code...
   description: { type: String },
   rating: { type: Number, default: 4.8 },
