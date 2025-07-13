@@ -40,6 +40,8 @@ export default function SignupPage() {
 
       //save the user in localstorage
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', response.data.user);
+
 
       
       setTimeout(() => {
