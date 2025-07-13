@@ -1,6 +1,6 @@
 import Hero from "@/components/home/Hero";
 import Nav from "@/components/home/Nav";
-import Counselloer from "@/components/home/Counsellor";
+import Counseller from "@/components/home/Counsellor";
 import Footer from "@/components/home/Footer";
 import CounselingLandingSections from "@/components/home/WhyChoose-us";
 
@@ -10,7 +10,7 @@ export default function Main(){
       <Nav/>
       <Hero/>
 
-      <Counselloer/>
+      <Counseller/>
       <CounselingLandingSections/>
       <Footer/>
 
