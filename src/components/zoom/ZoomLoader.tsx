@@ -21,7 +21,6 @@ export default function ZoomLoader({
     const initZoom = async () => {
       const { ZoomMtg } = await import('@zoomus/websdk');
 
-      // ✅ Set the SDK library path BEFORE using anything else
       ZoomMtg.setZoomJSLib('https://source.zoom.us/2.18.0/lib', '/av');
       ZoomMtg.preLoadWasm();
       ZoomMtg.prepareWebSDK();

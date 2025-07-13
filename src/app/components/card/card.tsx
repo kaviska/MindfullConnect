@@ -36,7 +36,7 @@ const Card = ({ item, showActions = false, onDelete }: any) => {
   const router = useRouter();
 
   const handleEdit = () => {
-    router.push(`/write/${item.slug}`);
+    router.push(`/counsellor/manageBlog/write/${item.slug}`);
   };
 
   const handleDelete = async () => {

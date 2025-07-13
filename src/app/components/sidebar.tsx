@@ -68,8 +68,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
   const blogItems = [
     { href: "/blogMC", label: "Read Blogs", icon: BookOpen },
-    { href: "/myBlogs", label: "My Blogs", icon: FileText },
-    { href: "/write", label: "Write a Blog", icon: Edit3 },
+    { href: "/counsellor/manageBlog/myBlogs", label: "My Blogs", icon: FileText },
+    { href: "/counsellor/manageBlog/write", label: "Write a Blog", icon: Edit3 },
   ];
 
   const isActive = (href: string) => pathname === href;
