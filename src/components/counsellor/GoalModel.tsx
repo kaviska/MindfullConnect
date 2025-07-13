@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { X, Target, User, FileText } from "lucide-react";
+import React, { useState } from "react";
+import { X, Target, FileText } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import Toast from "@/components/main/Toast";
 
@@ -12,8 +12,6 @@ interface GoalModelProps {
 export default function GoalModel({ open, setOpen }: GoalModelProps) {
   const [goalTitle, setGoalTitle] = useState("");
   const [goalDescription, setGoalDescription] = useState("");
-  const [counsellors, setCounsellors] = useState([]);
-  const [selectedCounsellor, setSelectedCounsellor] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast, setToast } = useToast();
 
@@ -21,56 +19,40 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
     setOpen(false);
   };
 
-  useEffect(() => {
-    fetchCounsellors();
-  }, []);
-
-  const fetchCounsellors = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/counsellors`
-      );
-      const data = await response.json();
-      setCounsellors(data);
-    } catch (error) {
-      console.error("Error fetching counsellors:", error);
-    }
-  };
-
   const handleSubmit = async () => {
-    if (goalTitle && goalDescription && selectedCounsellor) {
+    if (goalTitle && goalDescription) {
       setLoading(true);
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/goals`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              title: goalTitle,
-              description: goalDescription,
-              counsellor_id: selectedCounsellor,
-            }),
-          }
-        );
+        const response = await fetch("/api/goals", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: goalTitle,
+            description: goalDescription,
+          }),
+        });
 
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to create goal");
         }
-
-        setGoalTitle("");
-        setGoalDescription("");
-        setSelectedCounsellor("");
-        setOpen(false);
-
         setToast({
           open: true,
           message: "Goal Created Successfully",
           type: "success",
         });
+
+        setGoalTitle("");
+        setGoalDescription("");
+
+        // Close the modal after a short delay (e.g., 1.5 seconds)
+        setTimeout(() => {
+          setOpen(false);
+        }, 1500);
+
+       
       } catch (error) {
         setToast({
           open: true,
@@ -146,28 +128,6 @@ export default function GoalModel({ open, setOpen }: GoalModelProps) {
                   rows={4}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                 />
-              </div>
-            </div>
-
-            {/* Counsellor Selection */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Assign Counsellor
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <select
-                  value={selectedCounsellor}
-                  onChange={(e) => setSelectedCounsellor(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="">Select Counsellor</option>
-                  {counsellors.map((counsellor: any) => (
-                    <option key={counsellor._id} value={counsellor._id}>
-                      {counsellor.name}
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
           </div>

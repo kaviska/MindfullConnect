@@ -3,6 +3,7 @@ import Nav from './Nav';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 
 
+
 interface LayoutProps {
     children: React.ReactNode;
 }
@@ -14,6 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <header>
                    
                 </header>
+                <Nav/>
                 <main>
                     {children}
                     {/* <PatientDetailsForm />  Render as a component, not a function */}

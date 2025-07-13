@@ -4,7 +4,7 @@ export default function PatientPage() {
   const quickActions = [
     { title: "My Sessions", icon: Calendar, href: "#", color: "bg-blue-500" },
     { title: "Messages", icon: MessageSquare, href: "#", color: "bg-green-500" },
-    { title: "Progress", icon: TrendingUp, href: "#", color: "bg-purple-500" },
+    { title: "Progress", icon: TrendingUp, href: "/patient/my-goals", color: "bg-purple-500" },
     { title: "Wellness", icon: Heart, href: "#", color: "bg-red-500" },
     { title: "Resources", icon: BookOpen, href: "#", color: "bg-orange-500" },
     { title: "Profile", icon: User, href: "#", color: "bg-gray-500" },

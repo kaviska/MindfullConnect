@@ -3,7 +3,7 @@
 import mongoose from "mongoose";
 import "../models/index"; // Import all models to ensure they are registered
 
-const MONGODB_URI = 'mongodb+srv://judepinto73:ucdv29RK2QSlensT@cluster0.v4jxuwd.mongodb.net/messagesDB?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI =process.env.MONGO_URI;
 
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
@@ -19,7 +19,7 @@ export default async function connectDB() {
 
   try {
     console.log("Connecting to MongoDB...");
-    const connection = await mongoose.connect(MONGODB_URI);
+    const connection = await mongoose.connect(MONGODB_URI as string);
     cachedConnection = connection;
     console.log("MongoDB connected successfully");
     return connection;

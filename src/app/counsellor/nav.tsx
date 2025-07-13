@@ -1,4 +1,3 @@
-
 "use client"
 import React, { PropsWithChildren, useState, useEffect } from 'react';
 import { Bell, Target, FileText } from 'lucide-react';
@@ -48,28 +47,21 @@ const Nav = () => {
 
           {/* Navigation Links */}
           <nav className="hidden md:flex space-x-8">
-            <NavLink href="/patient/dashboard" active={pathname === '/patient/dashboard'}>
-              Home
+            <NavLink href="/counsellor/dashboard" active={pathname === '/counsellor/dashboard'}>
+              Dashboard
             </NavLink>
-            {user && (
-              <>
-                <NavLink href="/patient/my-goals" active={pathname === '/patient/my-goals'}>
-                  <div className="flex items-center gap-2">
-                    <Target size={16} />
-                    My Goals
-                  </div>
-                </NavLink>
-                <NavLink href="/patient/my-quizzes" active={pathname === '/patient/my-quizzes'}>
-                  <div className="flex items-center gap-2">
-                    <FileText size={16} />
-                    My Quizzes
-                  </div>
-                </NavLink>
-              </>
-            )}
-            <NavLink href="#" active={false}>FAQ</NavLink>
-            <NavLink href="#" active={false}>Services</NavLink>
-            <NavLink href="#" active={false}>Find a Counsellor</NavLink>
+            <NavLink href="/counsellor/goals" active={pathname === '/counsellor/goals'}>
+              Goals & Quizzes
+            </NavLink>
+            <NavLink href="/counsellor/patient-progress" active={pathname === '/counsellor/patient-progress'}>
+              Patient Progress
+            </NavLink>
+            <NavLink href="/counsellor/patient-quiz-results" active={pathname === '/counsellor/patient-quiz-results'}>
+              Quiz Results
+            </NavLink>
+            <NavLink href="/counsellor/sessions" active={pathname === '/counsellor/sessions'}>
+              Sessions
+            </NavLink>
           </nav>
 
           {/* Right Section - Avatar & Notifications */}

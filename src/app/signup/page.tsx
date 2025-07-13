@@ -37,9 +37,17 @@ export default function SignupPage() {
         message: "Account created successfully!",
         type: "success"
       });
+
+      //save the user in localstorage
+      localStorage.setItem('token', response.data.token);
+
       
       setTimeout(() => {
-        router.push("/");
+        if (response.data?.user?.role === "counselor") {
+          router.push("/counselor-register");
+        } else {
+          router.push("/");
+        }
       }, 1500);
     } catch (error: any) {
       console.error("Signup failed", error);

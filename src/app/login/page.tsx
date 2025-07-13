@@ -32,26 +32,37 @@ export default function LoginPage() {
       // Store token in localStorage
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      
+      console.log("User data stored in localStorage", response.data.user);
+
       setToast({
         open: true,
         message: "Login successful! Welcome back!",
         type: "success"
       });
-      
-      setTimeout(() => {
-        router.push("/");
-      }, 1500);
-    } catch (error: any) {
+
+      // Redirect based on user role
+      if (response.data.user?.role === 'counsellor') {
+        router.push('/counsellor');
+      } else {
+        router.push('/');
+      }
+      // setTimeout(() => {
+      //   router.push("/");
+      // }, 1500);
+        } catch (error: any) {
       console.error("Login failed", error);
       const errorMessage = error.response?.data?.error || error.message;
-      
+
       setToast({
         open: true,
         message: errorMessage || "Login failed",
         type: "error"
       });
-    } finally {
+
+      if (errorMessage === "Counselor account is not active") {
+        router.push('/counsellor-register');
+      }
+        } finally {
       setLoading(false);
     }
   };
