@@ -1,19 +1,45 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import Counselor from "@/models/Counselor";
+import dbconfig from "@/lib/db";
 import Stripe from "stripe";
 
-export async function GET(request: Request) {
+const JWT_SECRET = "your_jwt_secret";
+
+export async function GET(request: NextRequest) {
+  await dbconfig();
+
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
-    const accountId = "acct_1RjoBE07FeY57x0d";
 
-    if (!accountId) {
+    const token =
+      request.cookies.get("token")?.value ||
+      request.headers.get("authorization")?.replace("Bearer ", "");
+
+    if (!token) {
       return NextResponse.json(
-        { error: "Account ID is required" },
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const userId = decoded.userId;
+
+    const counselor = await Counselor.findOne({ userId });
+
+    if (!counselor || !counselor.stripeAccountId) {
+      return NextResponse.json(
+        {
+          error: "Stripe account not found. Please complete onboarding first.",
+        },
         { status: 400 }
       );
     }
 
-    const loginLink = await stripe.accounts.createLoginLink(accountId);
+    const loginLink = await stripe.accounts.createLoginLink(
+      counselor.stripeAccountId
+    );
 
     return NextResponse.json(loginLink, { status: 200 });
   } catch (error) {
