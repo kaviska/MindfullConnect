@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // ✅ Create response and set cookies
     const response = NextResponse.json({
       message: 'User registered successfully',
-      token:token
+      token:token,
       user: { id: user._id, fullName, email, role }
     }, { status: 201 });
 
