@@ -40,7 +40,7 @@ export default function SignupPage() {
     });
 
     setTimeout(() => {
-      router.push("/verify-otp?email=" + user.email);
+    router.push(`/verify-otp?email=${user.email}`);
     }, 1500);
   } catch (error: any) {
     console.error("Signup failed", error);
@@ -55,27 +55,6 @@ export default function SignupPage() {
   }
 };
 
-      
-      setTimeout(() => {
-        if (response.data?.user?.role === "counselor") {
-          router.push("/counsellor-register");
-        } else {
-          router.push("/");
-        }
-      }, 1500);
-    } catch (error: any) {
-      console.error("Signup failed", error);
-      const errorMessage = error.response?.data?.error || error.message;
-      
-      setToast({
-        open: true,
-        message: errorMessage || "Signup failed",
-        type: "error"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleToastClose = () => {
     setToast({ ...toast, open: false });
