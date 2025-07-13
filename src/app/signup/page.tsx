@@ -46,7 +46,7 @@ export default function SignupPage() {
       
       setTimeout(() => {
         if (response.data?.user?.role === "counselor") {
-          router.push("/counselor-register");
+          router.push("/counsellor-register");
         } else {
           router.push("/");
         }

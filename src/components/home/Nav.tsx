@@ -66,10 +66,31 @@ const Nav = () => {
   };
 
   const getDashboardUrl = () => {
-    if (user?.role === 'counselor') return '/counsellor/dashboard';
-    if (user?.role === 'client') return '/client/dashboard';
-    if (user?.role === 'User') return '/patient/dashboard';
+    if (user?.role === 'counselor') return '/counsellor';
+    if (user?.role === 'User') return '/patient';
     return '/dashboard';
+  };
+
+  const getDashboardButtonText = () => {
+    if (user?.role === 'counselor') return 'Counsellor Dashboard';
+    if (user?.role === 'User') return 'Patient Dashboard';
+    return 'Dashboard';
+  };
+
+  // Filter navigation items based on user role
+  const getNavigationItems = () => {
+    const baseItems = [
+      { href: "/", label: "Home" },
+      { href: "/blogMC", label: "Blog" },
+      { href: "/find-counselor", label: "Find a Counselor" }
+    ];
+
+    // Only show "Join as a Counselor" if user is not a counselor
+    if (!user || user.role !== 'counselor') {
+      baseItems.push({ href: "/join-as-counselor", label: "Join as a Counselor" });
+    }
+
+    return baseItems;
   };
 
   return (
@@ -88,10 +109,11 @@ const Nav = () => {
             
             {/* Desktop menu items */}
             <div className="hidden md:ml-12 md:flex md:space-x-8">
-              <NavLink href="/">Home</NavLink>
-              <NavLink href="/blogMC">Blog</NavLink>
-              <NavLink href="/find-counselor">Find a Counselor</NavLink>
-              <NavLink href="/join-as-counselor">Join as a Counselor</NavLink>
+              {getNavigationItems().map((item) => (
+                <NavLink key={item.href} href={item.href}>
+                  {item.label}
+                </NavLink>
+              ))}
             </div>
           </div>
 
@@ -109,7 +131,7 @@ const Nav = () => {
                   className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200"
                 >
                   <User className="h-4 w-4" />
-                  <span className="font-medium">{user.fullName}</span>
+                  <span className="font-medium">{getDashboardButtonText()}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -158,10 +180,11 @@ const Nav = () => {
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
           <div className="px-4 pt-2 pb-3 space-y-1">
-            <MobileNavLink href="/">Home</MobileNavLink>
-            <MobileNavLink href="/blogMC">Blog</MobileNavLink>
-            <MobileNavLink href="/find-counselor">Find Counselor</MobileNavLink>
-            <MobileNavLink href="/join-as-counselor">Join as Counselor</MobileNavLink>
+            {getNavigationItems().map((item) => (
+              <MobileNavLink key={item.href} href={item.href}>
+                {item.label}
+              </MobileNavLink>
+            ))}
             
             <div className="pt-4 border-t border-gray-200 space-y-2">
               {user ? (
@@ -171,7 +194,7 @@ const Nav = () => {
                     className="flex items-center space-x-2 text-gray-700 font-medium"
                   >
                     <User className="h-4 w-4" />
-                    <span>{user.fullName}</span>
+                    <span>{getDashboardButtonText()}</span>
                   </MobileNavLink>
                   <button
                     onClick={handleLogout}

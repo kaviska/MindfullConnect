@@ -37,13 +37,20 @@ export async function POST(request: NextRequest) {
     if (role === 'counselor') {
       const counselorProfile = new Counselor({
         userId: user._id,
-        name:fullName,
+        name: fullName,
         specialty: 'General Counseling',
+        yearsOfExperience: 0,
+        highestQualification: '',
+        availabilityType: 'online',
+        availableTimeSlots: [],
+        therapeuticModalities: [],
+        languagesSpoken: [],
         description: 'Certified counselor',
         rating: 4.8,
         reviews: 0,
         avatar: '/ava2.svg',
-        status: 'inactive',
+        status: 'active',
+        profileCompleted: false
       });
 
       await counselorProfile.save();
