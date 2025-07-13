@@ -1,15 +1,28 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import dbConnect from '@/lib/mongodb';
 import ZoomMeeting from '@/models/ZoomMeetings';
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
     const { meetingId, topic, start_time, duration } = body;
 
-    if (!meetingId) {
-      return NextResponse.json({ error: 'Meeting ID is required' }, { status: 400 });
+    // Validate required fields
+    if (!meetingId || !topic || !start_time || !duration) {
+      return NextResponse.json(
+        { error: 'Missing required fields: meetingId, topic, start_time, and duration are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate start_time format
+    const startTimeDate = new Date(start_time);
+    if (isNaN(startTimeDate.getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid start_time format' },
+        { status: 400 }
+      );
     }
 
     // Connect to DB
@@ -38,6 +51,7 @@ export async function PATCH(request: Request) {
       `https://api.zoom.us/v2/meetings/${meetingId}`,
       {
         topic,
+        type: 2, // Scheduled meeting
         start_time,
         duration,
         settings: {
@@ -54,7 +68,7 @@ export async function PATCH(request: Request) {
 
     // Update meeting in MongoDB
     const updatedMeeting = await ZoomMeeting.findOneAndUpdate(
-      { meetingId: meetingId },
+      { meetingId },
       {
         topic,
         startTime: new Date(start_time),
@@ -78,7 +92,7 @@ export async function PATCH(request: Request) {
   } catch (err: any) {
     console.error('Zoom Update Error:', err.response?.data || err.message);
     return NextResponse.json(
-      { error: err.response?.data || 'Zoom update API error' },
+      { error: err.response?.data?.message || err.message || 'Zoom update API error' },
       { status: err.response?.status || 500 }
     );
   }

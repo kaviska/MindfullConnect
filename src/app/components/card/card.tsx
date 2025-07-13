@@ -29,7 +29,7 @@ const Card = ({ item, showActions = false, onDelete }: any) => {
       } catch (err) {
       }
     } else {
-      previewText = item.desc.substring(0, 100);
+      previewText = item.desc.substring(0, 2000);
     }
   }
 
