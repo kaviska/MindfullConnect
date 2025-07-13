@@ -74,7 +74,7 @@ const onSignup = async (e: React.FormEvent) => {
         open={toast.open}
         message={toast.message}
         type={toast.type}
-        onClose={handleToastClose}
+      
       />
 
       {/* Login page image box */}
@@ -148,7 +148,7 @@ const onSignup = async (e: React.FormEvent) => {
                 />
                 <button
                   type="button"
-                  onClick={togglePasswordVisibility }
+              
                  
                   className="absolute inset-y-0 right-0 px-3 py-2 text-sm text-gray-500 focus:outline-none"
                 >
