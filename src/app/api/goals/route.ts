@@ -4,12 +4,55 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import { NextRequest } from "next/server";
 import { createNotification } from "@/utility/backend/notificationService";
+import jwt from "jsonwebtoken";
+import User from "@/models/User";
+import Counselor from "@/models/Counselor";
+
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 export async function POST(req: NextRequest) {
   await dbConnect();
   try {
+    // Get JWT token from cookies
+    const token = req.cookies.get("token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { message: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Verify JWT token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    } catch (error) {
+      return NextResponse.json(
+        { message: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    // Get user and verify they are a counselor
+    const user = await User.findById(decoded.userId);
+    if (!user || user.role !== "counselor") {
+      return NextResponse.json(
+        { message: "Only counselors can create goals" },
+        { status: 403 }
+      );
+    }
+
+    // Get counselor profile
+    const counselor = await Counselor.findOne({ userId: user._id });
+    if (!counselor) {
+      return NextResponse.json(
+        { message: "Counselor profile not found" },
+        { status: 404 }
+      );
+    }
+
     const body = await req.json();
-    const { title, description, counsellor_id } = body;
+    const { title, description } = body;
 
     // Validation
     if (!title || typeof title !== "string" || title.trim().length < 2) {
@@ -36,24 +79,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!counsellor_id || !mongoose.Types.ObjectId.isValid(counsellor_id)) {
-      return NextResponse.json(
-        { message: "Invalid counsellor ID" },
-        { status: 400 }
-      );
-    }
-
     const goals = new Goals({
       title: title.trim(),
       description: description.trim(),
-      counsellor_id,
+      counsellor_id: counselor._id,
     });
     await goals.save();
+
     const notification = await createNotification({
       type: "question_group",
       message: `New Goal created: ${title}`,
-      user_id: "68120f0abdb0b2d10474be42", // Replace with actual user ID
+      user_id: decoded.userId,
     });
+
     return NextResponse.json(
       { message: "Goal created successfully", data: goals },
       { status: 201 }

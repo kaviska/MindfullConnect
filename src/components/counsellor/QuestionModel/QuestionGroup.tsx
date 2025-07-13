@@ -13,21 +13,18 @@ export default function QuestionGroup() {
       try {
         setToast({
           open: true,
-          message: "Question group is being createing",
+          message: "Question group is being created",
           type: "info",
         });
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/question-group`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              title: questionGroupTitle,
-            }),
-          }
-        );
+        const response = await fetch("/api/question-group", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: questionGroupTitle,
+          }),
+        });
   
         if (!response.ok) {
           const errorData = await response.json();

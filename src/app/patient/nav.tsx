@@ -1,6 +1,9 @@
-import React, { PropsWithChildren } from 'react';
 
-import { Bell } from 'lucide-react';
+"use client"
+import React, { PropsWithChildren, useState, useEffect } from 'react';
+import { Bell, Target, FileText } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface NavLinkProps extends PropsWithChildren {
   href: string;
@@ -8,6 +11,26 @@ interface NavLinkProps extends PropsWithChildren {
 }
 
 const Nav = () => {
+  const [user, setUser] = useState<any>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Check if user is logged in by checking cookies or localStorage
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData); // userData is the user object directly
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
   return (
     <header className="w-full bg-[#E1F3FD] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,7 +40,7 @@ const Nav = () => {
             <div className="flex-shrink-0">
               <img
                 className="h-12 w-12 rounded-full object-cover"
-                src="./profile"
+                src="/ava2.svg"
                 alt="Profile"
               />
             </div>
@@ -25,11 +48,28 @@ const Nav = () => {
 
           {/* Navigation Links */}
           <nav className="hidden md:flex space-x-8">
-            <NavLink href="#" active>Home</NavLink>
-            <NavLink href="#">FAQ</NavLink>
-            <NavLink href="#">Services</NavLink>
-            <NavLink href="#">Find a Counsellor</NavLink>
-            <NavLink href="#">Join as a Counsellor</NavLink>
+            <NavLink href="/patient/dashboard" active={pathname === '/patient/dashboard'}>
+              Home
+            </NavLink>
+            {user && (
+              <>
+                <NavLink href="/patient/my-goals" active={pathname === '/patient/my-goals'}>
+                  <div className="flex items-center gap-2">
+                    <Target size={16} />
+                    My Goals
+                  </div>
+                </NavLink>
+                <NavLink href="/patient/my-quizzes" active={pathname === '/patient/my-quizzes'}>
+                  <div className="flex items-center gap-2">
+                    <FileText size={16} />
+                    My Quizzes
+                  </div>
+                </NavLink>
+              </>
+            )}
+            <NavLink href="#" active={false}>FAQ</NavLink>
+            <NavLink href="#" active={false}>Services</NavLink>
+            <NavLink href="#" active={false}>Find a Counsellor</NavLink>
           </nav>
 
           {/* Right Section - Avatar & Notifications */}
@@ -40,7 +80,7 @@ const Nav = () => {
             <div className="relative">
               <img
                 className="h-10 w-10 rounded-full border-2 border-gray-200"
-                src="/api/placeholder/40/40"
+                src={user?.profileImageUrl || "/ava2.svg"}
                 alt="Avatar"
               />
               <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white" />
@@ -65,7 +105,7 @@ const Nav = () => {
 // NavLink component for consistent styling
 const NavLink: React.FC<NavLinkProps> = ({ href, children, active = false }) => {
   return (
-    <a
+    <Link
       href={href}
       className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
         active
@@ -74,7 +114,7 @@ const NavLink: React.FC<NavLinkProps> = ({ href, children, active = false }) => 
       }`}
     >
       {children}
-    </a>
+    </Link>
   );
 };
 

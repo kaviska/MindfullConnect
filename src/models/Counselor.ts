@@ -8,6 +8,24 @@ const counselorSchema = new Schema({
   rating: { type: Number, default: 4.8 },
   reviews: { type: Number, default: 0 },
   avatar: { type: String, default: "/default-avatar.png" },
+  status: { type: String, enum: ["active", "inactive"], default: "inactive" },
+   name: {
+      type: String,
+      required: true,
+    },
+   
+   
+    patients_ids: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: false,
+      },
+    ],
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
 });
 
 const Counselor = mongoose.models.Counselor || mongoose.model("Counselor", counselorSchema);

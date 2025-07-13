@@ -16,9 +16,7 @@ export default function Quiz() {
     // Fetch question groups from the server
     const fetchQuestionGroups = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/question-group`
-        );
+        const response = await fetch("/api/question-group");
         const data = await response.json();
         setQuestionGroups(data);
       } catch (error) {
@@ -29,7 +27,7 @@ export default function Quiz() {
     fetchQuestionGroups();
   }, []);
 
-    const handleSubmitQuiz = async () => {
+  const handleSubmitQuiz = async () => {
     if (!quizTitle) {
       setToast({
         open: true,
@@ -38,7 +36,7 @@ export default function Quiz() {
       });
       return;
     }
-  
+
     if (!quizDescription) {
       setToast({
         open: true,
@@ -47,7 +45,7 @@ export default function Quiz() {
       });
       return;
     }
-  
+
     if (!selectedQuestionGroup) {
       setToast({
         open: true,
@@ -56,25 +54,22 @@ export default function Quiz() {
       });
       return;
     }
-  
+
     try {
       const newQuiz = {
         title: quizTitle,
         description: quizDescription,
         question_group_id: selectedQuestionGroup,
       };
-  
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/quiz`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newQuiz),
-        }
-      );
-  
+
+      const response = await fetch("/api/quiz", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newQuiz),
+      });
+
       if (!response.ok) {
         const errorData = await response.json();
         setToast({
@@ -84,10 +79,10 @@ export default function Quiz() {
         });
         return;
       }
-  
+
       const data = await response.json();
       console.log("New Quiz created:", data);
-  
+
       // Reset form
       setQuizTitle("");
       setQuizDescription("");

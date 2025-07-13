@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const QuizSchema = new mongoose.Schema({
+const quizSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -10,16 +10,21 @@ const QuizSchema = new mongoose.Schema({
     required: true,
   },
   question_group_id: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "QuestionGroup",
     required: true,
   },
- 
+  counsellor_id: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-const Quiz = mongoose.models.Quiz || mongoose.model("Quiz", QuizSchema);
+const Quiz = mongoose.models.Quiz || mongoose.model("Quiz", quizSchema);
+
 export default Quiz;

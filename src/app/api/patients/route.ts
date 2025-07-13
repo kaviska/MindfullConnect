@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Patient from "@/models/Patient";
+import dbConnect from "@/lib/db";
+import User from "@/models/User";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 // Add a new patient
 export async function POST(req: NextRequest) {
@@ -19,16 +22,31 @@ export async function POST(req: NextRequest) {
 }
 
 // Get all patients
-export async function GET() {
+export async function GET(req: NextRequest) {
   await dbConnect();
+  
   try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) {
+      return NextResponse.json({ message: "Authentication required" }, { status: 401 });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const user = await User.findById(decoded.userId);
     
-    const patients = await Patient.find({});
-    return NextResponse.json(patients);
+    if (!user || user.role !== "counselor") {
+      return NextResponse.json({ message: "Only counselors can view patients" }, { status: 403 });
+    }
+
+    // Get all users with role 'User' (patients)
+    const patients = await User.find({ 
+      role: { $in: ['User', 'user'] } 
+    }).select('fullName email _id').sort({ fullName: 1 });
+
+    return NextResponse.json(patients, { status: 200 });
+
   } catch (error) {
-    return NextResponse.json(
-      { error: "Error fetching patients" },
-      { status: 500 }
-    );
+    console.error("Error fetching patients:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }

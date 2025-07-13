@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import connectDB from '@/lib/db';
 import User from '@/models/User';
-import Counselor from '@/models/Counselor'; // ✅ NEW
+import Counselor from '@/models/Counselor';
+import dbconfig from '@/lib/db';
 
-const JWT_SECRET = 'your_jwt_secret'; // Replace with environment variable in production
+const JWT_SECRET = 'your_jwt_secret'; // ⚠️ Use environment variable in production
 
 export async function POST(request: NextRequest) {
-  await connectDB();
+  await dbconfig();
 
   try {
     const { fullName, email, password, role } = await request.json();
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     await user.save();
 
-    // ✅ If counselor, create their profile
+    // If counselor, create profile
     if (role === 'counselor') {
       const counselorProfile = new Counselor({
         userId: user._id,
@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
         description: 'Certified counselor',
         rating: 4.8,
         reviews: 0,
-        avatar: '/ava2.svg', // Default or pass from request
+        avatar: '/ava2.svg',
+        status: 'inactive',
       });
 
       await counselorProfile.save();
@@ -49,10 +50,23 @@ export async function POST(request: NextRequest) {
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
-    return NextResponse.json({
-      token,
+    // ✅ Create response and set cookies
+    const response = NextResponse.json({
+      message: 'User registered successfully',
+      token:token
       user: { id: user._id, fullName, email, role }
     }, { status: 201 });
+
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60, // 1 hour
+      path: '/',
+    });
+
+   
+    return response;
 
   } catch (error) {
     console.error("Register error:", error);

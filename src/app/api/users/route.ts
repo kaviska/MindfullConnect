@@ -7,10 +7,13 @@ export async function GET(request: NextRequest) {
   await connectDB();
 
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1];
-    console.log("Received token in /api/users:", token);
+    // Get JWT token from cookies
+    const token = request.cookies.get("token")?.value;
     if (!token) {
-      return NextResponse.json({ error: "No token provided" }, { status: 401 });
+      return NextResponse.json(
+      { message: "Authentication required" },
+      { status: 401 }
+      );
     }
 
     if (!process.env.JWT_SECRET) {
@@ -18,8 +21,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
-    console.log("Decoded token in /api/users:", decoded);
+    // Verify JWT token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
+    } catch (error) {
+      return NextResponse.json(
+      { message: "Invalid token" },
+      { status: 401 }
+      );
+    }
 
     // Fetch all users except the logged-in user, include profileImageUrl
     const users = await User.find({ _id: { $ne: decoded.userId } }).select(

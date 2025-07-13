@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
       status: "confirmed",
     });
 
+    //whos is the counsellor counselorId=userid
+    //patendids user id
+
     await session.save();
 
     return NextResponse.json({ message: "Session booked", session });
