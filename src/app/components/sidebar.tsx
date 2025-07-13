@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
     { href: "/counsellor/goals", label: "Goals & Milestones", icon: Target },
     { href: "/counsellor/notifications", label: "Notifications", icon: Bell },
     { href: "#", label: "Manage Profile", icon: User },
-    { href: "#", label: "Sessions", icon: Calendar },
+    { href: "/counsellor/sessions", label: "Sessions", icon: Calendar },
     { href: "/chatinterface", label: "Messages", icon: MessageSquare },
     { href: "#", label: "Progress Tracking", icon: TrendingUp },
     { href: "#", label: "Feedbacks", icon: Star },
