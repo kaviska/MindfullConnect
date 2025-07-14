@@ -1,5 +1,5 @@
 import { connect } from "@/dbConfig/dbConfig";
-import User from "@/models/userModel";
+import User from "@/models/User";
 import { NextRequest, NextResponse } from "next/server";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -32,27 +32,30 @@ export async function POST(request: NextRequest) {
 
     // Create token data
     const tokenData = {
-      id: user._id, // Changed from user.id to user._id (MongoDB uses _id)
+      userId: user._id, // Changed from user.id to user._id (MongoDB uses _id)
       username: user.username,
       email: user.email
     };
 
     // Create token
-    if (!process.env.TOKEN_SECRET) {
+    if (!process.env.JWT_SECRET) {
       throw new Error("TOKEN_SECRET is not defined in environment variables");
     }
 
     const token = jwt.sign(
       tokenData,
-      process.env.TOKEN_SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
     const response = NextResponse.json({
+      token, // Include token in response body
       message: "Login successful",
+      
       success: true,
       user: { // Include basic user info in response
         id: user._id,
+         _id: user._id, // ✅ Include both for compatibility
         username: user.username,
         email: user.email
       }

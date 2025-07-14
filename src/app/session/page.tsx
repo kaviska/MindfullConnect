@@ -106,54 +106,29 @@ export default function Session() {
     document.body.style.overflow = "auto";
   };
 
-  // Updated bookSession function with correct signature
-  const bookSession = async (slot: string, date: string) => {
-    if (!selectedCounselor) return;
-
-    try {
-      // Here you would call your booking API
-      const response = await fetch('/api/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          counselorId: selectedCounselor._id,
-          timeSlot: slot,
-          date: date,
-          // Add other necessary fields like patientId
-        }),
-      });
-
-      if (response.ok) {
-        // Store session info for snackbar
-        setLastBookedSession({
-          slot: slot,
-          counselorName: selectedCounselor.name || ""
-        });
-
-        // Close modal and show success
-        closeBookingModal();
-        setShowSnackbar(true);
-        setTimeout(() => setShowSnackbar(false), 4000);
-
-        // Optionally refresh booked sessions or counselors list
-        // You might want to refetch data here
-      } else {
-        const errorData = await response.json();
-        console.error('Booking failed:', errorData.error);
-        // Handle error (show error message to user)
-      }
-    } catch (error) {
-      console.error('Error booking session:', error);
-      // Handle error (show error message to user)
-    }
-  };
+  
 
   const filteredCounselors = counselors.filter((counselor) =>
     counselor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     counselor.specialty?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+const handleBookingSuccess = (sessionData: any) => {
+  console.log('✅ Booking successful:', sessionData);
+  
+  // Store session info for snackbar
+  setLastBookedSession({
+    slot: sessionData.time,
+    counselorName: selectedCounselor?.name || ""
+  });
+
+  // Show success feedback
+  setShowSnackbar(true);
+  setTimeout(() => setShowSnackbar(false), 4000);
+
+  // Close modal
+  closeBookingModal();
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fcff] to-[#e3f2fd] text-[#334155] font-inter">
@@ -191,7 +166,7 @@ export default function Session() {
         isOpen={isBookingModalOpen}
         closeModal={closeBookingModal}
         selectedCounselor={selectedCounselor}
-        bookSession={bookSession}
+        onBookingSuccess={handleBookingSuccess}
         bookedSessions={bookedSessions}
       />
 
