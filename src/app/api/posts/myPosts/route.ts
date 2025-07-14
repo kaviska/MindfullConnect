@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Post from "@/models/postModel";
-import '@/models/userModel';
+import User from "@/models/User";
 import mongoose from "mongoose";
 // import { getUserFromToken } from "@/lib/getUserFromToken";
 
