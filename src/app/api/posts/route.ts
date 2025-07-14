@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connect } from "@/dbConfig/dbConfig";
-import '@/models/userModel';
+import User from '@/models/User';
 import Post from '@/models/postModel';
 import { getUserFromToken } from "@/lib/getUserFromToken";
 
