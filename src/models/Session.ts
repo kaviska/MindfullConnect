@@ -6,7 +6,7 @@ const sessionSchema = new Schema({
   date: { type: String, required: true }, // Format: "YYYY-MM-DD"
   time: { type: String, required: true }, // Format: "HH:mm"
   duration: { type: Number, default: 55 }, // in minutes
-  status: { type: String, enum: ["confirmed", "cancelled", "completed" , "booked"], default: "booked" },
+  status: { type: String, enum: ["booked", "confirmed", "cancelled", "completed"], default: "booked" },
   createdAt: { type: Date, default: Date.now }
 });
 
