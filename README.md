@@ -1,4 +1,4 @@
-# Mindful Connect
+# MindfulConnect
 
 ![Built With Next.js](https://img.shields.io/badge/Built%20with-Next.js-000?logo=next.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B?logo=mongodb&logoColor=white)
@@ -15,10 +15,6 @@ Mindful Connect is a modern web-based counseling platform that bridges the gap b
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Setup Instructions](#setup-instructions)
-- [Usage](#usage)
-- [Admin Portal](#admin-portal)
-- [License](#license)
-- [Contributing](#contributing)
 
 ---
 
