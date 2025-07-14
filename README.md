@@ -4,7 +4,6 @@
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B?logo=mongodb&logoColor=white)
 ![Stripe](https://img.shields.io/badge/Payments-Stripe-635BFF?logo=stripe&logoColor=white)
 ![Zoom](https://img.shields.io/badge/Video-Zoom-2D8CFF?logo=zoom&logoColor=white)
-![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 Mindful Connect is a modern web-based counseling platform that bridges the gap between clients and mental health professionals. Built with performance, privacy, and scalability in mind, it offers secure video conferencing, appointment scheduling, journaling, and streamlined payment processing — all under one intuitive interface.
 
