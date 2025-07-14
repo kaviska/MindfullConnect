@@ -1,0 +1,116 @@
+.container {
+    margin-bottom: 50px;
+    display: flex;
+    align-items: center;
+    gap: 50px;
+;
+  }
+  
+  .imageContainer {
+    flex: 0.5;
+    width: 100%;
+    height: 280px;
+    position: relative;
+  }
+  
+  .image {
+    object-fit: fill;
+  }
+  
+  .textContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    height: 280px;
+  }
+  
+  .date {
+    color: gray;
+  }
+  
+  .category {
+    color: crimson;
+    font-weight: 500;
+  }
+  
+  .desc {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--softTextColor);
+  }
+  
+  .link {
+    border-bottom: 1px solid crimson;
+    width: max-content;
+    padding: 2px 0px;
+    &:hover {
+      font-size: large;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+  }
+  
+  @media screen and (max-width: 1080px) {
+    .imageContainer {
+      display: none;
+    }
+  }
+
+  .actionsWrapper {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  margin-top: -10px;
+}
+
+.dotsWrapper {
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dots {
+  font-size: 24px;
+  font-weight: bold;
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #333;
+}
+
+.dotsWrapper:hover .dots {
+  transform: scale(1.3);
+  color: #000;
+}
+
+.dropdown {
+  position: absolute;
+  top: 26px;
+  right: 50%;
+  background-color: white;
+  border: 1px solid #ccc;
+  width: 100px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dropdown button {
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: #555;
+  text-align: left;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s ease;
+}
+
+.dropdown button:hover {
+  color: #000;
+}
