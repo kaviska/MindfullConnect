@@ -10,48 +10,42 @@ export async function POST(request: NextRequest) {
   await connectDB();
 
   try {
-    // ✅ Get token from cookies instead of Authorization header
     const token = request.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-
-    // ✅ Update to match your request body format
     const { counselorId, time, date } = await request.json();
 
     if (!counselorId || !date || !time) {
       return NextResponse.json({ error: "Missing required fields: counselorId, date, time" }, { status: 400 });
     }
 
-    // Check for double booking
     const existing = await Session.findOne({ 
       counselorId, 
       date, 
-      time // Use time from request (matches your body)
+      time
     });
     
     if (existing) {
       return NextResponse.json({ error: "Time slot already booked" }, { status: 409 });
     }
 
-    // Create the session
     const session = new Session({
       patientId: decoded.userId,
       counselorId,
       date,
-      time, // Use time from request
-      status: "booked",
+      time,
+      status: "booked", // Initial status before payment
     });
 
     await session.save();
 
-    // ✅ Add patient to counselor's patients_ids array (if not already present)
     await Counselor.findByIdAndUpdate(
       counselorId,
       {
-        $addToSet: { patients_ids: decoded.userId } // Only adds if not already present
+        $addToSet: { patients_ids: decoded.userId }
       },
       { new: true }
     );
@@ -73,5 +67,36 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Error booking session:", error);
     return NextResponse.json({ error: error.message || "Failed to book session" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  await connectDB();
+
+  try {
+    const { sessionId, status } = await request.json();
+
+    if (!sessionId || !status) {
+      return NextResponse.json({ error: "Missing sessionId or status" }, { status: 400 });
+    }
+
+    const session = await Session.findByIdAndUpdate(
+      sessionId,
+      { status },
+      { new: true }
+    );
+
+    if (!session) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ 
+      message: "Session status updated successfully", 
+      session 
+    });
+
+  } catch (error: any) {
+    console.error("Error updating session status:", error);
+    return NextResponse.json({ error: error.message || "Failed to update session" }, { status: 500 });
   }
 }

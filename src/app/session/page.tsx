@@ -113,21 +113,38 @@ export default function Session() {
     counselor.specialty?.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-const handleBookingSuccess = (sessionData: any) => {
-  console.log('✅ Booking successful:', sessionData);
+const handleBookingSuccess = async (sessionData: any) => {
+  console.log('✅ Booking created, initiating payment:', sessionData);
   
-  // Store session info for snackbar
-  setLastBookedSession({
-    slot: sessionData.time,
-    counselorName: selectedCounselor?.name || ""
-  });
+  try {
+    // Create payment intent
+    const paymentResponse = await fetch('/api/payment/payment-intent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sessionId: sessionData.id,
+        counselorId: sessionData.counselorId,
+        amount: 300 // $3.00 in cents
+      })
+    });
 
-  // Show success feedback
-  setShowSnackbar(true);
-  setTimeout(() => setShowSnackbar(false), 4000);
-
-  // Close modal
-  closeBookingModal();
+    const paymentData = await paymentResponse.json();
+    
+    if (paymentResponse.ok && paymentData.client_secret) {
+      // Close booking modal before redirect
+      closeBookingModal();
+      // Redirect to payment page
+      window.location.href = `/payment?client_secret=${paymentData.client_secret}&session_id=${sessionData.id}`;
+    } else {
+      console.error('❌ Payment intent creation failed:', paymentData.error);
+      alert('Payment setup failed. Please try again.');
+    }
+  } catch (error) {
+    console.error('❌ Payment initiation failed:', error);
+    alert('Network error. Please check your connection and try again.');
+  }
 };
 
   return (

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import { getUserFromToken } from '@/lib/getUserFromToken';
 import ZoomMeeting from '@/models/ZoomMeetings';
 import jwt from 'jsonwebtoken';
 import User from '@/models/User';
