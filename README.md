@@ -1,4 +1,4 @@
-# Mindful Connect
+# MindfulConnect
 
 **Mindful Connect** is a modern, full-featured online counseling platform designed to bridge the gap between mental health professionals and individuals seeking support. With secure video conferencing, session management, rich-text communication, and integrated payments, Mindful Connect delivers a seamless and secure experience for both counselors and clients.
 
