@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       counselorId,
       date,
       time, // Use time from request
-      status: "confirmed",
+      status: "booked",
     });
 
     await session.save();
