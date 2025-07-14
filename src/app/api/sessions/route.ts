@@ -22,8 +22,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields: counselorId, date, time" }, { status: 400 });
     }
 
+    // Find the counselor document by userId to get the actual counselor _id
+    const counselor = await Counselor.findOne({ userId: counselorId });
+    if (!counselor) {
+      return NextResponse.json({ error: "Counselor not found" }, { status: 404 });
+    }
+
     const existing = await Session.findOne({ 
-      counselorId, 
+      counselorId: counselor._id, // Use the counselor's _id
       date, 
       time
     });
@@ -34,30 +40,30 @@ export async function POST(request: NextRequest) {
 
     const session = new Session({
       patientId: decoded.userId,
-      counselorId,
+      counselorId: counselor._id, // Use the counselor's _id
       date,
       time,
-      status: "booked", // Initial status before payment
+      status: "booked",
     });
 
     await session.save();
 
     await Counselor.findByIdAndUpdate(
-      counselorId,
+      counselor._id, // Use the counselor's _id
       {
         $addToSet: { patients_ids: decoded.userId }
       },
       { new: true }
     );
 
-    console.log(`Session booked: Patient ${decoded.userId} with Counselor ${counselorId} on ${date} at ${time}`);
+    console.log(`Session booked: Patient ${decoded.userId} with Counselor ${counselor._id} on ${date} at ${time}`);
 
     return NextResponse.json({ 
       message: "Session booked successfully", 
       session: {
         id: session._id,
         patientId: session.patientId,
-        counselorId: session.counselorId,
+        counselorId: counselorId, // Return the original userId for frontend consistency
         date: session.date,
         time: session.time,
         status: session.status

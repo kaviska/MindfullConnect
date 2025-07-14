@@ -12,8 +12,17 @@ export async function POST(request: Request) {
     await connectDB();
 
     // Check if counselor has a Connect account
-    const counselor = await Counselor.findById(counselorId);
-    const connectAccountId = counselor?.stripeConnectAccountId;
+    const counselor = await Counselor.findOne({ userId: counselorId });
+    console.log("Counsellor", counselorId, counselor);
+    
+    // Debug the stripeAccountId field
+    console.log("All counselor keys:", Object.keys(counselor || {}));
+    console.log("Raw stripeAccountId:", counselor?.stripeAccountId);
+    console.log("toObject stripeAccountId:", counselor?.toObject()?.stripeAccountId);
+    console.log("Direct access:", counselor && counselor['stripeAccountId']);
+    
+    const connectAccountId = counselor?.toObject()?.stripeAccountId || counselor?.stripeAccountId;
+    console.log("Connect Account ID:", connectAccountId);
 
     let paymentIntentParams: any = {
       amount: amount,
