@@ -10,28 +10,19 @@ import {
   Clock,
   Star,
   Brain,
-  Shield
+  Shield,
+  Plus,
+  Video,
+  Phone,
+  ArrowRight
 } from "lucide-react";
 import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 
 export default function PatientPage() {
   const { user } = useAuth();
 
   const quickActions = [
-    { 
-      title: "My Sessions", 
-      icon: Calendar, 
-      href: "/session", 
-      color: "bg-gradient-to-br from-[#4f46e5] to-[#7c3aed]",
-      description: "View upcoming therapy sessions"
-    },
-    { 
-      title: "Find Counselors", 
-      icon: Heart, 
-      href: "/session", 
-      color: "bg-gradient-to-br from-[#06b6d4] to-[#0891b2]",
-      description: "Connect with mental health professionals"
-    },
     { 
       title: "Progress Tracking", 
       icon: TrendingUp, 
@@ -63,8 +54,69 @@ export default function PatientPage() {
   ];
 
   const upcomingSessions = [
-    { date: "Today", time: "2:00 PM", counselor: "Dr. Sarah Johnson", type: "Individual Therapy" },
-    { date: "Tomorrow", time: "10:00 AM", counselor: "Dr. Michael Chen", type: "Cognitive Behavioral" },
+    { 
+      id: 1,
+      date: "Today", 
+      time: "2:00 PM", 
+      counselor: "Dr. Sarah Johnson", 
+      type: "Individual Therapy",
+      status: "confirmed",
+      sessionType: "video",
+      counselorId: "counselor_1"
+    },
+    { 
+      id: 2,
+      date: "Tomorrow", 
+      time: "10:00 AM", 
+      counselor: "Dr. Michael Chen", 
+      type: "Cognitive Behavioral",
+      status: "confirmed",
+      sessionType: "phone",
+      counselorId: "counselor_2"
+    },
+    { 
+      id: 3,
+      date: "July 18", 
+      time: "3:30 PM", 
+      counselor: "Dr. Emily Rodriguez", 
+      type: "Anxiety Management",
+      status: "pending",
+      sessionType: "video",
+      counselorId: "counselor_3"
+    },
+  ];
+
+  const featuredCounselors = [
+    {
+      id: 1,
+      name: "Dr. Sarah Johnson",
+      specialization: "Anxiety & Depression",
+      rating: 4.9,
+      reviews: 127,
+      price: "$80/session",
+      availability: "Available today",
+      image: "/counselor1.jpg"
+    },
+    {
+      id: 2,
+      name: "Dr. Michael Chen",
+      specialization: "Relationship Therapy",
+      rating: 4.8,
+      reviews: 95,
+      price: "$75/session",
+      availability: "Next available: Tomorrow",
+      image: "/counselor2.jpg"
+    },
+    {
+      id: 3,
+      name: "Dr. Emily Rodriguez",
+      specialization: "Trauma & PTSD",
+      rating: 4.9,
+      reviews: 156,
+      price: "$90/session",
+      availability: "Available this week",
+      image: "/counselor3.jpg"
+    },
   ];
 
   const wellnessStats = [
@@ -97,6 +149,148 @@ export default function PatientPage() {
           </div>
         </div>
 
+        {/* Main Action Cards - Sessions & Find Counselors */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Upcoming Sessions - PRIORITY 1 */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-xl">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">My Sessions</h2>
+              </div>
+              <Link href="/patient/sessions" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                View All
+              </Link>
+            </div>
+            
+            {upcomingSessions.length > 0 ? (
+              <div className="space-y-4">
+                {/* ✅ Show maximum 2 sessions */}
+                {upcomingSessions.slice(0, 2).map((session) => (
+                  <div key={session.id} className="border border-gray-100 rounded-xl p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="font-semibold text-gray-900">{session.counselor}</div>
+                        {session.sessionType === 'video' ? 
+                          <Video className="h-4 w-4 text-blue-500" /> : 
+                          <Phone className="h-4 w-4 text-green-500" />
+                        }
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <div className="text-sm text-blue-600 font-semibold">{session.date}</div>
+                        <div className="text-sm text-gray-500">{session.time}</div>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-600 mb-3">{session.type}</div>
+                    
+                    {/* ✅ Enhanced action buttons with chat */}
+                    <div className="flex justify-between items-center">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        session.status === 'confirmed' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {session.status === 'confirmed' ? '✓ Confirmed' : '⏳ Pending'}
+                      </span>
+                      
+                      <div className="flex gap-2">
+                        {/* ✅ Chat button for booked sessions */}
+                        <Link href={`/chat/${session.counselorId}`}>
+                          <button className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors flex items-center gap-1">
+                            <MessageSquare className="h-3 w-3" />
+                            Chat
+                          </button>
+                        </Link>
+                        
+                        {/* ✅ Join/View button */}
+                        {session.date === 'Today' ? (
+                          <button className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
+                            Join Now
+                          </button>
+                        ) : (
+                          <button className="bg-gray-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors">
+                            View Details
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <Link href="/patient/sessions" className="block w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all text-center">
+                  Manage All Sessions
+                </Link>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 mb-2 text-lg font-medium">No upcoming sessions</p>
+                <p className="text-gray-400 text-sm mb-6">Schedule your first therapy session today</p>
+                <Link href="/session" className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all">
+                  Book Your First Session
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Find Counselors - PRIORITY 2 */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-[#06b6d4] to-[#0891b2] p-3 rounded-xl">
+                  <Heart className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Find Counselors</h2>
+              </div>
+              <Link href="/session" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                View All
+              </Link>
+            </div>
+            
+            <div className="space-y-4">
+              {featuredCounselors.slice(0, 2).map((counselor) => (
+                <div key={counselor.id} className="border border-gray-100 rounded-xl p-4 hover:shadow-md transition-all cursor-pointer">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                      {counselor.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-semibold text-gray-900">{counselor.name}</h3>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold text-gray-900">{counselor.price}</div>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                            <span className="text-xs text-gray-600">{counselor.rating} ({counselor.reviews})</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">{counselor.specialization}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-green-600 font-medium">{counselor.availability}</span>
+                        <Link href="/session">
+                          <button className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
+                            Book Session
+                          </button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <Link href="/session" className="block w-full bg-gradient-to-r from-teal-600 to-blue-600 text-white py-3 rounded-xl font-medium hover:from-teal-700 hover:to-blue-700 transition-all text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Find More Counselors
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+
         {/* Wellness Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {wellnessStats.map((stat, index) => {
@@ -111,101 +305,26 @@ export default function PatientPage() {
           })}
         </div>
 
-        {/* Quick Actions Grid */}
+        {/* Quick Access Tools */}
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900">Your Wellness Tools</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-2xl font-bold text-gray-900">Additional Wellness Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {quickActions.map((action, index) => {
               const Icon = action.icon;
               return (
-                <div
-                  key={index}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:-translate-y-1"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`${action.color} p-4 rounded-xl group-hover:scale-105 transition-transform duration-200 shadow-lg`}>
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg mb-2">{action.title}</h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">{action.description}</p>
-                      <div className="mt-4">
-                        <span className="text-blue-600 text-sm font-medium group-hover:text-blue-700">
-                          Explore →
-                        </span>
+                <Link href={action.href} key={index}>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-300 cursor-pointer group hover:-translate-y-1">
+                    <div className="text-center">
+                      <div className={`${action.color} p-3 rounded-xl group-hover:scale-105 transition-transform duration-200 shadow-lg mx-auto w-fit mb-3`}>
+                        <Icon className="h-5 w-5 text-white" />
                       </div>
+                      <h3 className="font-semibold text-gray-900 text-sm mb-2">{action.title}</h3>
+                      <p className="text-gray-600 text-xs leading-relaxed">{action.description}</p>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
-          </div>
-        </div>
-
-        {/* Upcoming Sessions & Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Upcoming Sessions */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                <Clock className="h-5 w-5 text-white" />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900">Upcoming Sessions</h2>
-            </div>
-            
-            {upcomingSessions.length > 0 ? (
-              <div className="space-y-4">
-                {upcomingSessions.map((session, index) => (
-                  <div key={index} className="border border-gray-100 rounded-xl p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="font-medium text-gray-900">{session.counselor}</div>
-                      <div className="text-sm text-blue-600 font-medium">{session.date}</div>
-                    </div>
-                    <div className="text-sm text-gray-600 mb-1">{session.type}</div>
-                    <div className="text-sm text-gray-500">{session.time}</div>
-                  </div>
-                ))}
-                <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all">
-                  View All Sessions
-                </button>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 mb-2">No upcoming sessions</p>
-                <p className="text-gray-400 text-sm mb-4">Schedule your next therapy session</p>
-                <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all">
-                  Book Session
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Mental Wellness Tips */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gradient-to-br from-green-500 to-teal-600 p-2 rounded-lg">
-                <Brain className="h-5 w-5 text-white" />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900">Wellness Tips</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="bg-gradient-to-r from-green-50 to-teal-50 border border-green-100 rounded-xl p-4">
-                <h3 className="font-medium text-gray-900 mb-2">🌱 Practice Gratitude</h3>
-                <p className="text-sm text-gray-600">Take a moment to write down three things you're grateful for today.</p>
-              </div>
-              
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100 rounded-xl p-4">
-                <h3 className="font-medium text-gray-900 mb-2">🧘 Mindful Breathing</h3>
-                <p className="text-sm text-gray-600">Try the 4-7-8 breathing technique to reduce stress and anxiety.</p>
-              </div>
-              
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-100 rounded-xl p-4">
-                <h3 className="font-medium text-gray-900 mb-2">☀️ Morning Routine</h3>
-                <p className="text-sm text-gray-600">Start your day with intention and positive affirmations.</p>
-              </div>
-            </div>
           </div>
         </div>
 
