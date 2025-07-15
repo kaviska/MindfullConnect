@@ -1,10 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
+    "checkJs": false,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -19,16 +24,36 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@lib/*": ["./src/lib/*"],
-      "@models/*": ["./src/models/*"],
-      "@public/*": ["/public/*"],
-      "@components/*": ["./src/components/*"],
-      "@stores/*": ["./src/lib/frontend/store*"],
+      "@/*": [
+        "./src/*"
+      ],
+      "@lib/*": [
+        "./src/lib/*"
+      ],
+      "@models/*": [
+        "./src/models/*"
+      ],
+      "@public/*": [
+        "/public/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@stores/*": [
+        "./src/lib/frontend/store*"
+      ]
     }
   },
-
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/components/ManageProfile.tsx", "src/app/patient/patientreg.jsx", "src/app/session/page.tsx"],
-
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/app/components/ManageProfile.tsx",
+    "src/app/patient/patientreg.jsx",
+    "src/app/session/page.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

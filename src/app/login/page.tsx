@@ -44,7 +44,7 @@ export default function LoginPage() {
       if (response.data.user?.role === 'counsellor') {
         router.push('/counsellor');
       } else {
-        router.push('/');
+        router.push('/patient');
       }
       // setTimeout(() => {
       //   router.push("/");

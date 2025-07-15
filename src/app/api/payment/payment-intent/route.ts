@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import connectDB from "@/lib/db";
 import Counselor from "@/models/Counselor";
+import Session from "@/models/Session";     
 
 export async function POST(request: Request) {
   try {
@@ -72,6 +73,13 @@ export async function POST(request: Request) {
     const { client_secret: clientSecret } = await stripe.paymentIntents.create(
       paymentIntentParams
     );
+     // ✅ Update session status to confirmed after successful payment intent creation
+    if (sessionId) {
+      await Session.findByIdAndUpdate(sessionId, {
+        status: "confirmed"
+      });
+      console.log(`✅ Session ${sessionId} status updated to confirmed`);
+    }
 
     return NextResponse.json({ client_secret: clientSecret }, { status: 200 });
   } catch (error) {
