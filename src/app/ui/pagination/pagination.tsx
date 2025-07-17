@@ -39,7 +39,7 @@ const Pagination: React.FC<PaginationProps> = ({ totalPages }) => {
 
         return pages.map((page, idx) => {
             if (page === "...") {
-                return <span key={idx} className="px-2">...</span>;//renders plain text
+                return <span key={idx} className="px-2">...</span>;
             }
 
             return (
@@ -58,11 +58,15 @@ const Pagination: React.FC<PaginationProps> = ({ totalPages }) => {
     };
 
     return (
-        <div className=" flex items-center justify-between py-4 text-sm">
-            <p className="text-gray-600">
-                Showing page {currentPage} of {totalPages}
-            </p>
+        <div className="w-full flex flex-col sm:flex-row justify-center sm:justify-between items-center py-4 text-sm space-y-2 sm:space-y-0">
+            {/* Left side - page info */}
+            <div className="hidden sm:block">
+                <p className="text-gray-600">
+                    Showing page {currentPage} of {totalPages}
+                </p>
+            </div>
 
+            {/* Right side - page navigation */}
             <div className="flex items-center space-x-2 text-gray-600">
                 <span
                     className={`cursor-pointer ${currentPage === 1 ? "text-gray-400 cursor-not-allowed" : ""}`}

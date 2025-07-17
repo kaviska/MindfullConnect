@@ -1,18 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
     Home,
     PsychologyAlt,
     Person,
     ReportProblem,
-    Badge
+    Badge,
+    KeyboardArrowLeft,
+    KeyboardArrowRight
 } from '@mui/icons-material';
 
-const Sidebar = () => {
+interface SidebarProps {
+    collapsed: boolean;
+    setCollapsed: (value: boolean) => void;
+    windowWidth: number;
+}
+
+const Sidebar = ({ collapsed, setCollapsed, windowWidth }: SidebarProps) => {
     const [activeMenu, setActiveMenu] = useState('Dashboard');
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const [showText, setShowText] = useState(!collapsed);
+
+    // Sync showText with collapsed on mount and when collapsed changes
+    useEffect(() => {
+        if (!collapsed) {
+            // Delay showing text until after width transition (~300ms)
+            const timeout = setTimeout(() => setShowText(true), 300);
+            return () => clearTimeout(timeout);
+        } else {
+            // Immediately hide text when collapsing
+            setShowText(false);
+        }
+    }, [collapsed]);
 
     const handleMenuClick = (menu: string, hasSubItems: boolean) => {
         if (hasSubItems) {
@@ -46,50 +67,78 @@ const Sidebar = () => {
     ];
 
     return (
-        <div className="w-64 bg-white shadow-md p-4 flex flex-col items-center h-screen">
-            <img src="/logo.png" alt="Logo" className="w-20 h-20 object-contain mb-6" />
-            <ul className="w-full pl-4">
+        <div
+            className={`bg-white shadow-md p-4 flex flex-col items-center h-screen
+        transition-all duration-300 ease-in-out
+        ${collapsed ? 'w-20' : 'w-64'} relative
+      `}
+        >
+            <img
+                src="/logo.png"
+                alt="Logo"
+                className={`object-contain mb-6 transition-all duration-300 ease-in-out w-20 h-20
+          ${windowWidth < 768 && collapsed ? 'w-10 h-10' : ''}
+        `}
+            />
+
+            <ul className="w-full flex flex-col items-center">
                 {menuItems.map((item) => (
-                    <li key={item.name}>
+                    <li key={item.name} className="w-full">
                         {item.subItems ? (
-                            <button
-                                className={`flex items-center gap-3 p-3 rounded-lg text-[18px] font-medium w-full ${activeMenu === item.name
-                                    ? 'text-[#2D60FF]'
-                                    : 'text-[#9C9C9C] hover:text-[#7B7A7A]'
-                                    }`}
-                                onClick={() => handleMenuClick(item.name, true)}
-                            >
-                                {item.icon} {item.name}
-                            </button>
+                            <>
+                                <button
+                                    className={`flex items-center gap-3 p-3 rounded-lg font-medium w-full
+                    ${collapsed ? 'justify-center' : 'justify-start pl-6'}
+                    ${activeMenu === item.name ? 'text-[#2D60FF]' : 'text-[#9C9C9C] hover:text-[#7B7A7A]'}
+                    transition-colors duration-200
+                  `}
+                                    onClick={() => handleMenuClick(item.name, true)}
+                                    style={{ fontSize: windowWidth < 768 ? '14px' : '18px' }}
+                                >
+                                    {item.icon}
+                                    {showText && !collapsed && item.name}
+                                </button>
+
+                                {openDropdown === item.name && showText && !collapsed && (
+                                    <ul className="pl-12 mt-1">
+                                        {item.subItems.map((sub) => (
+                                            <li key={sub.name}>
+                                                <Link href={sub.path}>
+                                                    <span className="block text-[14px] text-[#9C9C9C] hover:text-[#2D60FF] py-1 cursor-pointer pl-6">
+                                                        {sub.name}
+                                                    </span>
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </>
                         ) : (
                             <Link
                                 href={item.path}
                                 onClick={() => handleMenuClick(item.name, false)}
-                                className={`flex items-center gap-3 p-3 rounded-lg text-[18px] font-medium w-full ${activeMenu === item.name
-                                    ? 'text-[#032DB0]'
-                                    : 'text-[#9C9C9C] hover:text-[#7B7A7A]'
-                                    }`}
+                                className={`flex items-center gap-3 p-3 rounded-lg font-medium w-full
+                  ${collapsed ? 'justify-center' : 'justify-start pl-6'}
+                  ${activeMenu === item.name ? 'text-[#032DB0]' : 'text-[#9C9C9C] hover:text-[#7B7A7A]'}
+                  transition-colors duration-200
+                `}
+                                style={{ fontSize: windowWidth < 768 ? '14px' : '18px' }}
                             >
-                                {item.icon} {item.name}
+                                {item.icon}
+                                {showText && !collapsed && item.name}
                             </Link>
-                        )}
-
-                        {item.subItems && openDropdown === item.name && (
-                            <ul className="pl-8">
-                                {item.subItems.map((sub) => (
-                                    <li key={sub.name}>
-                                        <Link href={sub.path}>
-                                            <span className="block text-[14px] text-[#9C9C9C] hover:text-[#2D60FF] py-1 cursor-pointer">
-                                                {sub.name}
-                                            </span>
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
                         )}
                     </li>
                 ))}
             </ul>
+
+            <button
+                onClick={() => setCollapsed(!collapsed)}
+                className="absolute bottom-4 right-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 flex items-center justify-center"
+                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+                {collapsed ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+            </button>
         </div>
     );
 };

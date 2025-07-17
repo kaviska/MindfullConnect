@@ -57,7 +57,7 @@ export default function AdminPassword() {
             </div>
 
             {/* Form */}
-            <div className="grid grid-cols-2 gap-6 w-full max-w-3xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <input
