@@ -1,6 +1,5 @@
-import { User } from "./models";
-import { Report } from "./models";
-import dbConnect from "./mongodb";
+import { User, Report } from "./models";
+import { connectToDB } from "./utils";
 import { Types } from "mongoose";
 
 const ITEMS_PER_PAGE = 8;
@@ -9,7 +8,7 @@ export const fetchPatients = async (q: string, page: number) => {
     const regex = new RegExp(q, "i");
 
     try {
-        await dbConnect();
+        await connectToDB();
 
         const filter = {
             role: "patient",
@@ -39,7 +38,7 @@ export const fetchPatients = async (q: string, page: number) => {
 
 export const fetchPatient = async (id: string) => {
     try {
-        await dbConnect();
+        await connectToDB();
 
         // Validate ObjectId
         if (!Types.ObjectId.isValid(id)) {
@@ -62,7 +61,7 @@ export const fetchPatient = async (id: string) => {
 
 
 export const fetchPendingReports = async (page: number) => {
-    await dbConnect();
+    await connectToDB();
     const filter = { status: "Pending" };
     const totalReports = await Report.countDocuments(filter);
     const reports = await Report.find(filter)
@@ -80,7 +79,7 @@ export const fetchPendingReports = async (page: number) => {
 };
 
 export const fetchResolvedReports = async (page: number) => {
-    await dbConnect();
+    await connectToDB();
     const filter = { status: "Resolved" };
     const totalReports = await Report.countDocuments(filter);
     const reports = await Report.find(filter)
