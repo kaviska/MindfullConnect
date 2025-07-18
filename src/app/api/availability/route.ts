@@ -111,21 +111,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const existing = await Availability.findOne({ counselorId, date });
-
-    let mergedSlots: string[] = availableSlots;
-    if (existing) {
-      const slotSet = new Set([...existing.availableSlots, ...availableSlots]);
-      mergedSlots = Array.from(slotSet);
-    }
-
+    // Replace the existing record's availableSlots with the new ones
     const updated = await Availability.findOneAndUpdate(
       { counselorId, date },
-      { availableSlots: mergedSlots },
+      { availableSlots },
       { upsert: true, new: true }
     );
 
-    return NextResponse.json({ message: "Availability merged", availability: updated });
+    return NextResponse.json({ message: "Availability updated", availability: updated });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
