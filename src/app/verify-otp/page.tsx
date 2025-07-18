@@ -40,7 +40,7 @@ export default function VerifyOtpPage() {
     if (res.ok) {
       setInfo('OTP verified successfully. Redirecting...');
       setTimeout(() => {
-        router.push('/login'); // Redirect to login or dashboard
+        router.push('/patient'); // Redirect to login or dashboard
       }, 1500);
     } else {
       setError(data.error || 'Invalid OTP');

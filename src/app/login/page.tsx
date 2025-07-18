@@ -41,10 +41,10 @@ export default function LoginPage() {
       });
 
       // Redirect based on user role
-      if (response.data.user?.role === 'counsellor') {
+      if (response.data.user?.role === 'counselor') {
         router.push('/counsellor');
       } else {
-        router.push('/');
+        router.push('/patient');
       }
       // setTimeout(() => {
       //   router.push("/");

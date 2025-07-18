@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
-import Counsellor from "@/models/Counsellor";
+import Counsellor from "@/models/Counselor";
 
 // Add a new counsellor
 export async function POST(req: NextRequest) {

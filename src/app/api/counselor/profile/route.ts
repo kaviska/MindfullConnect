@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe Connect account if not exists
     let stripeAccountId = existingCounselor.stripeAccountId;
-    let onboardingUrl = null;
 
     if (!stripeAccountId) {
       try {
@@ -54,23 +53,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Always create onboarding link if account exists but onboarding not completed
-    if (stripeAccountId && !existingCounselor.stripeOnboardingCompleted) {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const accountLink = await stripe.accountLinks.create({
-          account: stripeAccountId,
-          refresh_url: `${baseUrl}/counsellor/payment/reauth`,
-          return_url: `${baseUrl}/counsellor/payment/onboarded`,
-          type: "account_onboarding",
-        });
-
-        onboardingUrl = accountLink.url;
-      } catch (stripeError) {
-        console.error('Stripe onboarding link creation error:', stripeError);
-      }
-    }
-
     // Update counselor profile with new data
     const updatedCounselor = await Counselor.findOneAndUpdate(
       { userId },
@@ -85,8 +67,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Profile updated successfully',
-      counselor: updatedCounselor,
-      ...(onboardingUrl && { stripeOnboardingUrl: onboardingUrl })
+      counselor: updatedCounselor
     }, { status: 200 });
 
   } catch (error) {

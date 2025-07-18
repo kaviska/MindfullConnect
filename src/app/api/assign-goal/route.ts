@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import AssignedGoal from "@/models/AssignedGoal";
 import Patient from "@/models/Patient";
-import Counsellor from "@/models/Counsellor";
+import Counsellor from "@/models/Counselor";
 import Goals from "@/models/Goals";
 import Milestone from "@/models/MileStone";
 import dbConnect from "@/lib/mongodb";

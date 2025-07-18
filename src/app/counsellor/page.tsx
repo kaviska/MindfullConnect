@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Users, Calendar, MessageCircle, TrendingUp, Clock, Star, Phone, Video, FileText, Heart, ExternalLink } from "lucide-react";
+import { Users, Calendar, MessageCircle, TrendingUp, Clock, Star, Phone, Video, FileText, Heart, ExternalLink, AlertTriangle } from "lucide-react";
 
 export default function Home() {
   const [counselorData, setCounselorData] = React.useState(null);
@@ -27,6 +27,23 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
+      {/* Payment Setup Warning Banner */}
+      {counselorData && !counselorData.stripeOnboardingCompleted && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <AlertTriangle className="text-yellow-600 mt-1 mr-3" size={24} />
+            <div className="flex-1">
+              <h3 className="font-semibold text-yellow-800 mb-2">Payment Setup Required</h3>
+              <p className="text-yellow-700 mb-4">
+                Complete your bank account setup to start accepting paid counseling sessions. 
+                You can browse the dashboard but won't be able to conduct paid sessions until payment verification is complete.
+              </p>
+              <PaymentSetupButton />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-2xl p-8 text-white shadow-xl">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
@@ -335,6 +352,46 @@ function PaymentDashboardButton({ counselorData }: { counselorData: any }) {
           Account pending verification
         </div>
       )}
+    </button>
+  );
+}
+
+// Add Payment Setup Button Component
+function PaymentSetupButton() {
+  const [loading, setLoading] = React.useState(false);
+
+  const handleSetupPayment = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/payment/create-onboarding-link', {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        window.location.href = data.url;
+      } else {
+        throw new Error('Failed to create onboarding link');
+      }
+    } catch (error) {
+      console.error('Error creating onboarding link:', error);
+      alert('Error setting up payment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleSetupPayment}
+      disabled={loading}
+      className={`px-4 py-2 rounded-lg text-white font-medium ${
+        loading 
+          ? 'bg-gray-400 cursor-not-allowed' 
+          : 'bg-yellow-600 hover:bg-yellow-700'
+      } transition-colors`}
+    >
+      {loading ? 'Setting up...' : 'Setup Payment Details'}
     </button>
   );
 }
