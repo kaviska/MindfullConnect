@@ -38,9 +38,7 @@ export default function Session() {
 
     try {
       const res = await fetch("/api/sessions/my", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -60,7 +58,7 @@ export default function Session() {
   };
 
   fetchBookedSessions();
-}, [isBookingModalOpen, token]);
+}, [isBookingModalOpen]);
 
   
   useEffect(() => {

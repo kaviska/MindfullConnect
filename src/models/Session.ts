@@ -1,3 +1,4 @@
+// src/models/Session.ts
 import mongoose, { Schema } from "mongoose";
 
 const sessionSchema = new Schema({
@@ -7,6 +8,8 @@ const sessionSchema = new Schema({
   time: { type: String, required: true }, // Format: "HH:mm"
   duration: { type: Number, default: 55 }, // in minutes
   status: { type: String, enum: ["pending", "confirmed", "cancelled", "completed"], default: "pending" },
+  // TODO: Add zoom link field later
+  // zoomLink: { type: String }, // Will add this later for video sessions
   createdAt: { type: Date, default: Date.now }
 });
 

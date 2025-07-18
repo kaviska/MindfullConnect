@@ -1,5 +1,11 @@
 "use client";
-export default function Tabs({ activeTab, setActiveTab }) {
+
+interface TabsProps {
+  activeTab: 'upcoming' | 'past';
+  setActiveTab: (tab: 'upcoming' | 'past') => void;
+}
+
+export default function Tabs({ activeTab, setActiveTab }: TabsProps) {
   return (
     <div className="flex mb-6 border-b border-[#e2e8f0]">
       <button

@@ -1,5 +1,18 @@
 "use client";
-export default function BookingFilters({ counselorFilter, setCounselorFilter, dateRange, setDateRange }) {
+
+interface BookingFiltersProps {
+  counselorFilter: string;
+  setCounselorFilter: (filter: string) => void;
+  dateRange: string;
+  setDateRange: (range: string) => void;
+}
+
+export default function BookingFilters({ 
+  counselorFilter, 
+  setCounselorFilter, 
+  dateRange, 
+  setDateRange 
+}: BookingFiltersProps) {
   return (
     <div className="bg-[#f8fafc] p-4 rounded-[12px] mb-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
