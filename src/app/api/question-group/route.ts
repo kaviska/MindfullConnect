@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       const notification = await createNotification({
         type: "question_group",
         message: `New question group created: ${title}`,
-        user_id: "68120f0abdb0b2d10474be42", // Replace with actual user ID
+        user_id: decoded.userId,
         });
 
     return respond(
