@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
   await connectDB();
 
   try {
+    // ✅ Only get date and availableSlots from body - no counselorId
     const { date, availableSlots } = await req.json();
 
     const isValidDate = (date: string) => !isNaN(Date.parse(date));
@@ -75,12 +76,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid date or time slot format" }, { status: 400 });
     }
 
+    // ✅ Get user from token authentication (required)
     const token = req.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json({ message: "Authentication required" }, { status: 401 });
     }
 
-    const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+    const JWT_SECRET = process.env.JWT_SECRET;
     if (!JWT_SECRET) {
       throw new Error("JWT_SECRET environment variable is not set");
     }
@@ -99,19 +101,20 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    if (user.role !== "counselor") {
-      return NextResponse.json(
-        { error: "Unauthorized: Only counselors can set availability" },
-        { status: 403 }
-      );
-    }
-    const counselorId = user.id;
 
-    if (!counselorId || !date || !availableSlots.length) {
+    // ✅ Only counselors can set availability
+    if (user.role !== "counselor") {
+      return NextResponse.json({ error: "Unauthorized: Only counselors can set availability" }, { status: 403 });
+    }
+
+    // ✅ Use authenticated user's ID as counselorId
+    const userId = user.id;
+
+    if (!date || !availableSlots.length) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const existing = await Availability.findOne({ counselorId, date });
+    const existing = await Availability.findOne({ counselorId: userId, date });
 
     let mergedSlots: string[] = availableSlots;
     if (existing) {
@@ -120,7 +123,7 @@ export async function POST(req: NextRequest) {
     }
 
     const updated = await Availability.findOneAndUpdate(
-      { counselorId, date },
+      { counselorId: userId, date },
       { availableSlots: mergedSlots },
       { upsert: true, new: true }
     );
