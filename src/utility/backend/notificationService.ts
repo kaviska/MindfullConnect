@@ -15,18 +15,26 @@ export async function createNotification(data: any) {
   try {
     const notification = new Notification(data);
     await notification.save();
+    
+    // Trigger Pusher event with complete notification data including ID
     await pusher.trigger("notifications", "new-notification", {
+      id: notification._id.toString(),
       message: notification.message,
       user_id: notification.user_id,
       is_read: notification.is_read,
-      createdAt: notification.createdAt,
+      type: notification.type,
+      timestamp: notification.createdAt,
     });
+    
     console.log("Pusher event triggered: new-notification", {
-        message: notification.message,
-      });
+      id: notification._id.toString(),
+      message: notification.message,
+      user_id: notification.user_id,
+    });
 
     return { success: true, notification };
   } catch (error) {
+    console.error("Error creating notification:", error);
     return { success: false, error };
   }
 }
