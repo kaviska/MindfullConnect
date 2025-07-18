@@ -4,7 +4,6 @@ import dbConnect from '@/lib/mongodb';
 import ZoomMeeting from '@/models/ZoomMeetings';
 import jwt from 'jsonwebtoken';
 import User from '@/models/User';
-import { use } from 'react';
 
 export async function GET(req: NextRequest) {
   try {

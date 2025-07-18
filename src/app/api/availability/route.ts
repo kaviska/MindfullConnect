@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
       { upsert: true, new: true }
     );
 
-    return NextResponse.json({ message: "Availability merged", availability: updated });
+    return NextResponse.json({ message: "Availability updated", availability: updated });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
