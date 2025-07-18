@@ -124,7 +124,7 @@ const handleBookingSuccess = async (sessionData: any) => {
       body: JSON.stringify({
         sessionId: sessionData.id,
         counselorId: sessionData.counselorId,
-        amount: 300 // $3.00 in cents
+       
       })
     });
 
@@ -134,6 +134,8 @@ const handleBookingSuccess = async (sessionData: any) => {
       // Close booking modal before redirect
       closeBookingModal();
       // Redirect to payment page
+      localStorage.setItem("amount", paymentData.amount);
+
       window.location.href = `/payment?client_secret=${paymentData.client_secret}&session_id=${sessionData.id}`;
     } else {
       console.error('❌ Payment intent creation failed:', paymentData.error);
