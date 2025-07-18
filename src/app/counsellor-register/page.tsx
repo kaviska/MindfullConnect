@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useToast } from '@/contexts/ToastContext';
 import Toast from '@/components/main/Toast';
-import { Plus, X, Clock, User, Award, Languages, Calendar, DollarSign, FileText } from 'lucide-react';
+import { Plus, X, User, DollarSign, FileText } from 'lucide-react';
 
 export default function CounselorRegisterPage() {
   const router = useRouter();
@@ -21,7 +21,6 @@ export default function CounselorRegisterPage() {
     university: '',
     languagesSpoken: [''],
     availabilityType: 'online',
-    availableTimeSlots: [{ day: 'monday', startTime: '09:00', endTime: '17:00' }],
     consultationFee: '',
     
     // Counseling Approach
@@ -44,7 +43,7 @@ export default function CounselorRegisterPage() {
   ];
 
   const languages = ['English', 'Sinhala', 'Tamil', 'Hindi', 'Other'];
-  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  // const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -71,29 +70,6 @@ export default function CounselorRegisterPage() {
     }));
   };
 
-  const addTimeSlot = () => {
-    setFormData(prev => ({
-      ...prev,
-      availableTimeSlots: [...prev.availableTimeSlots, { day: 'monday', startTime: '09:00', endTime: '17:00' }]
-    }));
-  };
-
-  const removeTimeSlot = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      availableTimeSlots: prev.availableTimeSlots.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateTimeSlot = (index: number, field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      availableTimeSlots: prev.availableTimeSlots.map((slot, i) => 
-        i === index ? { ...slot, [field]: value } : slot
-      )
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -109,24 +85,18 @@ export default function CounselorRegisterPage() {
         sessionDuration: parseInt(formData.sessionDuration)
       };
 
-      const response = await axios.post('/api/counselor/profile', cleanedData);
+      await axios.post('/api/counselor/profile', cleanedData);
       
       setToast({
         open: true,
-        message: 'Profile completed successfully! Setting up payment processing...',
+        message: 'Profile completed successfully! Redirecting...',
         type: 'success'
       });
 
-      // If Stripe onboarding URL is provided, redirect to it
-      if (response.data.stripeOnboardingUrl) {
-        setTimeout(() => {
-          window.location.href = response.data.stripeOnboardingUrl;
-        }, 1500);
-      } else {
-        setTimeout(() => {
-          router.push('/counsellor');
-        }, 2000);
-      }
+      // Redirect to success page instead of immediate Stripe onboarding
+      setTimeout(() => {
+        router.push('/counsellor/registration-success');
+      }, 1500);
     } catch (error: any) {
       console.error('Profile creation failed:', error);
       setToast({
@@ -284,53 +254,6 @@ export default function CounselorRegisterPage() {
                     </label>
                   ))}
                 </div>
-              </div>
-
-              {/* Time Slots */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Available Time Slots</label>
-                {formData.availableTimeSlots.map((slot, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
-                    <select
-                      value={slot.day}
-                      onChange={(e) => updateTimeSlot(index, 'day', e.target.value)}
-                      className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      {days.map(day => (
-                        <option key={day} value={day}>{day.charAt(0).toUpperCase() + day.slice(1)}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="time"
-                      value={slot.startTime}
-                      onChange={(e) => updateTimeSlot(index, 'startTime', e.target.value)}
-                      className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <input
-                      type="time"
-                      value={slot.endTime}
-                      onChange={(e) => updateTimeSlot(index, 'endTime', e.target.value)}
-                      className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    {formData.availableTimeSlots.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeTimeSlot(index)}
-                        className="px-3 py-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
-                      >
-                        <X size={20} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addTimeSlot}
-                  className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50"
-                >
-                  <Plus size={16} />
-                  Add Time Slot
-                </button>
               </div>
 
               <div>
