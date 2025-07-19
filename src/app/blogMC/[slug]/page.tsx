@@ -41,7 +41,7 @@ async function getData(slug: string) {
 
     // Client-side: use fetch (fallback, though this component is server-side)
     console.log("Running on client-side, using fetch");
-    let baseUrl = "http://localhost:3000";
+    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
     if (process.env.NEXT_PUBLIC_API_URL) {
       baseUrl = process.env.NEXT_PUBLIC_API_URL;

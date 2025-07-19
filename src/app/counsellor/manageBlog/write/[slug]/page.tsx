@@ -1,11 +1,7 @@
 import TextEditor from "@/app/components/texteditor/textEditor";
 
 async function getBlogPost(slug: string) {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const res = await fetch(`${baseUrl}/api/posts/${slug}`, {
     cache: "no-store",
   });
