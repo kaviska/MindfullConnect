@@ -5,7 +5,7 @@ export interface IPost extends Document {
   slug: string;
   content: string;
   author: mongoose.Schema.Types.ObjectId;
-  category: 'wellbeing'| 'mindfulness' | 'self-care' | 'stress-management' | 'therapy' | 'resilience' | 'other';
+  category: 'wellbeing'| 'mindfulness' | 'self-care' | 'relationships' | 'therapy' | 'others';
   published: boolean;
 }
 
