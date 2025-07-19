@@ -3,12 +3,11 @@ import dbConnect from "@/lib/mongodb";
 import Counsellor from "@/models/Counselor";
 import type { NextRequest } from "next/server";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   await dbConnect();
-  const counsellorId = params?.id;
+
+  const url = new URL(request.url);
+  const counsellorId = url.pathname.split("/").pop(); // extract the [id] from URL
 
   if (!counsellorId) {
     return NextResponse.json({ error: "Counsellor ID is required" }, { status: 400 });
