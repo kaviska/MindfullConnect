@@ -9,6 +9,8 @@ import {
   useStripe,
   useElements
 } from "@stripe/react-stripe-js";
+import { Suspense } from 'react'
+
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -62,6 +64,7 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
   };
 
   return (
+    
     <div className="max-w-lg mx-auto mt-8 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
       {/* Header Section */}
       <div className="text-center mb-8">
@@ -174,10 +177,13 @@ export default function Payment() {
   }
 
   return (
+        <Suspense fallback={<div>Loading...</div>}>
+
     <Elements stripe={stripePromise} options={{ clientSecret }}>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4">
         <PaymentForm clientSecret={clientSecret} sessionId={sessionId} />
       </div>
     </Elements>
+    </Suspense>
   );
 }

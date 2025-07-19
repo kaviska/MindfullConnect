@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, CreditCard, ArrowRight } from 'lucide-react';
-import { Suspense } from 'react'
-
 
 export default function OnboardedPage() {
   const router = useRouter();
@@ -45,8 +43,6 @@ export default function OnboardedPage() {
   }
 
   return (
-        <Suspense fallback={<div>Loading...</div>}>
-
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
         <div className="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
@@ -96,6 +92,5 @@ export default function OnboardedPage() {
         </div>
       </div>
     </div>
-    </Suspense>
   );
 }
