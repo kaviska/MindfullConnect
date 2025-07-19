@@ -3,71 +3,82 @@ import { ChatUser } from "./types";
 
 interface ChatUserItemProps {
   user: ChatUser;
-  isActive?: boolean;
+  isActive: boolean;
 }
 
-export const ChatUserItem: React.FC<ChatUserItemProps> = ({
-  user,
-  isActive,
-}) => {
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase();
-  };
-
+export const ChatUserItem: React.FC<ChatUserItemProps> = ({ user, isActive }) => {
   return (
-    <article
-      className={`flex gap-2 items-center px-5 py-2 w-full ${
-        isActive ? "bg-indigo-100 border-l-4 border-blue-900" : ""
+    <div
+      className={`p-3 rounded-xl transition-all cursor-pointer ${
+        isActive
+          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+          : 'hover:bg-blue-50 text-gray-900'
       }`}
     >
-      {user.avatar ? (
-        <div className="flex flex-col items-center self-stretch pt-1 pb-8 my-auto w-12 h-12 bg-red-200 rounded-[100.75px]">
-          {user.status === "online" && (
-            <div className="flex shrink-0 bg-emerald-500 h-[11px] rounded-[100px] w-[11px]" />
-          )}
+      <div className="flex items-center gap-3">
+        {/* Avatar */}
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full overflow-hidden">
+            {user.avatar && user.avatar !== "avatar1" ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className={`w-full h-full flex items-center justify-center font-semibold ${
+                isActive ? 'bg-white bg-opacity-20 text-white' : 'bg-gradient-to-br from-blue-400 to-purple-500 text-white'
+              }`}>
+                {user.name.split(' ').map(n => n[0]).join('')}
+              </div>
+            )}
+          </div>
+          {/* Online Status */}
+          <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 ${
+            isActive ? 'border-white' : 'border-white'
+          } ${
+            user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+          }`}></div>
         </div>
-      ) : (
-        <div
-          className={`self-stretch px-3 my-auto w-12 h-12 text-base font-bold tracking-normal leading-none text-center whitespace-nowrap ${
-            user.name.includes("UI")
-              ? "bg-orange-100 text-orange-400"
-              : "bg-slate-300 text-slate-800"
-          } rounded-[100.75px]`}
-        >
-          {getInitials(user.name)}
-        </div>
-      )}
 
-      <div className="flex-1 shrink self-stretch my-auto basis-0">
-        <div className="flex gap-7 justify-between items-start w-full">
-          <h3 className="text-sm font-semibold text-center text-black">
-            {user.name}
-          </h3>
-          <time className="text-xs text-right text-neutral-700">
-            {user.lastMessageTime}
-          </time>
-        </div>
-        <div className="flex gap-2.5 items-center mt-1 w-full">
-          <p
-            className={`flex-1 shrink self-stretch my-auto text-xs ${
-              user.isTyping
-                ? "font-medium text-blue-900"
-                : "font-light text-neutral-400"
-            } tracking-normal leading-5 basis-0`}
-          >
-            {user.isTyping ? "Typing..." : user.lastMessage}
-          </p>
-          {user.unreadCount && (
-            <span className="self-stretch p-1 my-auto text-xs font-semibold tracking-normal leading-none text-indigo-100 bg-blue-800 rounded">
-              {user.unreadCount}
-            </span>
-          )}
+        {/* User Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <h4 className={`font-semibold text-sm truncate ${
+              isActive ? 'text-white' : 'text-gray-900'
+            }`}>
+              {user.name}
+            </h4>
+            {user.lastMessageTime && (
+              <span className={`text-xs ${
+                isActive ? 'text-blue-100' : 'text-gray-500'
+              }`}>
+                {user.lastMessageTime}
+              </span>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <p className={`text-xs truncate ${
+              isActive ? 'text-blue-100' : 'text-gray-600'
+            }`}>
+              {user.isTyping ? (
+                <span className="italic">Typing...</span>
+              ) : (
+                user.lastMessage || "No messages yet"
+              )}
+            </p>
+            
+            {user.unreadCount > 0 && (
+              <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${
+                isActive ? 'bg-white text-blue-600' : 'bg-blue-600 text-white'
+              }`}>
+                {user.unreadCount}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-    </article>
+    </div>
   );
 };

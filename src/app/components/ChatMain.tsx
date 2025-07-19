@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatMessage as ChatMessageType, Conversation, User } from "./types";
+import { ArrowLeft, Phone, Video, Info, Send, Paperclip, Smile } from "lucide-react";
 
 interface ChatMainProps {
   conversationId: string | null;
@@ -11,7 +12,7 @@ interface ChatMainProps {
   conversation?: Conversation;
   onToggleProfileSidebar: () => void;
   fetchConversations: () => Promise<void>;
-  onBack?: () => void; // Add onBack prop
+  onBack?: () => void;
   className?: string;
 }
 
@@ -43,7 +44,6 @@ export const ChatMain: React.FC<ChatMainProps> = ({
         const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
         const atBottom = scrollHeight - scrollTop - clientHeight < 50;
         setIsScrolledUp(!atBottom);
-        console.log("Scroll position:", { scrollTop, scrollHeight, clientHeight, atBottom, isScrolledUp: !atBottom });
       }
     };
 
@@ -86,20 +86,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
   }, [conversationId, token, user]);
 
   const handleSendMessage = async () => {
-    if (!newMessage) {
-      console.log("No message content to send");
-      return;
-    }
-    if (!conversationId) {
-      console.log("No conversation selected");
-      return;
-    }
-    if (!token) {
-      console.log("User not authenticated");
-      return;
-    }
-
-    console.log("Sending message:", newMessage, "to conversation:", conversationId);
+    if (!newMessage.trim() || !conversationId || !token) return;
 
     try {
       const res = await fetch(`/api/messages/${conversationId}`, {
@@ -113,7 +100,6 @@ export const ChatMain: React.FC<ChatMainProps> = ({
 
       if (res.ok) {
         const { message } = await res.json();
-        console.log("Message sent successfully:", message);
         setNewMessage("");
         setMessages((prev) => [
           ...prev,
@@ -146,124 +132,151 @@ export const ChatMain: React.FC<ChatMainProps> = ({
   const otherParticipant = conversation?.participants.find((p) => p._id !== user?._id);
 
   return (
-    <main className={`flex flex-col justify-between px-6 py-8 bg-white h-full ${className}`}>
-      <div className="flex flex-col h-full w-full max-md:max-w-full">
-        {!conversationId ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <h2 className="text-lg font-semibold text-gray-500">No conversation selected</h2>
-            <p className="text-sm text-gray-400">
-              Please select a conversation from the sidebar to start chatting.
+    <main className={`flex flex-col h-full bg-white ${className}`}>
+      {!conversationId ? (
+        <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-purple-50">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
+              <Send className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Messages</h2>
+            <p className="text-gray-600 max-w-md">
+              Select a conversation from the sidebar to start chatting, or start a new conversation with someone.
             </p>
           </div>
-        ) : (
-          <>
-            <header className="flex flex-wrap gap-10 justify-between items-center py-3 pr-2 w-full border-b border-solid border-b-[color:var(--Primary-P7,#E5EAFF)]">
-              <div className="flex gap-2.5 items-center self-stretch my-auto">
-                {onBack && (
-                  <button onClick={onBack} className="sm:hidden mr-2">
-                    <img
-                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/back-arrow-icon-url?placeholderIfAbsent=true&apiKey=your-api-key"
-                      className="object-contain w-6 aspect-square"
-                      alt="Back"
-                    />
-                  </button>
-                )}
-                <div className="flex gap-2 items-center self-stretch my-auto">
-                  <div className="flex flex-col items-center self-stretch pt-1 pb-8 my-auto w-12 h-12 bg-red-200 rounded-[100.75px]">
-                    <div className="flex shrink-0 bg-emerald-500 h-[11px] rounded-[100px] w-[11px]" />
-                  </div>
-                  <div className="flex flex-col items-start self-stretch my-auto text-center text-black">
-                    <h2 className="text-xs font-semibold">
-                      {otherParticipant?.fullName || "Jean-Eude Cokou"}
-                    </h2>
-                    <p className="mt-1 text-xs">{otherParticipant?.role || "Project Manager"}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-4 items-center self-stretch my-auto">
-                <button>
-                  <img
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/d08141d8351701fa168fadc1daef0ca269e159d4?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
-                    className="object-contain w-6 aspect-square"
-                    alt="Video call"
-                  />
-                </button>
-                <button>
-                  <img
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/c3efc60fdff5781dc31234b0e6b5046dbdf466c7?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
-                    className="object-contain w-6 aspect-square"
-                    alt="Audio call"
-                  />
-                </button>
-                <button onClick={onToggleProfileSidebar}>
-                  <img
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/0ee42b3e99f27e7d2774d2c8caf9c4f0b55edf43?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
-                    className="object-contain w-6 aspect-square"
-                    alt="More options"
-                  />
-                </button>
-              </div>
-            </header>
-
-            <div className="relative flex-1">
-            <section
-                ref={messagesContainerRef}
-                className="mt-0 w-full bg-white rounded-xl overflow-y-auto max-h-[400px] min-h-[400px]"
-              >
-                {messages.map((message) => (
-                  <ChatMessage key={message.id} message={message} />
-                ))}
-                <div ref={messagesEndRef} />
-              </section>
-
-              {isScrolledUp && (
-                <button
-                  onClick={handleScrollToBottom}
-                  className="absolute bottom-4 right-4 p-2 bg-blue-100 rounded-full shadow-lg hover:bg-blue-300 transition-colors"
+        </div>
+      ) : (
+        <>
+          {/* Header */}
+          <header className="flex items-center justify-between p-6 border-b border-blue-100 bg-white">
+            <div className="flex items-center gap-4">
+              {onBack && (
+                <button 
+                  onClick={onBack} 
+                  className="sm:hidden p-2 hover:bg-blue-50 rounded-lg transition-colors"
                 >
-                  <img
-                    src="/down-arrow.svg"
-                    className="w-6 h-6"
-                    alt="Scroll to bottom"
-                  />
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
                 </button>
               )}
+              
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full overflow-hidden">
+                    {otherParticipant?.profileImageUrl ? (
+                      <img
+                        src={otherParticipant.profileImageUrl}
+                        alt={otherParticipant.fullName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                        {otherParticipant?.fullName?.split(' ').map(n => n[0]).join('') || 'U'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                
+                <div>
+                  <h2 className="font-semibold text-gray-900">
+                    {otherParticipant?.fullName || "Unknown User"}
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    {otherParticipant?.role || "User"} • Online
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <footer className="flex flex-wrap gap-10 justify-between items-center px-3 py-2 mt-4 w-full rounded-lg">
-              <div className="flex gap-2 items-center self-stretch my-auto text-sm text-stone-500">
-                <img
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/88e4a9230a70882d89aeeab379816c034333991d?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
-                  className="object-contain shrink-0 self-stretch my-auto w-6 aspect-square"
-                  alt="Attachment"
-                />
-                <input
-                  type="text"
-                  placeholder="Enter your message"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSendMessage();
-                    }
-                  }}
-                  className="self-stretch my-auto bg-transparent outline-none"
-                />
-              </div>
+            <div className="flex items-center gap-2">
+              <button className="p-3 hover:bg-blue-50 rounded-lg transition-colors">
+                <Phone className="w-5 h-5 text-gray-600" />
+              </button>
+              <button className="p-3 hover:bg-blue-50 rounded-lg transition-colors">
+                <Video className="w-5 h-5 text-gray-600" />
+              </button>
+              <button 
+                onClick={onToggleProfileSidebar}
+                className="p-3 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                <Info className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+          </header>
+
+          {/* Messages */}
+          <div className="relative flex-1 bg-gradient-to-br from-blue-50 to-purple-50">
+            <section
+              ref={messagesContainerRef}
+              className="h-full overflow-y-auto p-6 space-y-4"
+            >
+              {messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
+                      <Send className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <p className="text-gray-500">No messages yet. Start the conversation!</p>
+                  </div>
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <ChatMessage key={message.id} message={message} />
+                ))
+              )}
+              <div ref={messagesEndRef} />
+            </section>
+
+            {isScrolledUp && (
+              <button
+                onClick={handleScrollToBottom}
+                className="absolute bottom-6 right-6 w-12 h-12 bg-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+              >
+                <ArrowLeft className="w-5 h-5 text-blue-600 rotate-[-90deg]" />
+              </button>
+            )}
+          </div>
+
+          {/* Message Input */}
+          <footer className="p-6 bg-white border-t border-blue-100">
+            <div className="flex items-center gap-3 bg-gray-50 rounded-2xl p-3">
+              <button className="p-2 hover:bg-blue-100 rounded-lg transition-colors">
+                <Paperclip className="w-5 h-5 text-gray-600" />
+              </button>
+              
+              <input
+                type="text"
+                placeholder="Type a message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
+              />
+              
+              <button className="p-2 hover:bg-blue-100 rounded-lg transition-colors">
+                <Smile className="w-5 h-5 text-gray-600" />
+              </button>
+              
               <button
                 onClick={handleSendMessage}
-                className="flex gap-2.5 items-center self-stretch p-3 my-auto w-10 h-10 bg-blue-900 rounded-lg"
+                disabled={!newMessage.trim()}
+                className={`p-3 rounded-xl transition-all ${
+                  newMessage.trim()
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
-                <img
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/3f38d43167fc382dbd85341e1ce5fe591b8369?placeholderIfAbsent=true&apiKey=fd0c2c04ade54c2997bae3153b14309c"
-                  className="object-contain self-stretch my-auto w-4 aspect-square"
-                  alt="Send"
-                />
+                <Send className="w-5 h-5" />
               </button>
-            </footer>
-          </>
-        )}
-      </div>
+            </div>
+          </footer>
+        </>
+      )}
     </main>
   );
 };

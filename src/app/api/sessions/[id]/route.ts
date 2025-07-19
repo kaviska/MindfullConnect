@@ -6,12 +6,22 @@ import User from "@/models/User";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+function getIdFromRequest(request: NextRequest): string | null {
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/');
+  // Assuming route structure: /api/sessions/[id]
+  const idIndex = segments.findIndex(seg => seg === 'sessions') + 1;
+  return segments[idIndex] || null;
+}
+
+export async function DELETE(request: NextRequest) {
   await connectDB();
 
-  const sessionId = params.id;
-  
-  // ✅ Use cookies instead of Authorization header
+  const sessionId = getIdFromRequest(request);
+  if (!sessionId) {
+    return NextResponse.json({ error: "Missing session id" }, { status: 400 });
+  }
+
   const token = request.cookies.get("token")?.value;
 
   if (!token) {
@@ -26,68 +36,68 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // Get user to check their role
     const user = await (User as any).findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check if user has permission to cancel this session
     const isPatient = session.patientId.toString() === decoded.userId;
-    const isCounselor = user.role === 'counselor' && session.counselorId.toString() === decoded.userId;
+    const isCounselor = user.role === "counselor" && session.counselorId.toString() === decoded.userId;
 
     if (!isPatient && !isCounselor) {
-      return NextResponse.json({ error: "Forbidden: You can only cancel your own sessions" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Forbidden: You can only cancel your own sessions" },
+        { status: 403 }
+      );
     }
 
-    // For patients, check if cancellation is at least 24 hours in advance
     if (isPatient) {
       const sessionDate = new Date(`${session.date}T${session.time}`);
       const now = new Date();
-      const timeDiff = sessionDate.getTime() - now.getTime();
-      const hoursDiff = timeDiff / (1000 * 60 * 60);
+      const hoursDiff = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
       if (hoursDiff < 24) {
-        return NextResponse.json({
-          error: "Cancellations are only allowed at least 24 hours in advance"
-        }, { status: 400 });
+        return NextResponse.json(
+          { error: "Cancellations are only allowed at least 24 hours in advance" },
+          { status: 400 }
+        );
       }
     }
 
-    // If there's a zoom link, try to delete the Zoom meeting
     if (session.zoomLink) {
       try {
-        // Extract meeting ID from zoom link if needed for API call
-        // For now, we'll just remove the link from our session
         console.log("Removing Zoom link for cancelled session:", sessionId);
       } catch (zoomError) {
         console.error("Error deleting Zoom meeting:", zoomError);
-        // Continue with cancellation even if Zoom deletion fails
       }
     }
 
-    // ✅ Update status to cancelled and remove zoom link
-    await (Session as any).findByIdAndUpdate(sessionId, { 
-      status: 'cancelled',
-      zoomLink: null // Remove the zoom link
+    await (Session as any).findByIdAndUpdate(sessionId, {
+      status: "cancelled",
+      zoomLink: null,
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Session cancelled successfully",
-      sessionId: sessionId 
+      sessionId,
     });
   } catch (error: any) {
     console.error("Error cancelling session:", error);
-    return NextResponse.json({ error: error.message || "Failed to cancel session" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Failed to cancel session" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest) {
   await connectDB();
 
-  const sessionId = params.id;
-  
-  // ✅ Use cookies instead of Authorization header
+  const sessionId = getIdFromRequest(request);
+  if (!sessionId) {
+    return NextResponse.json({ error: "Missing session id" }, { status: 400 });
+  }
+
   const token = request.cookies.get("token")?.value;
 
   if (!token) {
@@ -105,35 +115,43 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // Get user to check their role
     const user = await (User as any).findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check if user has permission to update this session
-    const isCounselor = user.role === 'counselor' && session.counselorId.toString() === decoded.userId;
+    const isCounselor = user.role === "counselor" && session.counselorId.toString() === decoded.userId;
 
     if (!isCounselor) {
-      return NextResponse.json({ error: "Forbidden: Only the assigned counselor can update this session" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Forbidden: Only the assigned counselor can update this session" },
+        { status: 403 }
+      );
     }
 
-    // Validate the status
-    const validStatuses = ["pending", "confirmed", "cancelled", "completed", "counselor requested reschedule"];
+    const validStatuses = [
+      "pending",
+      "confirmed",
+      "cancelled",
+      "completed",
+      "counselor requested reschedule",
+    ];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
-    // Update the session status
     await (Session as any).findByIdAndUpdate(sessionId, { status });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Session status updated successfully",
-      sessionId: sessionId,
-      newStatus: status
+      sessionId,
+      newStatus: status,
     });
   } catch (error: any) {
     console.error("Error updating session:", error);
-    return NextResponse.json({ error: error.message || "Failed to update session" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Failed to update session" },
+      { status: 500 }
+    );
   }
 }
