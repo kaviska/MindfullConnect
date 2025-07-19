@@ -1,12 +1,6 @@
 import TextEditor from "@/app/components/texteditor/textEditor";
 import { notFound } from "next/navigation";
 
-type PageProps = {
-  params: {
-    slug: string;
-  };
-};
-
 async function getBlogPost(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${slug}`, {
     cache: 'no-store',
@@ -29,11 +23,11 @@ async function getBlogPost(slug: string) {
   };
 }
 
-export default async function EditBlogPage({ params }: PageProps) {
+export default async function EditBlogPage({ params }: { params: { slug: string } }) {
   const blog = await getBlogPost(params.slug);
 
   if (!blog) {
-    notFound(); // Shows 404 page
+    notFound(); // triggers 404 page
   }
 
   return (
