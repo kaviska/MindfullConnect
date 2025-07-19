@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { User, Report } from "../../../../lib/models";
-import { connectToDB } from "../../../../lib/utils";
+import dbConnect from "../../../../lib/mongodb";
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-        await connectToDB();
+        await dbConnect();
         const reportId = params.id;
         const { actionNote, status, banUser } = await req.json();
 

@@ -1,5 +1,5 @@
-import { User } from "./models";
-import { Report } from "./models";
+import User from "../models/User";
+import Report from "../models/report";
 import dbConnect from "./mongodb";
 import { Types } from "mongoose";
 
@@ -60,39 +60,36 @@ export const fetchPatient = async (id: string) => {
     }
 };
 
-
-export const fetchPendingReports = async (page: number) => {
+export async function fetchPendingReports(page: number) {
     await dbConnect();
-    const filter = { status: "Pending" };
-    const totalReports = await Report.countDocuments(filter);
-    const reports = await Report.find(filter)
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const reports = await Report.find({ status: "Pending" })
         .sort({ createdAt: -1 })
-        .limit(ITEMS_PER_PAGE)
-        .skip(ITEMS_PER_PAGE * (page - 1))
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    console.log("Backend fetched", reports.length, "reports");
+    const total = await Report.countDocuments({ status: "Pending" });
+    const totalPages = Math.ceil(total / limit);
 
-    return {
-        reports,
-        totalPages: Math.ceil(totalReports / ITEMS_PER_PAGE),
-    };
-};
+    return { reports, totalPages };
+}
 
-export const fetchResolvedReports = async (page: number) => {
+export async function fetchResolvedReports(page: number) {
     await dbConnect();
-    const filter = { status: "Resolved" };
-    const totalReports = await Report.countDocuments(filter);
-    const reports = await Report.find(filter)
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const reports = await Report.find({ status: "Resolved" })
         .sort({ createdAt: -1 })
-        .limit(ITEMS_PER_PAGE)
-        .skip(ITEMS_PER_PAGE * (page - 1))
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    console.log("Backend fetched", reports.length, "reports");
+    const total = await Report.countDocuments({ status: "Resolved" });
+    const totalPages = Math.ceil(total / limit);
 
-    return {
-        reports,
-        totalPages: Math.ceil(totalReports / ITEMS_PER_PAGE),
-    };
-};
+    return { reports, totalPages };
+}

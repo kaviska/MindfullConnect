@@ -1,11 +1,11 @@
 // /pages/api/reports/stats.ts
 import { NextResponse } from "next/server";
 import { Report } from "../../../lib/models";
-import { connectToDB } from "../../../lib/utils";
+import dbConnect from "../../../lib/mongodb";
 
 export const GET = async () => {
     try {
-        await connectToDB();
+        await dbConnect();
 
         const totalReports = await Report.countDocuments({});
         const resolvedReports = await Report.countDocuments({ status: "Resolved" });

@@ -10,16 +10,14 @@ import SearchIcon from '@mui/icons-material/Search';
 
 interface Patient {
     _id: string;
-    firstname: string;
-    lastname: string;
-    date: string;
-    totalSessions: number;
+    fullName: string;
     email: string;
-    status: "Active" | "Inactive";
-    imageUrl: string;
-    nic: string;
-    address: string;
-    contact: string;
+    role: string;
+    lastSeen?: Date;
+    isVerified: boolean;
+    otp?: string;
+    otpExpiry?: Date;
+    image?: string;
 }
 
 const fetchPatients = async (
@@ -103,10 +101,9 @@ export default function PatientPage() {
                         <tr>
                             <th className="px-6 py-4 text-center hidden lg:table-cell">User Id</th>
                             <th className="px-6 py-4 text-center">Name</th>
-                            <th className="px-6 py-4 text-center hidden lg:table-cell">Registered Date</th>
-                            <th className="px-6 py-4 text-center hidden md:table-cell">Total Sessions</th>
                             <th className="px-6 py-4 text-center hidden md:table-cell">Email</th>
-                            <th className="px-6 py-4 text-center">Status</th>
+                            <th className="px-6 py-4 text-center hidden md:table-cell">Role</th>
+                            <th className="px-6 py-4 text-center hidden md:table-cell">Verified</th>
                             <th className="px-6 py-4 text-center">Action</th>
                         </tr>
                     </thead>
@@ -115,13 +112,22 @@ export default function PatientPage() {
                             <tr key={i} className="border-t border-gray-200 hover:bg-gray-50">
                                 <td className="px-6 py-4 text-center hidden lg:table-cell">{user._id}</td>
                                 <td className="px-6 py-4 text-center flex items-center justify-center gap-2">
-                                    <img src={user.imageUrl} alt="" className="w-7 h-7 rounded-full" />
-                                    {user.firstname}
+                                    {user.image && user.image.trim() !== "" ? (
+                                        <img src={user.image} alt="" className="w-7 h-7 rounded-full" />
+                                    ) : (
+                                        <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-gray-500">
+                                            {user.fullName.charAt(0)}
+                                        </div>
+                                    )}
+                                    {user.fullName}
                                 </td>
-                                <td className="px-6 py-4 text-center hidden lg:table-cell">{user.date}</td>
-                                <td className="px-6 py-4 text-center hidden md:table-cell">{user.totalSessions}</td>
                                 <td className="px-6 py-4 text-center hidden md:table-cell">{user.email}</td>
-                                <td className="px-6 py-4 text-center">{user.status}</td>
+                                <td className="px-6 py-4 text-center hidden md:table-cell">{user.role}</td>
+                                <td className="px-6 py-4 text-center hidden md:table-cell">
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {user.isVerified ? 'Verified' : 'Not Verified'}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4 text-center flex justify-center gap-3 text-purple-600">
                                     <button
                                         onClick={() => handleViewDetails(user._id)}
@@ -140,7 +146,12 @@ export default function PatientPage() {
 
             {selectedPatient && (
                 <PatientProfilePopup
-                    patient={selectedPatient}
+                    patient={{
+                        ...selectedPatient,
+                        imageUrl: selectedPatient.image && selectedPatient.image.trim() !== "" ? selectedPatient.image : null,
+                        lastSeen: selectedPatient.lastSeen ? new Date(selectedPatient.lastSeen).toLocaleString() : undefined,
+                        otpExpiry: selectedPatient.otpExpiry ? new Date(selectedPatient.otpExpiry).toLocaleString() : undefined
+                    }}
                     onClose={() => setSelectedPatient(null)}
                 />
             )}

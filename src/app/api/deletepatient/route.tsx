@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectToDB } from "../../lib/utils";
+import dbConnect from "../../lib/mongodb";
 import { User } from "../../lib/models";
 
 export async function POST(req: NextRequest) {
     try {
-        await connectToDB();
+        await dbConnect();
         const formData = await req.formData();
         const id = formData.get("id") as string;
 
