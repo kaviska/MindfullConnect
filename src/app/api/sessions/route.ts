@@ -82,3 +82,52 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message || "Failed to book session" }, { status: 500 });
   }
 }
+
+// PATCH route - Update session status
+export async function PATCH(request: NextRequest) {
+  await connectDB();
+
+  try {
+    const { sessionId, status } = await request.json();
+
+    if (!sessionId || !status) {
+      return NextResponse.json({ error: "Missing required fields: sessionId, status" }, { status: 400 });
+    }
+
+    // Validate status value
+    const validStatuses = ["pending", "confirmed", "cancelled", "completed", "counselor requested reschedule"];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
+    }
+
+    // Find and update the session
+    const session = await Session.findByIdAndUpdate(
+      sessionId,
+      { status },
+      { new: true }
+    );
+
+    if (!session) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    console.log(`Session ${sessionId} status updated to: ${status}`);
+
+    return NextResponse.json({ 
+      message: "Session status updated successfully", 
+      session: {
+        _id: session._id,
+        patientId: session.patientId,
+        counselorId: session.counselorId,
+        date: session.date,
+        time: session.time,
+        status: session.status,
+        zoomLink: session.zoomLink
+      }
+    });
+
+  } catch (error: any) {
+    console.error("Error updating session status:", error);
+    return NextResponse.json({ error: error.message || "Failed to update session status" }, { status: 500 });
+  }
+}
