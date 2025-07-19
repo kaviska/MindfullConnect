@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import styles from './page.module.css'
 import Image from 'next/image'
 import BlogPostViewer from '@/app/components/blogPostViewer/render'
+import { type Metadata } from 'next'
+import type { PageProps } from 'next'
 
 async function getData(slug: string) {
   try {
@@ -10,16 +12,14 @@ async function getData(slug: string) {
     })
 
     if (!res.ok) return null
-
-    const data = await res.json()
-    return data
+    return await res.json()
   } catch (error) {
     console.error('Error fetching post:', error)
     return null
   }
 }
 
-const BlogPost = async ({ params }: { params: { slug: string } }) => {
+export default async function BlogPost({ params }: PageProps<{ slug: string }>) {
   const post = await getData(params.slug)
 
   if (!post) return notFound()
@@ -58,5 +58,3 @@ const BlogPost = async ({ params }: { params: { slug: string } }) => {
     </div>
   )
 }
-
-export default BlogPost
