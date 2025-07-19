@@ -9,6 +9,8 @@ import {
   useStripe,
   useElements
 } from "@stripe/react-stripe-js";
+import { Suspense } from 'react'
+
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -62,6 +64,9 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
   };
 
   return (
+        <Suspense fallback={<div>Loading...</div>}>
+
+    
     <div className="max-w-lg mx-auto mt-8 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
       {/* Header Section */}
       <div className="text-center mb-8">
@@ -161,10 +166,11 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
         </div>
       </div>
     </div>
+    </Suspense>
   );
 }
 
-export default function Payment() {
+function PaymentContent() {
   const searchParams = useSearchParams();
   const clientSecret = searchParams.get("client_secret");
   const sessionId = searchParams.get("session_id");
@@ -179,5 +185,13 @@ export default function Payment() {
         <PaymentForm clientSecret={clientSecret} sessionId={sessionId} />
       </div>
     </Elements>
+  );
+}
+
+export default function Payment() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentContent />
+    </Suspense>
   );
 }
