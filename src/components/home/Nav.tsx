@@ -31,8 +31,8 @@ const Nav = () => {
       });
       
       if (response.ok) {
-        const userData = await response.json();
-        setUser(userData); // userData is already the user object, not wrapped
+        const responseData = await response.json();
+        setUser(responseData.user); // Extract user from the nested structure
       } else if (response.status === 403) {
         // Counselor not approved - still show as logged in but redirect to pending page
         const errorData = await response.json();

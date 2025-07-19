@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
 import Session from "@/models/Session";
 import Counselor from "@/models/Counselor";
+import { createNotification } from "@/utility/backend/notificationService";
+
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -61,6 +63,7 @@ export async function POST(request: NextRequest) {
       console.log("Warning: Could not update counselor patient list:", counselorError);
       // Continue without failing the session creation
     }
+    
 
     console.log(`Session booked: Patient ${decoded.userId} with Counselor ${counselorId} on ${date} at ${time}`);
 
@@ -112,6 +115,12 @@ export async function PATCH(request: NextRequest) {
     }
 
     console.log(`Session ${sessionId} status updated to: ${status}`);
+     // Create notification for the counselor 
+    const notification = await createNotification({
+      type: "session_created",
+      message: `New Session created: Date: ${session.date}, Time: ${session.time}, Link: ${session.zoomLink || "N/A"}`,
+      user_id: session.counselorId,
+    });
 
     return NextResponse.json({ 
       message: "Session status updated successfully", 
