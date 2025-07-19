@@ -23,7 +23,7 @@ const counselorSchema = new Schema({
   // Counseling Approach
   bio: { type: String, maxlength: 1000 },
   therapeuticModalities: [{ type: String }],
-  sessionDuration: { type: Number, default: 60 }, // in minutes
+  sessionDuration: { type: Number, default: 60 }, // in minutes updated
 
   // Stripe Connect fields
   stripeAccountId: { type: String },
