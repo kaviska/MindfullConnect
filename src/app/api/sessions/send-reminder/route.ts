@@ -1,4 +1,3 @@
-// src/app/api/session/send-reminder/route.ts
 import { NextResponse } from 'next/server';
 import dbconfig from '@/lib/db';
 import Session from '@/models/Session';
@@ -6,6 +5,7 @@ import User from '@/models/User';
 import nodemailer from 'nodemailer';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+
 dayjs.extend(utc);
 
 export async function GET() {
@@ -20,7 +20,6 @@ export async function GET() {
   const sessions = await Session.find({
     date: formattedDate,
     time: formattedTime,
-    emailSent: "no",
     status: "confirmed"
   }).populate('patientId').populate('counselorId');
 
@@ -33,6 +32,11 @@ export async function GET() {
   });
 
   for (const session of sessions) {
+    // ✅ Skip if emailSent is not "no"
+    if (!("emailSent" in session) || session.emailSent !== "no") {
+      continue;
+    }
+
     const { patientId, counselorId, zoomLink } = session;
 
     if (!zoomLink) continue;
@@ -40,16 +44,35 @@ export async function GET() {
     const patientEmail = patientId.email;
     const counselorEmail = counselorId.email;
 
-    const htmlContent = `
-      <div style="font-family:sans-serif;">
-        <h2>📅 Your session is starting soon!</h2>
-        <p><strong>Date:</strong> ${session.date}</p>
-        <p><strong>Time:</strong> ${session.time}</p>
-        <p>Join your session using the Zoom link below:</p>
-        <a href="${zoomLink}" style="background-color:#007bff;color:white;padding:10px 20px;border-radius:5px;text-decoration:none;">Join Zoom Session</a>
-        <p>Best regards,<br/>MindfulConnect Team</p>
+   const htmlContent = `
+  <div style="background-color:#f4f4f7;padding:30px 0;font-family:'Segoe UI',Roboto,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,0.1);overflow:hidden;">
+      <div style="padding:30px;text-align:center;">
+        <h2 style="color:#333333;">🕒 Your Session Starts in 30 Minutes</h2>
+        <p style="color:#555;font-size:16px;">Here are the details of your upcoming session:</p>
+        <table style="width:100%;margin:20px 0;">
+          <tr>
+            <td style="padding:10px;text-align:right;font-weight:bold;color:#333;">Date:</td>
+            <td style="padding:10px;text-align:left;color:#555;">${session.date}</td>
+          </tr>
+          <tr>
+            <td style="padding:10px;text-align:right;font-weight:bold;color:#333;">Time:</td>
+            <td style="padding:10px;text-align:left;color:#555;">${session.time}</td>
+          </tr>
+        </table>
+        <p style="margin:25px 0;">
+          <a href="${zoomLink}" style="display:inline-block;background-color:#007bff;color:#fff;padding:12px 25px;border-radius:6px;text-decoration:none;font-weight:500;font-size:16px;">
+            🔗 Join Zoom Session
+          </a>
+        </p>
+        <hr style="border:none;border-top:1px solid #eaeaea;margin:30px 0;">
+        <p style="color:#888;font-size:14px;">If you have any questions, feel free to contact support.</p>
+        <p style="color:#aaa;font-size:13px;">— MindfulConnect Team</p>
       </div>
-    `;
+    </div>
+  </div>
+`;
+
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -61,10 +84,11 @@ export async function GET() {
     try {
       await transporter.sendMail(mailOptions);
       await Session.findByIdAndUpdate(session._id, { emailSent: "yes" });
+      console.log(`Reminder sent for session ${session._id}`);
     } catch (error) {
-      console.error("Failed to send email:", error);
+      console.error(`Failed to send email for session ${session._id}:`, error);
     }
   }
 
-  return NextResponse.json({ message: "Checked sessions and sent reminders." });
+  return NextResponse.json({ message: "Checked sessions and sent reminders where needed." });
 }
