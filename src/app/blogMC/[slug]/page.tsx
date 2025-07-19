@@ -7,8 +7,41 @@ async function getData(slug: string) {
   try {
     console.log("getData called with slug:", slug);
 
-    // Fix the baseUrl logic
-    let baseUrl = "http://localhost:3000"; // Default for development
+    // For server-side rendering, we should directly import and use the API logic
+    // instead of making HTTP requests to ourselves
+    if (typeof window === "undefined") {
+      // Server-side: directly use the database
+      console.log("Running on server-side, using direct database access");
+
+      try {
+        const dbConnect = (await import("@/lib/mongodb")).default;
+        const Post = (await import("@/models/postModel")).default;
+
+        await dbConnect();
+
+        console.log("Searching for post with slug:", slug);
+        const PostModel = Post as any;
+        const post = await PostModel.findOne({ slug }).populate(
+          "author",
+          "username email"
+        );
+
+        if (!post) {
+          console.log("Post not found for slug:", slug);
+          return null;
+        }
+
+        console.log("Post found successfully");
+        return JSON.parse(JSON.stringify(post)); // Serialize for client
+      } catch (dbError) {
+        console.error("Database error:", dbError);
+        return null;
+      }
+    }
+
+    // Client-side: use fetch (fallback, though this component is server-side)
+    console.log("Running on client-side, using fetch");
+    let baseUrl = "http://localhost:3000";
 
     if (process.env.NEXT_PUBLIC_API_URL) {
       baseUrl = process.env.NEXT_PUBLIC_API_URL;
