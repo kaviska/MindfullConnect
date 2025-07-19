@@ -3,8 +3,46 @@ import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
 import Session from "@/models/Session";
 import User from "@/models/User";
+import axios from "axios";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+
+// Utility function to delete Zoom meeting
+async function deleteZoomMeeting(meetingId: string): Promise<boolean> {
+  try {
+    // Step 1: Get Access Token
+    const tokenRes = await axios.post(
+      `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${process.env.ZOOM_ACCOUNT_ID}`,
+      {},
+      {
+        headers: {
+          Authorization:
+            'Basic ' +
+            Buffer.from(
+              `${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`
+            ).toString('base64'),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
+
+    const accessToken = tokenRes.data.access_token;
+
+    // Step 2: Delete from Zoom
+    await axios.delete(`https://api.zoom.us/v2/meetings/${meetingId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log("✅ Zoom meeting deleted successfully:", meetingId);
+    return true;
+  } catch (error: any) {
+    console.error("❌ Failed to delete Zoom meeting:", error.response?.data || error.message);
+    return false;
+  }
+}
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   await connectDB();
@@ -57,10 +95,25 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // If there's a zoom link, try to delete the Zoom meeting
     if (session.zoomLink) {
       try {
-        // Extract meeting ID from zoom link if needed for API call
-        // For now, we'll just remove the link from our session
-        console.log("Removing Zoom link for cancelled session:", sessionId);
-      } catch (zoomError) {
+        // Extract meeting ID from zoom link
+        // Zoom URLs are like: https://zoom.us/j/1234567890 or https://us04web.zoom.us/j/1234567890
+        const meetingIdMatch = session.zoomLink.match(/\/j\/(\d+)/);
+        if (meetingIdMatch && meetingIdMatch[1]) {
+          const zoomMeetingId = meetingIdMatch[1];
+          console.log("Attempting to delete Zoom meeting with ID:", zoomMeetingId);
+          
+          // Call the utility function to delete from Zoom
+          const deleteSuccess = await deleteZoomMeeting(zoomMeetingId);
+          
+          if (deleteSuccess) {
+            console.log("✅ Zoom meeting deleted successfully");
+          } else {
+            console.error("❌ Failed to delete Zoom meeting, but continuing with session cancellation");
+          }
+        } else {
+          console.warn("Could not extract meeting ID from Zoom link:", session.zoomLink);
+        }
+      } catch (zoomError: any) {
         console.error("Error deleting Zoom meeting:", zoomError);
         // Continue with cancellation even if Zoom deletion fails
       }
