@@ -4,13 +4,20 @@ import connectDB from '@/lib/db';
 import Message from '@/models/Message';
 import Conversation from '@/models/Conversation';
 
-export async function GET(
-  request: NextRequest,
-  context: { params: { conversationId: string } }
-) {
+function extractConversationIdFromUrl(request: NextRequest): string | null {
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/');
+  const idIndex = segments.findIndex(seg => seg === 'messages') + 1;
+  return segments[idIndex] || null;
+}
+
+export async function GET(request: NextRequest) {
   await connectDB();
 
-  const { conversationId } = context.params;
+  const conversationId = extractConversationIdFromUrl(request);
+  if (!conversationId) {
+    return NextResponse.json({ error: 'Missing conversationId in URL' }, { status: 400 });
+  }
 
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
@@ -35,13 +42,13 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  context: { params: { conversationId: string } }
-) {
+export async function POST(request: NextRequest) {
   await connectDB();
 
-  const { conversationId } = context.params;
+  const conversationId = extractConversationIdFromUrl(request);
+  if (!conversationId) {
+    return NextResponse.json({ error: 'Missing conversationId in URL' }, { status: 400 });
+  }
 
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
