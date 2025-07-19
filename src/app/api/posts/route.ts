@@ -40,12 +40,15 @@ export async function POST(req: NextRequest) {
         if (!body.slug) {
           const baseSlug = body.title
             .toLowerCase()
-            .trim()                              // Remove leading/trailing whitespace
-            .replace(/[,.:'";!?()[\]{}]/g, '-')  // Replace punctuation with hyphens
-            .replace(/[^\w\s-]/g, '')            // Remove remaining special characters except hyphens and spaces
-            .replace(/\s+/g, '-')                // Replace spaces with hyphens
-            .replace(/-+/g, '-')                 // Replace multiple consecutive hyphens with single hyphen
-            .replace(/^-+|-+$/g, '');            // Remove leading/trailing hyphens
+            .trim()                                    // Remove leading/trailing whitespace
+            .normalize('NFD')                          // Normalize Unicode characters
+            .replace(/[\u0300-\u036f]/g, '')          // Remove diacritics/accents
+            .replace(/[''""]/g, '')                   // Remove smart quotes
+            .replace(/[,.:'";!?()[\]{}@#$%^&*+=<>]/g, '-')  // Replace punctuation with hyphens
+            .replace(/[^\w\s-]/g, '')                 // Remove remaining special characters except hyphens and spaces
+            .replace(/\s+/g, '-')                     // Replace spaces with hyphens
+            .replace(/-+/g, '-')                      // Replace multiple consecutive hyphens with single hyphen
+            .replace(/^-+|-+$/g, '');                 // Remove leading/trailing hyphens
           
           body.slug = `${baseSlug}-${Date.now()}`;
           console.log('Generated slug:', body.slug);
