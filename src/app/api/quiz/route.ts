@@ -3,6 +3,7 @@ import { NextResponse, NextRequest } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import { createNotification } from "@/utility/backend/notificationService";
 import jwt from "jsonwebtoken";
+import { decode } from "punycode";
 
 
 function respond(data: object, status: number = 200) {
@@ -69,11 +70,11 @@ export async function POST(req: NextRequest) {
       counsellor_id: decoded.userId,
     });
     await quiz.save();
-    //  const notification = await createNotification({
-    //       type: "quiz",
-    //       message: `New quiz created`,
-    //       user_id: "68120f0abdb0b2d10474be42", // Replace with actual user ID
-    //       });
+     const notification = await createNotification({
+          type: "quiz",
+          message: `New quiz created`,
+          user_id:  decoded.userId, // Replace with actual user ID
+          });
 
     return respond({ message: "Quiz created successfully", data: quiz }, 201);
   } catch (error) {

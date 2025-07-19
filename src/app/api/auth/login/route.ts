@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
 import Counselor from "@/models/Counselor";
+import { createNotification } from "@/utility/backend/notificationService";
+
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret"; // Use .env for production
 
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
     await user.save();
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "24h",
     });
 
     //check if user is counselor and status is active
@@ -49,6 +51,13 @@ export async function POST(request: NextRequest) {
           { status: 403 }
         );
       }
+      //add notification for counselor login with time
+      await createNotification({
+        type: "login",
+        message: `Counselor ${user.fullName} logged in at ${new Date().toLocaleString()}`,
+        user_id: user._id,
+        time: new Date(),
+      });
     }
 
     // ✅ Create response with cookies

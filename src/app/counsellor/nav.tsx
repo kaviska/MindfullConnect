@@ -3,6 +3,7 @@ import React, { PropsWithChildren, useState, useEffect } from 'react';
 import { Bell, Target, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Pusher from 'pusher-js';
 
 interface NavLinkProps extends PropsWithChildren {
   href: string;
@@ -11,6 +12,7 @@ interface NavLinkProps extends PropsWithChildren {
 
 const Nav = () => {
   const [user, setUser] = useState<any>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -20,7 +22,7 @@ const Nav = () => {
         const response = await fetch('/api/auth/me');
         if (response.ok) {
           const userData = await response.json();
-          setUser(userData); // userData is the user object directly
+          setUser(userData.user); // Access the user object from userData
         }
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -29,6 +31,60 @@ const Nav = () => {
 
     checkAuth();
   }, []);
+
+  // Fetch unread notifications count
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch(`/api/notification-temp?user_id=${user.id}`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const notifications = await response.json();
+          const unreadNotifications = notifications.filter((n: any) => !n.is_read);
+          setUnreadCount(unreadNotifications.length);
+          console.log("Notifcation Count:", unreadNotifications.length);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchUnreadCount();
+  }, [user]);
+
+  // Real-time notification updates with Pusher
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const pusher = new Pusher("26d23c8825bb9eac01f6", {
+      cluster: "ap2",
+    });
+
+    const channel = pusher.subscribe("notifications");
+
+    // Listen for new notifications
+    channel.bind("new-notification", function (data: any) {
+      if (data.user_id === user.id && !data.is_read) {
+        setUnreadCount(prev => prev + 1);
+      }
+    });
+
+    // Listen for notification read events (you can add this to your notification update API)
+    channel.bind("notification-read", function (data: any) {
+      if (data.user_id === user.id) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    });
+
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+      pusher.disconnect();
+    };
+  }, [user]);
 
   return (
     <header className="w-full bg-[#E1F3FD] shadow-sm">
@@ -66,9 +122,16 @@ const Nav = () => {
 
           {/* Right Section - Avatar & Notifications */}
           <div className="flex items-center space-x-4">
-            <button className="p-2 rounded-full hover:bg-white/50 transition-colors">
-              <Bell className="h-5 w-5 text-gray-500" />
-            </button>
+            <Link href="/counsellor/notifications">
+              <button className="relative p-2 rounded-full hover:bg-white/50 transition-colors">
+                <Bell className="h-5 w-5 text-gray-500" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full min-w-[18px] h-[18px]">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+            </Link>
             <div className="relative">
               <img
                 className="h-10 w-10 rounded-full border-2 border-gray-200"

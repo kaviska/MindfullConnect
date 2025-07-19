@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import BlockUserModal from "../../../ui/blockuser/blockuser";
 
 interface UserType {
@@ -17,12 +17,15 @@ interface UserType {
     [key: string]: any;
 }
 
-const UserInfo = ({ id }: { id: string }) => {
+const UserInfoPage = () => {
     const router = useRouter();
+    const params = useParams();
+    const id = typeof params.id === "string" ? params.id : Array.isArray(params.id) ? params.id[0] : "";
     const [user, setUser] = useState<UserType | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
+        if (!id) return;
         const loadUser = async () => {
             try {
                 const res = await fetch(`/api/user/${id}`);
@@ -96,4 +99,4 @@ const UserInfo = ({ id }: { id: string }) => {
     );
 };
 
-export default UserInfo;
+export default UserInfoPage;

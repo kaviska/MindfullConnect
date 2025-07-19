@@ -6,7 +6,7 @@ import Counselor from "@/models/Counselor";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-// Updated POST route - remove counselor lookup
+// Updated POST route - Create session
 export async function POST(request: NextRequest) {
   await connectDB();
 
@@ -46,15 +46,20 @@ export async function POST(request: NextRequest) {
     await session.save();
 
     // ✅ Optional: Update counselor's patient list using User._id
-    const counselor = await Counselor.findOne({ userId: counselorId });
-    if (counselor) {
-      await Counselor.findByIdAndUpdate(
-        counselor._id,
-        {
-          $addToSet: { patients_ids: decoded.userId }
-        },
-        { new: true }
-      );
+    try {
+      const counselor = await Counselor.findOne({ userId: counselorId }).exec();
+      if (counselor) {
+        await Counselor.findByIdAndUpdate(
+          counselor._id,
+          {
+            $addToSet: { patients_ids: decoded.userId }
+          },
+          { new: true }
+        );
+      }
+    } catch (counselorError) {
+      console.log("Warning: Could not update counselor patient list:", counselorError);
+      // Continue without failing the session creation
     }
 
     console.log(`Session booked: Patient ${decoded.userId} with Counselor ${counselorId} on ${date} at ${time}`);
@@ -67,7 +72,8 @@ export async function POST(request: NextRequest) {
         counselorId: session.counselorId,
         date: session.date,
         time: session.time,
-        status: session.status
+        status: session.status,
+        zoomLink: session.zoomLink
       }
     });
 

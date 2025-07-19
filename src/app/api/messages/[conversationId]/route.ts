@@ -4,12 +4,20 @@ import connectDB from '@/lib/db';
 import Message from '@/models/Message';
 import Conversation from '@/models/Conversation';
 
+function extractConversationIdFromUrl(request: NextRequest): string | null {
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/');
+  const idIndex = segments.findIndex(seg => seg === 'messages') + 1;
+  return segments[idIndex] || null;
+}
 
-
-export async function GET(request: NextRequest, { params }: { params: { conversationId: string } }) {
+export async function GET(request: NextRequest) {
   await connectDB();
-  
-  const { conversationId } = await params;
+
+  const conversationId = extractConversationIdFromUrl(request);
+  if (!conversationId) {
+    return NextResponse.json({ error: 'Missing conversationId in URL' }, { status: 400 });
+  }
 
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
@@ -18,14 +26,14 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
     }
 
     if (!process.env.JWT_SECRET) {
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
+
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
+      jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
     }
-    
 
     const messages = await Message.find({ conversationId }).populate('sender', 'fullName');
     return NextResponse.json({ messages });
@@ -34,11 +42,13 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { conversationId: string } }) {
+export async function POST(request: NextRequest) {
   await connectDB();
 
-  
-  const { conversationId } = await params;
+  const conversationId = extractConversationIdFromUrl(request);
+  if (!conversationId) {
+    return NextResponse.json({ error: 'Missing conversationId in URL' }, { status: 400 });
+  }
 
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
@@ -47,19 +57,23 @@ export async function POST(request: NextRequest, { params }: { params: { convers
     }
 
     if (!process.env.JWT_SECRET) {
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
+
     let decoded: { userId: string };
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
     } catch (error) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
     }
-    
+
     const { content, attachment } = await request.json();
 
     if (!content && !attachment) {
-      return NextResponse.json({ error: 'Message content or attachment is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Message content or attachment is required' },
+        { status: 400 }
+      );
     }
 
     const message = new Message({
@@ -73,7 +87,9 @@ export async function POST(request: NextRequest, { params }: { params: { convers
     await message.save();
     await message.populate('sender', 'fullName');
 
-    await Conversation.findByIdAndUpdate(conversationId, { lastMessage: message._id });
+    await Conversation.findByIdAndUpdate(conversationId, {
+      lastMessage: message._id,
+    });
 
     return NextResponse.json({ message });
   } catch (error) {

@@ -16,6 +16,11 @@ export async function POST(request: Request) {
     const counselor = await Counselor.findOne({ userId: counselorId });
     console.log("Counsellor", counselorId, counselor);
     
+    // Determine the final amount to charge
+    const counselorFee = counselor?.consultationFee;
+    const finalAmount = (counselorFee && counselorFee > 0) ? counselorFee : amount;
+    console.log(`💰 Using amount: $${finalAmount/100} (Counselor fee: $${counselorFee/100 || 'not set'}, Default: $${amount/100})`);
+    
     // Debug the stripeAccountId field
     console.log("All counselor keys:", Object.keys(counselor || {}));
     console.log("Raw stripeAccountId:", counselor?.stripeAccountId);
@@ -26,7 +31,7 @@ export async function POST(request: Request) {
     console.log("Connect Account ID:", connectAccountId);
 
     let paymentIntentParams: any = {
-      amount: amount,
+      amount: finalAmount,
       currency: currency,
       metadata: {
         sessionId: sessionId,
@@ -46,7 +51,7 @@ export async function POST(request: Request) {
           "active";
 
         if (hasTransferCapability) {
-          paymentIntentParams.application_fee_amount = Math.floor(amount * 0.2); // 20% commission
+          paymentIntentParams.application_fee_amount = Math.floor(finalAmount * 0.2); // 20% commission
           paymentIntentParams.transfer_data = {
             destination: connectAccountId, // 80% goes to counselor
           };
@@ -81,7 +86,10 @@ export async function POST(request: Request) {
       console.log(`✅ Session ${sessionId} status updated to confirmed`);
     }
 
-    return NextResponse.json({ client_secret: clientSecret }, { status: 200 });
+    return NextResponse.json(
+      { client_secret: clientSecret, amount: finalAmount },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error creating payment intent:", error);
     return NextResponse.json(

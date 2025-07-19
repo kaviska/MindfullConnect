@@ -9,7 +9,7 @@ export default function SessionsPage() {
   return (
     <div className=" flex flex-col bg-blue-50">
   {/* Scrollable content */}
-  <div className="flex-grow overflow-y-auto px-6 space-y-16">
+  <div className="flex-grow overflow-y-auto px-6 space-y-10 mb-6">
     <SessionStats />
 
     {/* Availability Selector */}
@@ -17,11 +17,6 @@ export default function SessionsPage() {
 
     {/* Session Table */}
     <SessionTable />
-  </div>
-
-  {/* Sticky pagination at bottom */}
-  <div className="px-6 py-4 min-h-full sticky bottom-0 z-10">
-    <Pagination />
   </div>
 </div>
 

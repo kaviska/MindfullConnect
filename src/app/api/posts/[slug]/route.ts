@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Post from '@/models/postModel';
+import { Model } from 'mongoose';
 
 export async function GET(
   request: Request,
@@ -9,7 +10,8 @@ export async function GET(
   await dbConnect();
 
   try {
-    const post = await Post.findOne({ slug: params.slug }).populate('author', 'username email');
+    const PostModel = Post as Model<any>;
+    const post = await PostModel.findOne({ slug: params.slug }).populate('author', 'username email');
 
     if (!post) {
       return NextResponse.json({ message: 'Post not found' }, { status: 404 });
@@ -32,7 +34,8 @@ export async function DELETE(
   try {
     const { slug } = params;
 
-    const deletedPost = await Post.findOneAndDelete({ slug });
+    const PostModel = Post as Model<any>;
+    const deletedPost = await PostModel.findOneAndDelete({ slug });
 
     if (!deletedPost) {
       return NextResponse.json(
@@ -65,7 +68,8 @@ export async function PUT(
     const body = await req.json();
     const { title, content, description, category, coverImage, published } = body;
 
-    const updatedPost = await Post.findOneAndUpdate(
+    const PostModel = Post as Model<any>;
+    const updatedPost = await PostModel.findOneAndUpdate(
       { slug: params.slug },
       {
         $set: {

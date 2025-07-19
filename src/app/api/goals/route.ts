@@ -86,14 +86,15 @@ export async function POST(req: NextRequest) {
     });
     await goals.save();
 
+    // Create notification for the counselor who created the goal
     const notification = await createNotification({
-      type: "question_group",
+      type: "goal_created",
       message: `New Goal created: ${title}`,
       user_id: decoded.userId,
     });
 
     return NextResponse.json(
-      { message: "Goal created successfully", data: goals },
+      { message: "Goal created successfully", data: goals, notification },
       { status: 201 }
     );
   } catch (error) {
