@@ -17,8 +17,10 @@ async function getData(slug: string) {
   return res.json();
 }
 
-const BlogPost = async ({ params }: { params: { slug: string } }) => {
-  const post = await getData(params.slug);
+const BlogPost = async ({ params }: { params: Promise<{ slug: string }> }) => {
+  const { slug } = await params;
+  const post = await getData(slug);
+
   if (!post) notFound();
 
   const parsedContent = JSON.parse(post.content);
