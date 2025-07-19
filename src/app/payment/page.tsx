@@ -56,7 +56,7 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
             status: "confirmed",
           }),
         });
-        router.push("/session?payment=success");
+        router.push("/payment-success");
       } catch (err) {
         console.error("Failed to update session status:", err);
       }

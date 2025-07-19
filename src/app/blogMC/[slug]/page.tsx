@@ -11,34 +11,33 @@ async function getData(slug: string) {
   try {
     console.log("Getting data for slug:", slug);
 
-    // Connect to database directly in server component
-    await dbConnect();
-
     // Decode the slug in case it's URL encoded
     const decodedSlug = decodeURIComponent(slug);
     console.log("Decoded slug:", decodedSlug);
 
+    // Connect to database directly in server component
+    await dbConnect();
     const PostModel = Post as Model<any>;
 
-    // Try to find by ObjectId first, then by slug
-    let post = null;
+    // First try to find by slug (most common case)
+    let post = await PostModel.findOne({ slug: decodedSlug }).populate(
+      "author",
+      "username email"
+    );
 
-    if (ObjectId.isValid(decodedSlug)) {
+    console.log(
+      "Searching by slug:",
+      decodedSlug,
+      post ? "Found" : "Not found"
+    );
+
+    // If not found by slug and it looks like an ObjectId, try that
+    if (!post && ObjectId.isValid(decodedSlug)) {
       console.log("Searching by ObjectId:", decodedSlug);
       post = await PostModel.findById(decodedSlug).populate(
         "author",
         "username email"
       );
-    }
-
-    // Client-side: use fetch (fallback, though this component is server-side)
-    console.log("Running on client-side, using fetch");
-    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-
-    if (process.env.NEXT_PUBLIC_API_URL) {
-      baseUrl = process.env.NEXT_PUBLIC_API_URL;
-    } else if (process.env.VERCEL_URL) {
-      baseUrl = `https://${process.env.VERCEL_URL}`;
     }
 
     if (post) {

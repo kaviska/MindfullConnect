@@ -136,7 +136,7 @@ const handleBookingSuccess = async (sessionData: any) => {
       console.error('❌ Zoom meeting creation failed:', zoomData.error);
       // Continue with payment even if zoom fails
     } else {
-      console.log('✅ Zoom meeting created successfully:', zoomData.joinUrl);
+      alert(`✅ Zoom meeting created successfully: ${zoomData.joinUrl}`);
     }
 
     // Step 2: Create payment intent
