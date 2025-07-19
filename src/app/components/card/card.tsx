@@ -169,7 +169,7 @@ const Card = ({ item, showActions = false, onDelete }: any) => {
           </div>
 
           <div className={styles.content}>
-            <Link href={`/posts/${item.slug}`} className={styles.titleLink}>
+            <Link href={`/blogMC/${item.slug}`} className={styles.titleLink}>
               <h2 className={styles.title}>{item.title}</h2>
             </Link>
 
