@@ -17,8 +17,9 @@ export function useNotifications() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
         const response = await fetch(
-          "http://localhost:3000/api/notification-temp?user_id=68120f0abdb0b2d10474be42",
+          `${baseUrl}/api/notification-temp?user_id=68120f0abdb0b2d10474be42`,
           {
             method: "GET",
             headers: {
@@ -68,7 +69,8 @@ export function useNotifications() {
 
   const markAsRead = async (id: string) => {
     try {
-      const response = await fetch("http://localhost:3000/api/notification-temp", {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      const response = await fetch(`${baseUrl}/api/notification-temp`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

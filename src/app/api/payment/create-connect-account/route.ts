@@ -19,10 +19,11 @@ export async function POST(request: Request) {
     console.log("Stripe account created:", account.id); 
 
     // 2. Create an onboarding link
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: "http://localhost:3000/reauth",
-      return_url: "http://localhost:3000/onboarded",
+      refresh_url: `${baseUrl}/reauth`,
+      return_url: `${baseUrl}/onboarded`,
       type: "account_onboarding",
     });
 

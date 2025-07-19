@@ -134,7 +134,8 @@ export default function NotificationsPage() {
   const markAsRead = async (id: string) => {
     try {
       console.log("Marking as read:", id); // Debug log
-      const response = await fetch("http://localhost:3000/api/notification-temp", {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      const response = await fetch(`${baseUrl}/api/notification-temp`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -159,8 +160,9 @@ export default function NotificationsPage() {
   const deleteNotification = async (id: string) => {
     try {
       console.log("Deleting notification:", id); // Debug log
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
       const response = await fetch(
-        `http://localhost:3000/api/notification-temp?id=${id}`,
+        `${baseUrl}/api/notification-temp?id=${id}`,
         {
           method: "DELETE",
         }
