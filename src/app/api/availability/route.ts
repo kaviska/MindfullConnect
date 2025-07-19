@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    const user = await User.findById(decoded.userId);
+    const user = await (User as any).findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
 
     const startDate = startOfWeek(new Date(weekStart), { weekStartsOn: 1 });
     const endDate = endOfWeek(startDate, { weekStartsOn: 1 });
-    const availability = await Availability.find({
+    const availability = await (Availability as any).find({
       counselorId: user.id,
       date: {
         $gte: format(startDate, "yyyy-MM-dd"),
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    const user = await User.findById(decoded.userId);
+    const user = await (User as any).findById(decoded.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -110,25 +110,33 @@ export async function POST(req: NextRequest) {
     // ✅ Use authenticated user's ID as counselorId
     const userId = user.id;
 
-    if (!date || !availableSlots.length) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    if (!date || !Array.isArray(availableSlots)) {
+      return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
     }
 
-    const existing = await Availability.findOne({ counselorId: userId, date });
+    // ✅ Find existing availability record
+    const existing = await (Availability as any).findOne({ counselorId: userId, date });
 
-    let mergedSlots: string[] = availableSlots;
-    if (existing) {
-      const slotSet = new Set([...existing.availableSlots, ...availableSlots]);
-      mergedSlots = Array.from(slotSet);
-    }
-
-    const updated = await Availability.findOneAndUpdate(
+    // ✅ Replace slots completely instead of merging (to handle deselections)
+    const updated = await (Availability as any).findOneAndUpdate(
       { counselorId: userId, date },
-      { availableSlots: mergedSlots },
+      { availableSlots: availableSlots }, // Replace with new selection
       { upsert: true, new: true }
     );
 
-    return NextResponse.json({ message: "Availability updated", availability: updated });
+    console.log(`Availability updated for ${date}:`, {
+      userId,
+      date,
+      availableSlots,
+      updatedRecord: updated
+    });
+
+    return NextResponse.json({ 
+      message: "Availability updated successfully", 
+      availability: updated,
+      date,
+      slotsCount: availableSlots.length
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

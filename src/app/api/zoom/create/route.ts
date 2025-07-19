@@ -1,25 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import dbConnect from '@/lib/mongodb';
-import ZoomMeeting from '@/models/ZoomMeetings';
+import Session from '@/models/Session';
 
 export async function POST(req: NextRequest) {
-  console.log('🔔 Incoming Zoom create POST request');
+  console.log('Incoming Zoom create POST request');
 
   // Read body once
   const body = await req.json();
-  console.log('📦 Received body:', body);
+  console.log('Received body:', body);
 
   try {
     await dbConnect();
 
-    // Extract fields from body
-    const { topic, start_time, duration, counsellorId, patientId } = body;
+    // Extract fields from body - updated to work with session data
+    const { sessionId, topic, start_time, duration } = body;
 
     // Validate required fields
-    if (!topic || !start_time || !duration || !counsellorId || !patientId) {
+    if (!sessionId || !topic || !start_time || !duration) {
       return NextResponse.json(
-        { error: 'Missing required fields: topic, start_time, duration, counsellorId, and patientId are required' },
+        { error: 'Missing required fields: sessionId, topic, start_time, and duration are required' },
         { status: 400 }
       );
     }
@@ -30,6 +30,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid start_time format' },
         { status: 400 }
+      );
+    }
+
+    // Check if session exists
+    const session = await Session.findById(sessionId).exec();
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Session not found' },
+        { status: 404 }
       );
     }
 
@@ -59,7 +68,11 @@ export async function POST(req: NextRequest) {
         type: 2, // Scheduled meeting
         start_time,
         duration,
-        settings: { join_before_host: true },
+        settings: { 
+          join_before_host: true,
+          waiting_room: false,
+          auto_recording: 'none'
+        },
       },
       {
         headers: {
@@ -71,24 +84,29 @@ export async function POST(req: NextRequest) {
 
     const meeting = zoomRes.data;
 
-    // Step 3: Save to MongoDB
-    const newMeeting = new ZoomMeeting({
-      meetingId: meeting.id.toString(),
-      topic: meeting.topic,
-      joinUrl: meeting.join_url,
-      startURL: meeting.start_url,
-      startTime: new Date(meeting.start_time),
-      duration,
-      status: meeting.status,
-      counsellorId,
-      patientId,
+    // Step 3: Update Session with Zoom link
+    const updatedSession = await Session.findByIdAndUpdate(
+      sessionId,
+      { 
+        zoomLink: meeting.join_url,
+        status: 'confirmed' // Update status when zoom link is created
+      },
+      { new: true }
+    ).exec();
+
+    console.log('✅ Zoom meeting created and session updated:', {
+      sessionId,
+      meetingId: meeting.id,
+      joinUrl: meeting.join_url
     });
 
-    await newMeeting.save();
-
     return NextResponse.json({
-      meetingId: newMeeting.meetingId,
-      joinUrl: newMeeting.joinUrl,
+      success: true,
+      sessionId: updatedSession._id,
+      meetingId: meeting.id.toString(),
+      joinUrl: meeting.join_url,
+      startUrl: meeting.start_url,
+      topic: meeting.topic
     });
 
   } catch (err: any) {

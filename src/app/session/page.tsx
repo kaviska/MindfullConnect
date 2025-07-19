@@ -112,10 +112,33 @@ export default function Session() {
   );
   
 const handleBookingSuccess = async (sessionData: any) => {
-  console.log('✅ Booking created, initiating payment:', sessionData);
+  console.log('✅ Booking created, creating Zoom meeting and initiating payment:', sessionData);
   
   try {
-    // Create payment intent
+    // Step 1: Create Zoom meeting for the session
+    const zoomResponse = await fetch('/api/zoom/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sessionId: sessionData.id,
+        topic: `Therapy Session - ${new Date(sessionData.date).toLocaleDateString()} at ${sessionData.time}`,
+        start_time: new Date(`${sessionData.date}T${sessionData.time}:00`).toISOString(),
+        duration: 55 // 55 minutes
+      })
+    });
+
+    const zoomData = await zoomResponse.json();
+    
+    if (!zoomResponse.ok) {
+      console.error('❌ Zoom meeting creation failed:', zoomData.error);
+      // Continue with payment even if zoom fails
+    } else {
+      console.log('✅ Zoom meeting created successfully:', zoomData.joinUrl);
+    }
+
+    // Step 2: Create payment intent
     const paymentResponse = await fetch('/api/payment/payment-intent', {
       method: 'POST',
       headers: {
@@ -142,7 +165,7 @@ const handleBookingSuccess = async (sessionData: any) => {
       alert('Payment setup failed. Please try again.');
     }
   } catch (error) {
-    console.error('❌ Payment initiation failed:', error);
+    console.error('❌ Booking process failed:', error);
     alert('Network error. Please check your connection and try again.');
   }
 };
