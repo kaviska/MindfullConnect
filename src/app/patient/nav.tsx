@@ -50,65 +50,62 @@ const Nav = () => {
   }, []);
 
   // ✅ Logout function
- 
-const handleLogout = async () => {
-  try {
-    // Call your existing logout API
-    const response = await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include'
-    });
+  const handleLogout = async () => {
+    try {
+      // Call your existing logout API
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
 
-    if (response.ok) {
-      // Clear any local storage or session storage
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Clear user state
-      setUser(null);
-      
-      // Close dropdown
-      setIsDropdownOpen(false);
-      
-      // Redirect to login page
-      router.push('/login');
-      
-      console.log('✅ Logged out successfully');
-    } else {
-      console.error('Logout failed');
-      // Even if API fails, clear local storage and redirect
+      if (response.ok) {
+        // Clear any local storage or session storage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Clear user state
+        setUser(null);
+        
+        // Close dropdown
+        setIsDropdownOpen(false);
+        
+        // Redirect to login page
+        router.push('/login');
+        
+        console.log('✅ Logged out successfully');
+      } else {
+        console.error('Logout failed');
+        // Even if API fails, clear local storage and redirect
+        localStorage.clear();
+        sessionStorage.clear();
+        setUser(null);
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: clear everything and redirect
       localStorage.clear();
       sessionStorage.clear();
       setUser(null);
       router.push('/login');
     }
-  } catch (error) {
-    console.error('Logout error:', error);
-    // Fallback: clear everything and redirect
-    localStorage.clear();
-    sessionStorage.clear();
-    setUser(null);
-    router.push('/login');
-  }
-};
+  };
+
   return (
     <header className="w-full bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo/Profile Section */}
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <img
-                className="h-12 w-12 rounded-full object-cover"
-                src="/ava2.svg"
-                alt="Profile"
-              />
+          {/* ✅ Updated Logo/Brand Section */}
+          <Link href="/patient" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">MC</span>
             </div>
-          </div>
+            <span className="text-xl font-bold text-gray-900">MindfulConnect</span>
+          </Link>
 
           {/* Navigation Links */}
           <nav className="hidden md:flex space-x-8">
-            <NavLink href="/patient/dashboard" active={pathname === '/patient/dashboard'}>
+            <NavLink href="/patient" active={pathname === '/patient'}>
               Home
             </NavLink>
             {user && (
@@ -129,7 +126,7 @@ const handleLogout = async () => {
             )}
             <NavLink href="#" active={false}>FAQ</NavLink>
             <NavLink href="#" active={false}>Services</NavLink>
-            <NavLink href="#" active={false}>Find a Counsellor</NavLink>
+            <NavLink href="/session" active={pathname === '/session'}>Find a Counsellor</NavLink>
           </nav>
 
           {/* Right Section - Avatar & Notifications */}
@@ -145,11 +142,17 @@ const handleLogout = async () => {
                 className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <div className="relative">
-                  <img
-                    className="h-10 w-10 rounded-full border-2 border-gray-200 object-cover"
-                    src={user?.profileImageUrl || "/ava2.svg"}
-                    alt="Avatar"
-                  />
+                  {user?.profileImageUrl ? (
+                    <img
+                      className="h-10 w-10 rounded-full border-2 border-gray-200 object-cover"
+                      src={user.profileImageUrl}
+                      alt="Avatar"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full border-2 border-gray-200 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                      {user?.fullName?.split(' ').map(n => n[0]).join('') || 'U'}
+                    </div>
+                  )}
                   <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white" />
                 </div>
                 <ChevronDown 
