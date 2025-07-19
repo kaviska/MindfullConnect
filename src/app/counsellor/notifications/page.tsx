@@ -8,25 +8,82 @@ export default function NotificationsPage() {
     { id: string; message: string; read: boolean; timestamp?: string; type?: string }[]
   >([]);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  // Format timestamp for display
+  const formatTimestamp = (timestamp: string | Date) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)} hours ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  // Get current user ID from token
   useEffect(() => {
-    const fetchNotifications = async () => {
-      const response = await fetch(
-        "http://localhost:3000/api/notification-temp?user_id=68120f0abdb0b2d10474be42",
-        {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          credentials: "include",
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          setCurrentUserId(userData.user.id || userData.user._id);
         }
-      );
-      const data = await response.json();
-      setNotifications(data);
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
     };
-    fetchNotifications();
+    
+    fetchCurrentUser();
   }, []);
 
   useEffect(() => {
+    if (!currentUserId) return;
+
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch(
+          `/api/notification-temp?user_id=${currentUserId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Format timestamps for existing notifications
+          const formattedNotifications = data.map((notification: any) => ({
+            ...notification,
+            id: notification._id || notification.id,
+            read: notification.is_read,
+            timestamp: notification.createdAt ? formatTimestamp(notification.createdAt) : 'Just now'
+          }));
+          setNotifications(formattedNotifications);
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+    
+    fetchNotifications();
+  }, [currentUserId]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
     const pusher = new Pusher("26d23c8825bb9eac01f6", {
       cluster: "ap2",
     });
@@ -37,20 +94,34 @@ export default function NotificationsPage() {
     interface NotificationData {
       id: string;
       message: string;
+      user_id: string;
+      is_read: boolean;
+      type: string;
+      timestamp: string;
     }
 
     channel.bind("new-notification", function (data: NotificationData) {
-      setNotifications((prev) => [
-        ...prev,
-        { id: data.id, message: data.message, read: false },
-      ]);
+      console.log("Received new notification:", data);
+      // Only add notification if it's for the current user
+      if (data.user_id === currentUserId) {
+        setNotifications((prev) => [
+          {
+            id: data.id,
+            message: data.message,
+            read: data.is_read,
+            type: data.type,
+            timestamp: formatTimestamp(data.timestamp)
+          },
+          ...prev,
+        ]);
+      }
     });
 
     return () => {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, []);
+  }, [currentUserId]);
 
   const filteredNotifications = notifications.filter(notification => {
     if (filter === 'unread') return !notification.read;
@@ -63,7 +134,8 @@ export default function NotificationsPage() {
   const markAsRead = async (id: string) => {
     try {
       console.log("Marking as read:", id); // Debug log
-      const response = await fetch("http://localhost:3000/api/notification-temp", {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      const response = await fetch(`${baseUrl}/api/notification-temp`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -88,8 +160,9 @@ export default function NotificationsPage() {
   const deleteNotification = async (id: string) => {
     try {
       console.log("Deleting notification:", id); // Debug log
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
       const response = await fetch(
-        `http://localhost:3000/api/notification-temp?id=${id}`,
+        `${baseUrl}/api/notification-temp?id=${id}`,
         {
           method: "DELETE",
         }
@@ -203,6 +276,11 @@ export default function NotificationsPage() {
                       <Clock size={12} />
                       {notification.timestamp || 'Just now'}
                     </span>
+                    {notification.type && (
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                        {notification.type.replace('_', ' ').toUpperCase()}
+                      </span>
+                    )}
                   </div>
                   <p className={`text-base ${!notification.read ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
                     {notification.message}

@@ -3,6 +3,8 @@
 import SearchIcon from '@mui/icons-material/Search';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
+import { Suspense } from 'react'
+
 
 interface SearchProps {
     placeholder: string;
@@ -30,6 +32,7 @@ const Search: React.FC<SearchProps> = ({ placeholder }) => {
     );
 
     return (
+         <Suspense fallback={<div>Loading...</div>}>
         <div>
             <div className="relative">
                 <input
@@ -41,6 +44,7 @@ const Search: React.FC<SearchProps> = ({ placeholder }) => {
                 <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 !w-5 !h-5" />
             </div>
         </div>
+        </Suspense>
     );
 };
 

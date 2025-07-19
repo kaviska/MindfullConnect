@@ -24,7 +24,7 @@ export default function PatientPage() {
   // ✅ Add state for dynamic sessions
   const [upcomingSessions, setUpcomingSessions] = useState<BookedSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // ✅ Add state for featured counselors
+  // ✅ Add state for featured counselors'
   const [featuredCounselors, setFeaturedCounselors] = useState<Counselor[]>([]);
   const [counselorsLoading, setCounselorsLoading] = useState(true);
   // ✅ Add state for modal
@@ -85,18 +85,18 @@ export default function PatientPage() {
       description: "Monitor your wellness journey",
     },
     {
-      title: "Mindfulness",
+      title: "My Goals",
       icon: Brain,
-      href: "/patient/mindfulness",
+      href: "/patient/my-goals",
       color: "bg-gradient-to-br from-[#8b5cf6] to-[#7c3aed]",
-      description: "Guided meditation & exercises",
+      description: "Guided Goals With Milstone",
     },
     {
-      title: "Resources",
+      title: "My Quiz",
       icon: BookOpen,
-      href: "/patient/resources",
+      href: "/patient/my-quizzes",
       color: "bg-gradient-to-br from-[#f59e0b] to-[#d97706]",
-      description: "Self-help tools and articles",
+      description: "Take personalized wellness quizzes",
     },
     {
       title: "Profile",

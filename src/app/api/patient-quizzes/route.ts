@@ -5,6 +5,7 @@ import Quiz from "@/models/Quiz";
 import User from "@/models/User";
 import Counselor from "@/models/Counselor";
 import jwt from "jsonwebtoken";
+import { createNotification } from "@/utility/backend/notificationService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
@@ -37,11 +38,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Quiz not found" }, { status: 404 });
     }
 
-    // Validate patient exists
+    // Validate patient exist
     const patient = await User.findById(patientId);
     if (!patient) {
       return NextResponse.json({ message: "Patient not found" }, { status: 404 });
     }
+
+
 
     // Check if already assigned
     const existingAssignment = await PatientQuiz.findOne({ 
@@ -62,6 +65,14 @@ export async function POST(req: NextRequest) {
     });
 
     await patientQuiz.save();
+
+    // Create notification for quiz assignment
+    await createNotification({
+      type: "quiz_assigned",
+      message: `Quiz "${quiz.title}" assigned to patient ${patient.fullName}`,
+      user_id: decoded.userId,
+      time: new Date(),
+    });
 
     return NextResponse.json({ 
       message: "Quiz assigned successfully", 

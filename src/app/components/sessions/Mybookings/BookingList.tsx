@@ -6,7 +6,7 @@ interface BookingListProps {
   activeTab: 'upcoming' | 'past';
   handleCancel: (id: string) => void;
   handleReschedule: (id: string) => void;
-  isDeleting?: boolean;
+  cancellingIds: Set<string>; // ✅ Changed from isDeleting to cancellingIds
   isLoading?: boolean;
 }
 
@@ -15,7 +15,7 @@ export default function BookingList({
   activeTab, 
   handleCancel, 
   handleReschedule,
-  isDeleting = false,
+  cancellingIds, // ✅ Updated prop name
   isLoading = false
 }: BookingListProps) {
   if (isLoading) {
@@ -38,7 +38,8 @@ export default function BookingList({
               isUpcoming={activeTab === 'upcoming'}
               handleCancel={handleCancel}
               handleReschedule={handleReschedule}
-              isDeleting={isDeleting}
+                        isDeleting={cancellingIds.has(booking.id)} // ✅ Check if this specific booking is being cancelled
+
             />
           ))}
         </div>
