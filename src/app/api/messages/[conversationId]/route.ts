@@ -4,14 +4,12 @@ import connectDB from '@/lib/db';
 import Message from '@/models/Message';
 import Conversation from '@/models/Conversation';
 
-interface Context {
-  params: { conversationId: string };
-}
 
-export async function GET(request: NextRequest, context: Context) {
+
+export async function GET(request: NextRequest, { params }: { params: { conversationId: string } }) {
   await connectDB();
-
-  const conversationId = context.params.conversationId;
+  
+  const { conversationId } = await params;
 
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
@@ -22,12 +20,12 @@ export async function GET(request: NextRequest, context: Context) {
     if (!process.env.JWT_SECRET) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
-
     try {
-      jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
     } catch (error) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
+    
 
     const messages = await Message.find({ conversationId }).populate('sender', 'fullName');
     return NextResponse.json({ messages });
@@ -36,10 +34,11 @@ export async function GET(request: NextRequest, context: Context) {
   }
 }
 
-export async function POST(request: NextRequest, context: Context) {
+export async function POST(request: NextRequest, { params }: { params: { conversationId: string } }) {
   await connectDB();
 
-  const conversationId = context.params.conversationId;
+  
+  const { conversationId } = await params;
 
   try {
     const token = request.headers.get('authorization')?.split(' ')[1];
@@ -50,14 +49,13 @@ export async function POST(request: NextRequest, context: Context) {
     if (!process.env.JWT_SECRET) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
-
     let decoded: { userId: string };
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
     } catch (error) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
-
+    
     const { content, attachment } = await request.json();
 
     if (!content && !attachment) {
