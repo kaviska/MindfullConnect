@@ -1,5 +1,4 @@
 import TextEditor from "@/app/components/texteditor/textEditor";
-import { notFound } from "next/navigation";
 
 async function getBlogPost(slug: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${slug}`, {
@@ -18,7 +17,7 @@ async function getBlogPost(slug: string) {
     description: post.description,
     category: post.category,
     coverImage: post.coverImage || '',
-    content: JSON.parse(post.content), // TipTap format
+    content: JSON.parse(post.content), // ensure it's a TipTap-friendly JSON
     slug: post.slug,
   };
 }
@@ -27,7 +26,7 @@ export default async function EditBlogPage({ params }: { params: { slug: string 
   const blog = await getBlogPost(params.slug);
 
   if (!blog) {
-    notFound(); // triggers 404 page
+    return <div className="p-10 text-center text-red-500">Blog not found.</div>;
   }
 
   return (
