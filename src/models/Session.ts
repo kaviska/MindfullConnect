@@ -8,7 +8,8 @@ const sessionSchema = new Schema({
   time: { type: String, required: true }, // Format: "HH:mm"
   duration: { type: Number, default: 55 }, // in minutes
   status: { type: String, enum: ["pending", "confirmed", "cancelled", "completed", "counselor requested reschedule"], default: "pending" },
-  zoomLink: { type: String },
+  zoomLink: { type: String, default: null },
+  zoomMeetingId: { type: String, default: null }, // Store Zoom meeting ID
    emailSent: { type: String, enum: ["yes", "no"], default: "no" },
   createdAt: { type: Date, default: Date.now }
 });

@@ -1,8 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
 import Post from '@/models/postModel';
-import { getUserFromToken } from "@/lib/getUserFromToken";
 import { Model } from 'mongoose';
 
 
@@ -38,14 +36,19 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         console.log('Request body received:', { ...body, content: '[CONTENT_TRUNCATED]' });
         
-        // Improved slug generation
+        // Enhanced slug generation
         if (!body.slug) {
           const baseSlug = body.title
             .toLowerCase()
-            .replace(/[^\w\s-]/g, '') // Remove special characters except hyphens and spaces
-            .replace(/\s+/g, '-') // Replace spaces with hyphens
-            .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-            .trim(); // Remove leading/trailing whitespace
+            .trim()                                    // Remove leading/trailing whitespace
+            .normalize('NFD')                          // Normalize Unicode characters
+            .replace(/[\u0300-\u036f]/g, '')          // Remove diacritics/accents
+            .replace(/[''""]/g, '')                   // Remove smart quotes
+            .replace(/[,.:'";!?()[\]{}@#$%^&*+=<>]/g, '-')  // Replace punctuation with hyphens
+            .replace(/[^\w\s-]/g, '')                 // Remove remaining special characters except hyphens and spaces
+            .replace(/\s+/g, '-')                     // Replace spaces with hyphens
+            .replace(/-+/g, '-')                      // Replace multiple consecutive hyphens with single hyphen
+            .replace(/^-+|-+$/g, '');                 // Remove leading/trailing hyphens
           
           body.slug = `${baseSlug}-${Date.now()}`;
           console.log('Generated slug:', body.slug);
