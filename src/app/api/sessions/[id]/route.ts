@@ -81,3 +81,59 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     return NextResponse.json({ error: error.message || "Failed to cancel session" }, { status: 500 });
   }
 }
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  await connectDB();
+
+  const sessionId = params.id;
+  
+  // ✅ Use cookies instead of Authorization header
+  const token = request.cookies.get("token")?.value;
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const body = await request.json();
+    const { status } = body;
+
+    const session = await (Session as any).findById(sessionId);
+
+    if (!session) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    // Get user to check their role
+    const user = await (User as any).findById(decoded.userId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Check if user has permission to update this session
+    const isCounselor = user.role === 'counselor' && session.counselorId.toString() === decoded.userId;
+
+    if (!isCounselor) {
+      return NextResponse.json({ error: "Forbidden: Only the assigned counselor can update this session" }, { status: 403 });
+    }
+
+    // Validate the status
+    const validStatuses = ["pending", "confirmed", "cancelled", "completed", "counselor requested reschedule"];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    // Update the session status
+    await (Session as any).findByIdAndUpdate(sessionId, { status });
+
+    return NextResponse.json({ 
+      message: "Session status updated successfully",
+      sessionId: sessionId,
+      newStatus: status
+    });
+  } catch (error: any) {
+    console.error("Error updating session:", error);
+    return NextResponse.json({ error: error.message || "Failed to update session" }, { status: 500 });
+  }
+}

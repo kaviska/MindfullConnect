@@ -9,6 +9,7 @@ const statusColors: Record<string, string> = {
   confirmed: "bg-blue-100 text-blue-600",
   completed: "bg-green-100 text-green-600",
   cancelled: "bg-red-100 text-red-600",
+  "counselor requested reschedule": "bg-orange-100 text-orange-600",
 };
 
 interface SessionProps {
@@ -40,6 +41,7 @@ export default function SessionRow({
 }: SessionProps) {
   const [formattedDateTime, setFormattedDateTime] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     // Combine date and time to create a proper datetime
@@ -92,7 +94,54 @@ export default function SessionRow({
     }
   };
 
+  const handleEdit = async () => {
+    if (isEditing) return;
+
+    const confirmReschedule = window.confirm(
+      "Request a reschedule for this session? This will change the status to 'counselor requested reschedule' and notify the patient."
+    );
+
+    if (!confirmReschedule) return;
+
+    setIsEditing(true);
+    try {
+      // Call the API to update session status
+      const response = await fetch(`/api/sessions/${_id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "counselor requested reschedule",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to request reschedule");
+      }
+
+      // Call the parent's onDeleteAction callback to refresh the data
+      if (onDeleteAction) {
+        onDeleteAction(_id);
+      }
+
+      // Show success message
+      alert(
+        "Reschedule request sent successfully! The patient will be notified."
+      );
+    } catch (error: any) {
+      console.error("Error requesting reschedule:", error);
+      alert(`Failed to request reschedule: ${error.message}`);
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
   const isSessionCancelled = status === "cancelled";
+  const isSessionRescheduleRequested =
+    status === "counselor requested reschedule";
   const shouldDisableJoin = isSessionCancelled || !zoomLink;
 
   return (
@@ -188,7 +237,9 @@ export default function SessionRow({
                     ? "bg-green-400"
                     : status === "cancelled"
                       ? "bg-red-400"
-                      : "bg-gray-400"
+                      : status === "counselor requested reschedule"
+                        ? "bg-orange-400"
+                        : "bg-gray-400"
             }`}
           ></div>
           {status}
@@ -210,14 +261,30 @@ export default function SessionRow({
             </div>
           ) : null}
           <button
+            onClick={handleEdit}
+            disabled={
+              isEditing || isSessionCancelled || isSessionRescheduleRequested
+            }
             className={`p-2 rounded-lg transition-all duration-200 ${
-              isSessionCancelled
+              isSessionCancelled || isSessionRescheduleRequested
                 ? "text-gray-400 cursor-not-allowed"
-                : "text-purple-600 hover:text-purple-800 hover:bg-purple-50"
+                : isEditing
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-purple-600 hover:text-purple-800 hover:bg-purple-50"
             }`}
-            disabled={isSessionCancelled}
+            title={
+              isSessionRescheduleRequested
+                ? "Reschedule already requested"
+                : isSessionCancelled
+                  ? "Session cancelled"
+                  : "Request reschedule"
+            }
           >
-            <Pencil className="w-4 h-4" />
+            {isEditing ? (
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
+            ) : (
+              <Pencil className="w-4 h-4" />
+            )}
           </button>
           <button
             onClick={handleDelete}
