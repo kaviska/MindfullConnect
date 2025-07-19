@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       message: "Session booked successfully", 
       session: {
-        id: session._id,
+        _id: session._id,
         patientId: session.patientId,
         counselorId: session.counselorId,
         date: session.date,
