@@ -1,8 +1,13 @@
 import TextEditor from "@/app/components/texteditor/textEditor";
 
 async function getBlogPost(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${slug}`, {
-    cache: 'no-store',
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+
+  const res = await fetch(`${baseUrl}/api/posts/${slug}`, {
+    cache: "no-store",
   });
 
   if (!res.ok) {
@@ -16,13 +21,17 @@ async function getBlogPost(slug: string) {
     title: post.title,
     description: post.description,
     category: post.category,
-    coverImage: post.coverImage || '',
+    coverImage: post.coverImage || "",
     content: JSON.parse(post.content), // ensure it's a TipTap-friendly JSON
     slug: post.slug,
   };
 }
 
-export default async function EditBlogPage({ params }: { params: { slug: string } }) {
+export default async function EditBlogPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const blog = await getBlogPost(params.slug);
 
   if (!blog) {

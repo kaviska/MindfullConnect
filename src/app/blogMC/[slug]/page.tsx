@@ -1,22 +1,27 @@
-import { notFound } from 'next/navigation'
-import styles from './page.module.css'
-import Image from 'next/image'
-import BlogPostViewer from '@/app/components/blogPostViewer/render'
+import { notFound } from "next/navigation";
+import styles from "./page.module.css";
+import Image from "next/image";
+import BlogPostViewer from "@/app/components/blogPostViewer/render";
 
 async function getData(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${slug}`, {
-    cache: 'no-store',
-  })
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
 
-  if (!res.ok) return null
-  return res.json()
+  const res = await fetch(`${baseUrl}/api/posts/${slug}`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  return res.json();
 }
 
 const BlogPost = async ({ params }: { params: { slug: string } }) => {
-  const post = await getData(params.slug)
-  if (!post) notFound()
+  const post = await getData(params.slug);
+  if (!post) notFound();
 
-  const parsedContent = JSON.parse(post.content)
+  const parsedContent = JSON.parse(post.content);
 
   return (
     <div className={styles.container}>
@@ -40,7 +45,7 @@ const BlogPost = async ({ params }: { params: { slug: string } }) => {
         <BlogPostViewer content={parsedContent} />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default BlogPost
+export default BlogPost;
