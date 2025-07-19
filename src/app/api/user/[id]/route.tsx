@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchUser } from "../../../lib/data";
 
-export async function GET(
-    request: NextRequest,
-    context: { params: { id: string } }
-) {
-    const { id } = context.params;
+export async function GET(request: NextRequest) {
+    const url = new URL(request.url);
+    const id = url.pathname.split("/").pop(); // gets the last segment as id
 
     try {
-        const user = await fetchUser(id);
+        const user = await fetchUser(id!);
 
         if (!user) {
             console.error("User not found:", id);

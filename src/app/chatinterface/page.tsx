@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 
-export const ChatLayout: React.FC = () => {
+export default function Page() {
   const { user, token, isLoading } = useAuth();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -33,71 +33,52 @@ export const ChatLayout: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isLoading) {
-      console.log("AuthContext is still loading, skipping redirect...");
-      return;
-    }
-
+    if (isLoading) return;
     if (!user || !token) {
-      console.log("User or token is null, redirecting to login...");
       router.push("/login");
     }
   }, [user, token, isLoading, router]);
 
   const fetchUsers = useCallback(async () => {
-    if (isLoading || !user) {
-      console.log("Skipping fetchUsers: AuthContext is loading or user/token is null");
-      return;
-    }
+    if (isLoading || !user) return;
 
     try {
-      console.log("Fetching users with cookies");
       const res = await fetch("/api/users", {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
       });
-      console.log("Response status from /api/users:", res.status);
       const data = await res.json();
-      console.log("Response from /api/users:", data);
       if (res.ok) {
-        const filteredUsers = data.users.filter((u: any) => u._id !== user._id);
-        console.log("Setting users (excluding logged-in user):", filteredUsers);
-        setUsers(filteredUsers);
+        const filtered = data.users.filter((u: any) => u._id !== user._id);
+        setUsers(filtered);
       } else {
         console.error("Failed to fetch users:", data.error);
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
+    } catch (err) {
+      console.error("Error fetching users:", err);
     }
   }, [user, isLoading]);
 
   const fetchConversations = useCallback(async () => {
-    if (isLoading || !user) {
-      console.log("Skipping fetchConversations: AuthContext is loading or user/token is null");
-      return;
-    }
+    if (isLoading || !user) return;
 
     try {
-      console.log("Fetching conversations with cookies");
       const res = await fetch("/api/conversations", {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
       });
-      console.log("Response status from /api/conversations:", res.status);
       const data = await res.json();
-      console.log("Response from /api/conversations:", data);
       if (res.ok) {
-        console.log("Setting conversations:", data.conversations);
         setConversations(data.conversations);
       } else {
         console.error("Failed to fetch conversations:", data.error);
       }
-    } catch (error) {
-      console.error("Error fetching conversations:", error);
+    } catch (err) {
+      console.error("Error fetching conversations:", err);
     }
   }, [user, isLoading]);
 
@@ -173,6 +154,7 @@ export const ChatLayout: React.FC = () => {
                 />
               </div>
             </div>
+
             <div className={`${showChatMain ? "flex" : "hidden sm:flex"} w-full sm:w-auto flex-1`}>
               <div className={`${showProfileSidebar ? "hidden sm:flex" : "flex"} w-full sm:w-auto flex-1`}>
                 <ChatMain
@@ -186,6 +168,7 @@ export const ChatLayout: React.FC = () => {
                   className="w-full h-full"
                 />
               </div>
+
               {(isProfileSidebarVisible || showProfileSidebar) && (
                 <div className={`${showProfileSidebar ? "flex" : "hidden sm:flex"} w-full sm:w-auto`}>
                   <ProfileSidebar
@@ -200,6 +183,4 @@ export const ChatLayout: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default ChatLayout;
+}

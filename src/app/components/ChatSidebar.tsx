@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ChatUserItem } from "./ChatUserItem";
 import { ChatUser, Conversation, User } from "./types";
 import { useAuth } from "@/context/AuthContext";
-import { Search, MessageSquare, Users, Filter, Plus } from "lucide-react";
+import { Search, MessageSquare, Users, Filter, Plus, Shield } from "lucide-react";
 
 interface ChatSidebarProps {
   onSelectConversation: (conversationId: string) => void;
@@ -47,37 +47,77 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     setIsLoadingUsers(false);
   }, [users, user, conversations]);
 
+  // ✅ Fixed mapping function with all required properties
   const mapConversationToChatUser = (conv: Conversation): ChatUser => {
     const otherParticipant = conv.participants.find((p) => p._id !== user?._id);
 
     return {
+      _id: otherParticipant?._id || "unknown", // ✅ Added _id
       name: otherParticipant?.fullName || "Unknown",
+      fullName: otherParticipant?.fullName || "Unknown", // ✅ Added fullName
+      role: otherParticipant?.role || "user", // ✅ Added role
       status: "offline",
-      avatar: otherParticipant?.profileImageUrl || "avatar1",
+      avatar: otherParticipant?.profileImageUrl || undefined,
+      profileImageUrl: otherParticipant?.profileImageUrl || undefined,
       isTyping: false,
-      lastMessage: conv.lastMessage?.content,
+      lastMessage: conv.lastMessage?.isEncrypted 
+        ? "[Encrypted Message]" 
+        : conv.lastMessage?.content || "",
       lastMessageTime: conv.lastMessage?.timestamp
         ? new Date(conv.lastMessage.timestamp).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           })
         : "Unknown",
-      unreadCount: 0,
+      unreadCount: conv.unreadCounts?.find(uc => 
+        typeof uc.participant === 'string' 
+          ? uc.participant === user?._id 
+          : uc.participant._id === user?._id
+      )?.count || 0,
+      // ✅ Added encryption-related properties
+      encryptionEnabled: conv.encryptionEnabled || false,
+      conversationType: conv.conversationType || 'general',
     };
   };
 
+  // ✅ Fixed mapping function with all required properties
   const mapUserToChatUser = (u: User): ChatUser => ({
+    _id: u._id, // ✅ Added _id
     name: u.fullName,
-    status: "offline",
-    avatar: u.profileImageUrl || "avatar1",
+    fullName: u.fullName, // ✅ Added fullName
+    role: u.role || "user", // ✅ Added role
+    status: u.isOnline ? "online" : "offline",
+    avatar: u.profileImageUrl || undefined,
+    profileImageUrl: u.profileImageUrl || undefined,
     isTyping: false,
     lastMessage: "",
     lastMessageTime: "",
     unreadCount: 0,
+    // ✅ Added encryption-related properties
+    encryptionEnabled: u.encryptionPreference || true,
+    conversationType: 'general',
   });
 
   const conversationUsers: ChatUser[] = conversations.map(mapConversationToChatUser);
   const otherChatUsers: ChatUser[] = otherUsers.map(mapUserToChatUser);
+
+  // ✅ Filter conversations based on search and active tab
+  const filteredConversationUsers = conversationUsers.filter(chatUser => {
+    const matchesSearch = searchTerm === '' || 
+      chatUser.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chatUser.lastMessage?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesTab = activeTab === 'all' || 
+      (activeTab === 'unread' && (chatUser.unreadCount || 0) > 0) ||
+      (activeTab === 'teams' && chatUser.conversationType === 'admin');
+    
+    return matchesSearch && matchesTab;
+  });
+
+  const filteredOtherUsers = otherChatUsers.filter(chatUser => 
+    searchTerm === '' || 
+    chatUser.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleStartConversation = async (participantId: string) => {
     if (!token) return;
@@ -89,6 +129,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        credentials: 'include', // ✅ Added for cookie support
         body: JSON.stringify({ participantId }),
       });
 
@@ -118,7 +159,14 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+              {/* ✅ Show encryption status */}
+              <div className="flex items-center gap-1 text-xs text-green-600">
+                <Shield className="w-3 h-3" />
+                <span>End-to-end encrypted</span>
+              </div>
+            </div>
           </div>
           <button className="w-10 h-10 bg-blue-50 hover:bg-blue-100 rounded-lg flex items-center justify-center transition-colors">
             <Plus className="w-5 h-5 text-blue-600" />
@@ -143,6 +191,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             >
               <Icon className="w-4 h-4" />
               {label}
+              {/* ✅ Show unread count badge */}
+              {key === 'unread' && filteredConversationUsers.filter(u => (u.unreadCount || 0) > 0).length > 0 && (
+                <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {filteredConversationUsers.filter(u => (u.unreadCount || 0) > 0).length}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -162,26 +216,42 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       {/* Conversations List */}
       <section className="flex-1 overflow-y-auto">
-        {conversationUsers.length > 0 && (
+        {filteredConversationUsers.length > 0 && (
           <div className="p-4">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
-              Recent Conversations
+              Recent Conversations 
+              {activeTab === 'unread' && ' (Unread)'}
+              {activeTab === 'teams' && ' (Teams)'}
             </h3>
             <div className="space-y-2">
-              {conversationUsers.map((chatUser, index) => (
-                <div
-                  key={conversations[index]._id}
-                  onClick={() => handleSelectConversation(conversations[index]._id)}
-                  className="cursor-pointer"
-                >
-                  <ChatUserItem
-                    user={chatUser}
-                    isActive={selectedConversationId === conversations[index]._id}
-                  />
-                </div>
-              ))}
+              {filteredConversationUsers.map((chatUser, index) => {
+                // Find the original conversation index
+                const originalIndex = conversationUsers.findIndex(cu => cu._id === chatUser._id);
+                return (
+                  <div
+                    key={conversations[originalIndex]._id}
+                    onClick={() => handleSelectConversation(conversations[originalIndex]._id)}
+                    className="cursor-pointer"
+                  >
+                    <ChatUserItem
+                      user={chatUser}
+                      isActive={selectedConversationId === conversations[originalIndex]._id}
+                    />
+                  </div>
+                );
+              })}
             </div>
+          </div>
+        )}
+
+        {/* Show empty state when no conversations match filters */}
+        {filteredConversationUsers.length === 0 && conversationUsers.length > 0 && (
+          <div className="p-4 text-center py-8">
+            <Filter className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">
+              No conversations match your current filter
+            </p>
           </div>
         )}
 
@@ -195,22 +265,27 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             <div className="flex items-center justify-center py-8">
               <div className="w-6 h-6 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
             </div>
-          ) : otherChatUsers.length > 0 ? (
+          ) : filteredOtherUsers.length > 0 ? (
             <div className="space-y-2">
-              {otherChatUsers.map((chatUser, index) => (
-                <div
-                  key={otherUsers[index]._id}
-                  onClick={() => handleStartConversation(otherUsers[index]._id)}
-                  className="cursor-pointer"
-                >
-                  <ChatUserItem user={chatUser} isActive={false} />
-                </div>
-              ))}
+              {filteredOtherUsers.map((chatUser, index) => {
+                const originalIndex = otherChatUsers.findIndex(cu => cu._id === chatUser._id);
+                return (
+                  <div
+                    key={otherUsers[originalIndex]._id}
+                    onClick={() => handleStartConversation(otherUsers[originalIndex]._id)}
+                    className="cursor-pointer"
+                  >
+                    <ChatUserItem user={chatUser} isActive={false} />
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8">
               <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">No new users to chat with</p>
+              <p className="text-sm text-gray-500">
+                {searchTerm ? 'No users found matching your search' : 'No new users to chat with'}
+              </p>
             </div>
           )}
         </div>

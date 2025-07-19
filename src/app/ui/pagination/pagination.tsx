@@ -2,6 +2,8 @@
 
 import React from "react";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react'
+
 
 interface PaginationProps {
     totalPages: number;
@@ -58,6 +60,7 @@ const Pagination: React.FC<PaginationProps> = ({ totalPages }) => {
     };
 
     return (
+         <Suspense fallback={<div>Loading...</div>}>
         <div className=" flex items-center justify-between py-4 text-sm">
             <p className="text-gray-600">
                 Showing page {currentPage} of {totalPages}
@@ -81,6 +84,7 @@ const Pagination: React.FC<PaginationProps> = ({ totalPages }) => {
                 </span>
             </div>
         </div>
+        </Suspense>
     );
 };
 
