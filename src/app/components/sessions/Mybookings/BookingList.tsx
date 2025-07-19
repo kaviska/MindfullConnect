@@ -1,5 +1,5 @@
-import BookingCard from './BookingCard';
 import { BookedSession } from '../../types';
+import BookingCard from './BookingCard';
 
 interface BookingListProps {
   bookings: BookedSession[];

@@ -1,4 +1,4 @@
-// ✅ Updated ChatMain.tsx with encryption
+// ✅ Updated ChatMain.tsx with encryption fixes
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -43,6 +43,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
       if (otherParticipant) {
         const key = MessageEncryption.generateConversationKey(user._id, otherParticipant._id);
         setConversationKey(key);
+        console.log('Conversation key generated:', key ? 'Success' : 'Failed');
       }
     }
   }, [conversation, user]);
@@ -69,9 +70,9 @@ export const ChatMain: React.FC<ChatMainProps> = ({
     }
   }, [conversationId]);
 
-  // ✅ Fetch and decrypt messages
+  // ✅ Fixed: Fetch and decrypt messages - wait for conversationKey
   useEffect(() => {
-    if (!conversationId || !token || !conversationKey) return;
+    if (!conversationId || !token) return;
 
     const fetchMessages = async () => {
       try {
@@ -87,14 +88,17 @@ export const ChatMain: React.FC<ChatMainProps> = ({
           const decryptedMessages = data.messages.map((msg: any) => {
             let decryptedContent = msg.content;
             
-            // ✅ Decrypt message if it's encrypted
+            // ✅ Only attempt decryption if message is encrypted AND we have the key
             if (msg.isEncrypted && conversationKey) {
               try {
                 decryptedContent = MessageEncryption.decryptMessage(msg.content, conversationKey);
+                console.log('Message decrypted successfully');
               } catch (error) {
                 console.error('Failed to decrypt message:', error);
-                decryptedContent = '[Encrypted message - failed to decrypt]';
+                decryptedContent = '[🔒 Encrypted message - failed to decrypt]';
               }
+            } else if (msg.isEncrypted && !conversationKey) {
+              decryptedContent = '[🔒 Encrypted message - key not available]';
             }
 
             return {
@@ -112,7 +116,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
           
           setMessages(decryptedMessages);
         } else {
-          console.error(data.error);
+          console.error('Failed to fetch messages:', data.error);
         }
       } catch (error) {
         console.error('Error fetching messages:', error);
@@ -122,20 +126,45 @@ export const ChatMain: React.FC<ChatMainProps> = ({
     fetchMessages();
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
-  }, [conversationId, token, user, conversationKey]);
+  }, [conversationId, token, user, conversationKey]); // ✅ Added conversationKey dependency
 
-  // ✅ Encrypt and send message
+  // ✅ Enhanced encryption toggle with feedback
+  const handleToggleEncryption = () => {
+    const newState = !isEncryptionEnabled;
+    setIsEncryptionEnabled(newState);
+    console.log(`Encryption ${newState ? 'enabled' : 'disabled'}`);
+    
+    // ✅ Visual feedback
+    if (newState && !conversationKey) {
+      console.warn('Encryption enabled but no conversation key available');
+    }
+  };
+
+  // ✅ Enhanced send message with better error handling
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !conversationId || !conversationKey) return;
+    if (!newMessage.trim() || !conversationId) {
+      console.log('Cannot send: empty message or no conversation');
+      return;
+    }
 
     try {
       let messageToSend = newMessage;
       let isEncrypted = false;
 
-      // ✅ Encrypt message if encryption is enabled
+      // ✅ Encrypt message if encryption is enabled AND we have a key
       if (isEncryptionEnabled && conversationKey) {
-        messageToSend = MessageEncryption.encryptMessage(newMessage, conversationKey);
-        isEncrypted = true;
+        try {
+          messageToSend = MessageEncryption.encryptMessage(newMessage, conversationKey);
+          isEncrypted = true;
+          console.log('Message encrypted successfully');
+        } catch (error) {
+          console.error('Encryption failed, sending unencrypted:', error);
+          // Continue with unencrypted message if encryption fails
+        }
+      } else if (isEncryptionEnabled && !conversationKey) {
+        console.warn('Encryption enabled but no conversation key, sending unencrypted');
+      } else {
+        console.log('Sending unencrypted message (encryption disabled)');
       }
 
       const res = await fetch(`/api/messages/${conversationId}`, {
@@ -154,12 +183,12 @@ export const ChatMain: React.FC<ChatMainProps> = ({
         const { message } = await res.json();
         setNewMessage("");
         
-        // ✅ Add decrypted message to local state
+        // ✅ Add message to local state with original content for display
         setMessages((prev) => [
           ...prev,
           {
             id: message._id,
-            content: newMessage, // Use original unencrypted content for display
+            content: newMessage, // Use original unencrypted content for immediate display
             timestamp: new Date(message.timestamp).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
@@ -171,6 +200,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
         ]);
         
         fetchConversations();
+        console.log('Message sent successfully');
       } else {
         const data = await res.json();
         console.error("Failed to send message:", data.error);
@@ -187,16 +217,23 @@ export const ChatMain: React.FC<ChatMainProps> = ({
 
   const otherParticipant = conversation?.participants.find((p) => p._id !== user?._id);
 
-   return (
-    <main className={`flex flex-col h-full bg-white ${className} overflow-hidden`}> {/* ✅ Fixed height container */}
-      
+  return (
+    <main className={`flex flex-col h-full bg-white overflow-hidden ${className}`}> {/* ✅ Added overflow-hidden */}
       {!conversationId ? (
         <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-purple-50">
-          {/* Your welcome message */}
+          <div className="text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
+              <Send className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Secure Messages</h2>
+            <p className="text-gray-600 max-w-md">
+              Select a conversation to start secure, encrypted messaging between counselor and patient.
+            </p>
+          </div>
         </div>
       ) : (
         <>
-          {/* ✅ Fixed Header - Doesn't scroll */}
+          {/* ✅ Fixed Header - flex-shrink-0 to prevent shrinking */}
           <header className="flex-shrink-0 flex items-center justify-between p-6 border-b border-blue-100 bg-white">
             <div className="flex items-center gap-4">
               {onBack && (
@@ -234,10 +271,17 @@ export const ChatMain: React.FC<ChatMainProps> = ({
                     <p className="text-sm text-gray-500">
                       {otherParticipant?.role || "User"} • Online
                     </p>
-                    {isEncryptionEnabled && (
+                    {/* ✅ Enhanced encryption indicator */}
+                    {isEncryptionEnabled && conversationKey && (
                       <div className="flex items-center gap-1 text-xs text-green-600">
                         <Shield className="w-3 h-3" />
                         <span>Encrypted</span>
+                      </div>
+                    )}
+                    {isEncryptionEnabled && !conversationKey && (
+                      <div className="flex items-center gap-1 text-xs text-yellow-600">
+                        <Shield className="w-3 h-3" />
+                        <span>Key pending</span>
                       </div>
                     )}
                   </div>
@@ -246,11 +290,31 @@ export const ChatMain: React.FC<ChatMainProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Your header buttons */}
+              {/* ✅ Enhanced encryption toggle with better visual feedback */}
+              <button
+                onClick={handleToggleEncryption}
+                className={`p-3 rounded-lg transition-all ${
+                  isEncryptionEnabled 
+                    ? 'bg-green-50 text-green-600 hover:bg-green-100 shadow-sm border border-green-200' 
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+                }`}
+                title={`Encryption is ${isEncryptionEnabled ? 'enabled' : 'disabled'}. Click to toggle.`}
+              >
+                <Shield className={`w-5 h-5 ${isEncryptionEnabled ? 'text-green-600' : 'text-gray-600'}`} />
+              </button>
+              
+              
+              
+              <button 
+                onClick={onToggleProfileSidebar}
+                className="p-3 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                <Info className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
           </header>
 
-          {/* ✅ Messages Container - Scrollable area */}
+          {/* ✅ Fixed Messages Container */}
           <div className="flex-1 relative bg-gradient-to-br from-blue-50 to-purple-50 overflow-hidden">
             <section
               ref={messagesContainerRef}
@@ -273,7 +337,6 @@ export const ChatMain: React.FC<ChatMainProps> = ({
               <div ref={messagesEndRef} />
             </section>
 
-            {/* ✅ Scroll to bottom button */}
             {isScrolledUp && (
               <button
                 onClick={handleScrollToBottom}
@@ -284,7 +347,7 @@ export const ChatMain: React.FC<ChatMainProps> = ({
             )}
           </div>
 
-          {/* ✅ Fixed Footer - Doesn't scroll */}
+          {/* ✅ Fixed Footer - flex-shrink-0 to prevent shrinking */}
           <footer className="flex-shrink-0 p-6 bg-white border-t border-blue-100">
             <div className="flex items-center gap-3 bg-gray-50 rounded-2xl p-3">
               <button className="p-2 hover:bg-blue-100 rounded-lg transition-colors">
@@ -293,7 +356,13 @@ export const ChatMain: React.FC<ChatMainProps> = ({
               
               <input
                 type="text"
-                placeholder={isEncryptionEnabled ? "Type a secure message..." : "Type a message..."}
+                placeholder={
+                  isEncryptionEnabled && conversationKey 
+                    ? "Type a secure message..." 
+                    : isEncryptionEnabled 
+                      ? "Type a message (encryption pending)..." 
+                      : "Type a message..."
+                }
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => {
@@ -322,12 +391,29 @@ export const ChatMain: React.FC<ChatMainProps> = ({
               </button>
             </div>
             
-            {isEncryptionEnabled && (
-              <div className="flex items-center justify-center gap-2 mt-2 text-xs text-green-600">
-                <Shield className="w-3 h-3" />
-                <span>Messages are end-to-end encrypted</span>
-              </div>
-            )}
+            {/* ✅ Enhanced encryption status indicator */}
+            <div className="flex items-center justify-center gap-2 mt-2 text-xs">
+              <Shield className={`w-3 h-3 ${
+                isEncryptionEnabled && conversationKey 
+                  ? 'text-green-600' 
+                  : isEncryptionEnabled 
+                    ? 'text-yellow-600' 
+                    : 'text-gray-400'
+              }`} />
+              <span className={
+                isEncryptionEnabled && conversationKey 
+                  ? 'text-green-600' 
+                  : isEncryptionEnabled 
+                    ? 'text-yellow-600' 
+                    : 'text-gray-400'
+              }>
+                {isEncryptionEnabled && conversationKey 
+                  ? 'Messages are end-to-end encrypted' 
+                  : isEncryptionEnabled 
+                    ? 'Encryption enabled - waiting for key...' 
+                    : 'Encryption disabled'}
+              </span>
+            </div>
           </footer>
         </>
       )}

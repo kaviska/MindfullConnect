@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
             specialty: counselorSpecialty
           },
           // TODO: Add zoom link when implemented
-          // zoomLink: session.zoomLink,
+          zoomLink: session.zoomLink,
           createdAt: session.createdAt
         };
       })
