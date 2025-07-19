@@ -31,7 +31,7 @@ export interface BookedSession {
     specialty: string;
   };
   // TODO: Add zoom link when implemented
-  // zoomLink?: string;
+  zoomLink?: string;
   createdAt: string;
   isUpcoming?: boolean;
   avatar?: string;

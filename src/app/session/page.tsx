@@ -39,6 +39,7 @@ export default function Session() {
     try {
       const res = await fetch("/api/sessions/my", {
         credentials: 'include',
+        
       });
 
       const data = await res.json();

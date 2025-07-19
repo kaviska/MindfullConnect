@@ -1,6 +1,7 @@
 // src/app/patient/page.tsx
 "use client";
 import AllSessionsModal from "@/app/components/sessions/AllSessionsModal";
+import SessionDetailsModal from "@/app/components/sessions/SessionDetailsModal"; // ✅ Add this import
 import { BookedSession, Counselor } from "@/app/components/types";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -17,18 +18,36 @@ import {
   Video,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // ✅ Add this import
 import { useEffect, useState } from "react";
 
 export default function PatientPage() {
   const { user } = useAuth();
+  const router = useRouter(); // ✅ Add router
+  
   // ✅ Add state for dynamic sessions
   const [upcomingSessions, setUpcomingSessions] = useState<BookedSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // ✅ Add state for featured counselors'
+  
+  // ✅ Add state for featured counselors
   const [featuredCounselors, setFeaturedCounselors] = useState<Counselor[]>([]);
   const [counselorsLoading, setCounselorsLoading] = useState(true);
-  // ✅ Add state for modal
+  
+  // ✅ Add state for modals
   const [isAllSessionsModalOpen, setIsAllSessionsModalOpen] = useState(false);
+  const [isSessionDetailsModalOpen, setIsSessionDetailsModalOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<BookedSession | null>(null);
+
+  // ✅ Add handlers for session actions
+  const handleChatClick = (counselorId: string) => {
+    router.push(`/chatinterface?counselorId=${counselorId}`);
+  };
+
+  const handleViewDetails = (session: BookedSession) => {
+    setSelectedSession(session);
+    setIsSessionDetailsModalOpen(true);
+  };
+
   // ✅ Fetch sessions on component mount
   useEffect(() => {
     const fetchSessions = async () => {
@@ -39,7 +58,14 @@ export default function PatientPage() {
 
         const data = await res.json();
         if (res.ok) {
-          setUpcomingSessions(data.sessions);
+          // ✅ Filter for upcoming sessions only
+          const now = new Date();
+          const upcoming = data.sessions.filter((session: BookedSession) => {
+            const sessionDateTime = new Date(`${session.date}T${session.time}`);
+            return sessionDateTime > now && (session.status === 'pending' || session.status === 'confirmed');
+          });
+          
+          setUpcomingSessions(upcoming);
         } else {
           console.error("❌ Error loading sessions:", data.error);
         }
@@ -193,7 +219,7 @@ export default function PatientPage() {
 
             {upcomingSessions.length > 0 ? (
               <div className="space-y-4">
-                {/* ✅ Show maximum 2 sessions */}
+                {/* ✅ Updated session cards with proper handlers */}
                 {upcomingSessions.slice(0, 2).map((session) => (
                   <div
                     key={session.id}
@@ -208,7 +234,7 @@ export default function PatientPage() {
                       </div>
                       <div className="flex flex-col items-end">
                         <div className="text-sm text-blue-600 font-semibold">
-                          {session.date}
+                          {new Date(session.date).toLocaleDateString()}
                         </div>
                         <div className="text-sm text-gray-500">
                           {session.time}
@@ -219,7 +245,7 @@ export default function PatientPage() {
                       {session.counselor.specialty}
                     </div>
 
-                    {/* ✅ Enhanced action buttons with chat */}
+                    {/* ✅ Updated action buttons with proper handlers */}
                     <div className="flex justify-between items-center">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -238,25 +264,22 @@ export default function PatientPage() {
                       </span>
 
                       <div className="flex gap-2">
-                        {/* ✅ Chat button for booked sessions */}
-                        <Link href={`/chat/${session.counselor.id}`}>
-                          <button className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors flex items-center gap-1">
-                            <MessageSquare className="h-3 w-3" />
-                            Chat
-                          </button>
-                        </Link>
+                        {/* ✅ Chat button with proper handler */}
+                        <button
+                          onClick={() => handleChatClick(session.counselor.id)}
+                          className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors flex items-center gap-1"
+                        >
+                          <MessageSquare className="h-3 w-3" />
+                          Chat
+                        </button>
 
-                        {/* ✅ Join/View button */}
-                        {new Date(session.date).toDateString() ===
-                        new Date().toDateString() ? (
-                          <button className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
-                            Join Now
-                          </button>
-                        ) : (
-                          <button className="bg-gray-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors">
-                            View Details
-                          </button>
-                        )}
+                        {/* ✅ View Details button with proper handler */}
+                        <button
+                          onClick={() => handleViewDetails(session)}
+                          className="bg-gray-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors"
+                        >
+                          View Details
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -266,7 +289,7 @@ export default function PatientPage() {
                   onClick={() => setIsAllSessionsModalOpen(true)}
                   className="block w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all text-center"
                 >
-                  View All
+                  View All Sessions
                 </button>
               </div>
             ) : (
@@ -299,7 +322,6 @@ export default function PatientPage() {
                   Top Rated Counselors
                 </h2>
               </div>
-              
             </div>
 
             {counselorsLoading ? (
@@ -322,7 +344,7 @@ export default function PatientPage() {
               </div>
             ) : featuredCounselors.length > 0 ? (
               <div className="space-y-4">
-                {/* // ✅ Fix property references in the counselor card section */}
+                {/* ✅ Fix property references in the counselor card section */}
                 {featuredCounselors.slice(0, 2).map((counselor) => (
                   <div
                     key={counselor._id}
@@ -481,10 +503,17 @@ export default function PatientPage() {
           </div>
         </div>
       </div>
-      {/* ✅ Add the modal */}
+      
+      {/* ✅ Add both modals */}
       <AllSessionsModal
         isOpen={isAllSessionsModalOpen}
         onClose={() => setIsAllSessionsModalOpen(false)}
+      />
+      
+      <SessionDetailsModal
+        isOpen={isSessionDetailsModalOpen}
+        onClose={() => setIsSessionDetailsModalOpen(false)}
+        session={selectedSession}
       />
     </div>
   );

@@ -9,6 +9,7 @@ const sessionSchema = new Schema({
   duration: { type: Number, default: 55 }, // in minutes
   status: { type: String, enum: ["pending", "confirmed", "cancelled", "completed", "counselor requested reschedule"], default: "pending" },
   zoomLink: { type: String },
+   emailSent: { type: String, enum: ["yes", "no"], default: "no" },
   createdAt: { type: Date, default: Date.now }
 });
 
