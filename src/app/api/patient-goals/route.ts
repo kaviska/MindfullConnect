@@ -5,6 +5,7 @@ import Goals from "@/models/Goals";
 import User from "@/models/User";
 import Counselor from "@/models/Counselor";
 import jwt from "jsonwebtoken";
+import { createNotification } from "@/utility/backend/notificationService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
@@ -62,6 +63,13 @@ export async function POST(req: NextRequest) {
     });
 
     await patientGoal.save();
+    // Create notification for goal assignment
+    await createNotification({
+      type: "goal_assigned",
+      message: `Goal "${goal.title}" assigned to patient ${patient.fullName}`,
+      user_id:decoded.userId,
+      time: new Date(),
+    });
 
     return NextResponse.json({ 
       message: "Goal assigned successfully", 

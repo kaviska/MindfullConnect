@@ -82,7 +82,7 @@ const Nav = () => {
     const baseItems = [
       { href: "/", label: "Home" },
       { href: "/blogMC", label: "Blog" },
-      { href: "/find-counselor", label: "Find a Counselor" }
+      { href: "/session", label: "Find a Counselor" }
     ];
 
     // Only show "Join as a Counselor" if user is not a counselor

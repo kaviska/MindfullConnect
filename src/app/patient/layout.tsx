@@ -1,5 +1,5 @@
 import React from 'react';
-import Nav from './Nav';
+import Nav from './nav';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 
 

@@ -1,18 +1,41 @@
 // Types and Interfaces
 export interface Counselor {
-   _id: string;
+  _id: string;
   name: string;
   specialty: string;
   rating: number;
   reviews: number;
-  description: string;
+  yearsOfExperience: number;
+  consultationFee: number;
+  bio: string;
   avatar: string;
+  status: "active" | "inactive" | "pending";
+  profileCompleted: boolean;
+  therapeuticModalities: string[];
+  languagesSpoken: string[];
+  availabilityType: "online" | "in-person" | "both";
+  // Optional fields
+  description?: string; // Keep for backward compatibility
 }
 
+// ✅ UPDATED: Enhanced BookedSession interface for dynamic data
 export interface BookedSession {
+  id: string;
   date: string;
   time: string;
-  counselor: string;
+  duration: number;
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+  counselor: {
+    id: string;
+    name: string;
+    specialty: string;
+  };
+  // TODO: Add zoom link when implemented
+  // zoomLink?: string;
+  createdAt: string;
+  isUpcoming?: boolean;
+  avatar?: string;
+  
 }
 
 // UPDATED: Added new chat and user-related interfaces

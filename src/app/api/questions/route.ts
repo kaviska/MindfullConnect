@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Question from "@/models/Question";
+import { createNotification } from "@/utility/backend/notificationService";
 
 function respond(data: object, status: number = 200) {
   return NextResponse.json(data, { status });
@@ -49,6 +50,13 @@ export async function POST(req: NextRequest) {
         400
       );
     }
+
+    
+    const notification = await createNotification({
+      type: "question_created",
+      message: `New Question created`,
+      user_id: decoded.userId,
+    });
 
     const questionDoc = new Question(body);
     await questionDoc.save();

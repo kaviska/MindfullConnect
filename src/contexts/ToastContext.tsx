@@ -24,6 +24,12 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     type: "success",
   });
 
+  // ✅ Add debug logging
+  const setToastWithDebug = (newToast: React.SetStateAction<Toast>) => {
+    console.log("🍞 ToastContext: Setting toast:", newToast);
+    setToast(newToast);
+  };
+
   return (
     <ToastContext.Provider value={{ toast, setToast }}>
       {children}

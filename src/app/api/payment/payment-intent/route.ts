@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import connectDB from "@/lib/db";
 import Counselor from "@/models/Counselor";
+import Session from "@/models/Session";     
 
 export async function POST(request: Request) {
   try {
@@ -12,11 +13,25 @@ export async function POST(request: Request) {
     await connectDB();
 
     // Check if counselor has a Connect account
-    const counselor = await Counselor.findById(counselorId);
-    const connectAccountId = counselor?.stripeConnectAccountId;
+    const counselor = await Counselor.findOne({ userId: counselorId });
+    console.log("Counsellor", counselorId, counselor);
+    
+    // Determine the final amount to charge
+    const counselorFee = counselor?.consultationFee;
+    const finalAmount = (counselorFee && counselorFee > 0) ? counselorFee : amount;
+    console.log(`💰 Using amount: $${finalAmount/100} (Counselor fee: $${counselorFee/100 || 'not set'}, Default: $${amount/100})`);
+    
+    // Debug the stripeAccountId field
+    console.log("All counselor keys:", Object.keys(counselor || {}));
+    console.log("Raw stripeAccountId:", counselor?.stripeAccountId);
+    console.log("toObject stripeAccountId:", counselor?.toObject()?.stripeAccountId);
+    console.log("Direct access:", counselor && counselor['stripeAccountId']);
+    
+    const connectAccountId = counselor?.toObject()?.stripeAccountId || counselor?.stripeAccountId;
+    console.log("Connect Account ID:", connectAccountId);
 
     let paymentIntentParams: any = {
-      amount: amount,
+      amount: finalAmount,
       currency: currency,
       metadata: {
         sessionId: sessionId,
@@ -36,7 +51,7 @@ export async function POST(request: Request) {
           "active";
 
         if (hasTransferCapability) {
-          paymentIntentParams.application_fee_amount = Math.floor(amount * 0.2); // 20% commission
+          paymentIntentParams.application_fee_amount = Math.floor(finalAmount * 0.2); // 20% commission
           paymentIntentParams.transfer_data = {
             destination: connectAccountId, // 80% goes to counselor
           };
@@ -63,8 +78,18 @@ export async function POST(request: Request) {
     const { client_secret: clientSecret } = await stripe.paymentIntents.create(
       paymentIntentParams
     );
+     // ✅ Update session status to confirmed after successful payment intent creation
+    if (sessionId) {
+      await Session.findByIdAndUpdate(sessionId, {
+        status: "confirmed"
+      });
+      console.log(`✅ Session ${sessionId} status updated to confirmed`);
+    }
 
-    return NextResponse.json({ client_secret: clientSecret }, { status: 200 });
+    return NextResponse.json(
+      { client_secret: clientSecret, amount: finalAmount },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error creating payment intent:", error);
     return NextResponse.json(

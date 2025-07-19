@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
 import Session from "@/models/Session";
+import User from "@/models/User";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -9,7 +10,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   await connectDB();
 
   const sessionId = params.id;
-  const token = request.headers.get("authorization")?.split(" ")[1];
+  
+  // ✅ Use cookies instead of Authorization header
+  const token = request.cookies.get("token")?.value;
 
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,33 +20,120 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    const session = await Session.findById(sessionId);
+    const session = await (Session as any).findById(sessionId);
 
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    // Check if logged-in user is the one who booked it
-    if (session.patientId.toString() !== decoded.userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Get user to check their role
+    const user = await (User as any).findById(decoded.userId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check if cancellation is at least 2 days in advance
-    const sessionDate = new Date(`${session.date}T${session.time}`);
-    const now = new Date();
-    const timeDiff = sessionDate.getTime() - now.getTime();
-    const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+    // Check if user has permission to cancel this session
+    const isPatient = session.patientId.toString() === decoded.userId;
+    const isCounselor = user.role === 'counselor' && session.counselorId.toString() === decoded.userId;
 
-    if (daysDiff < 2) {
-      return NextResponse.json({
-        error: "Cancellations are only allowed at least 2 days in advance"
-      }, { status: 400 });
+    if (!isPatient && !isCounselor) {
+      return NextResponse.json({ error: "Forbidden: You can only cancel your own sessions" }, { status: 403 });
     }
 
-    await Session.findByIdAndDelete(sessionId);
+    // For patients, check if cancellation is at least 24 hours in advance
+    if (isPatient) {
+      const sessionDate = new Date(`${session.date}T${session.time}`);
+      const now = new Date();
+      const timeDiff = sessionDate.getTime() - now.getTime();
+      const hoursDiff = timeDiff / (1000 * 60 * 60);
 
-    return NextResponse.json({ message: "Session cancelled successfully" });
+      if (hoursDiff < 24) {
+        return NextResponse.json({
+          error: "Cancellations are only allowed at least 24 hours in advance"
+        }, { status: 400 });
+      }
+    }
+
+    // If there's a zoom link, try to delete the Zoom meeting
+    if (session.zoomLink) {
+      try {
+        // Extract meeting ID from zoom link if needed for API call
+        // For now, we'll just remove the link from our session
+        console.log("Removing Zoom link for cancelled session:", sessionId);
+      } catch (zoomError) {
+        console.error("Error deleting Zoom meeting:", zoomError);
+        // Continue with cancellation even if Zoom deletion fails
+      }
+    }
+
+    // ✅ Update status to cancelled and remove zoom link
+    await (Session as any).findByIdAndUpdate(sessionId, { 
+      status: 'cancelled',
+      zoomLink: null // Remove the zoom link
+    });
+
+    return NextResponse.json({ 
+      message: "Session cancelled successfully",
+      sessionId: sessionId 
+    });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Error cancelling session:", error);
+    return NextResponse.json({ error: error.message || "Failed to cancel session" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  await connectDB();
+
+  const sessionId = params.id;
+  
+  // ✅ Use cookies instead of Authorization header
+  const token = request.cookies.get("token")?.value;
+
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const body = await request.json();
+    const { status } = body;
+
+    const session = await (Session as any).findById(sessionId);
+
+    if (!session) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    // Get user to check their role
+    const user = await (User as any).findById(decoded.userId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Check if user has permission to update this session
+    const isCounselor = user.role === 'counselor' && session.counselorId.toString() === decoded.userId;
+
+    if (!isCounselor) {
+      return NextResponse.json({ error: "Forbidden: Only the assigned counselor can update this session" }, { status: 403 });
+    }
+
+    // Validate the status
+    const validStatuses = ["pending", "confirmed", "cancelled", "completed", "counselor requested reschedule"];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    // Update the session status
+    await (Session as any).findByIdAndUpdate(sessionId, { status });
+
+    return NextResponse.json({ 
+      message: "Session status updated successfully",
+      sessionId: sessionId,
+      newStatus: status
+    });
+  } catch (error: any) {
+    console.error("Error updating session:", error);
+    return NextResponse.json({ error: error.message || "Failed to update session" }, { status: 500 });
   }
 }

@@ -50,7 +50,7 @@ export default function MyBlogs() {
     <div className="min-h-screen bg-white px-6 py-10 text-gray-900">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-extrabold mb-8 text-center tracking-tight">
-          Your Published Blogs
+          Your Blogs
         </h1>
 
         {loading && (

@@ -6,6 +6,7 @@ import Counselor from "@/models/Counselor";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
+// Updated POST route - Create session
 export async function POST(request: NextRequest) {
   await connectDB();
 
@@ -22,8 +23,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields: counselorId, date, time" }, { status: 400 });
     }
 
+    // ✅ Check for existing session using User._id directly
     const existing = await Session.findOne({ 
-      counselorId, 
+      counselorId: counselorId, // Use User._id directly, no lookup needed
       date, 
       time
     });
@@ -32,23 +34,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Time slot already booked" }, { status: 409 });
     }
 
+    // ✅ Create session with User._id directly
     const session = new Session({
       patientId: decoded.userId,
-      counselorId,
+      counselorId: counselorId, // Use User._id directly
       date,
       time,
-      status: "booked", // Initial status before payment
+      status: "pending", // Use a valid status from your enum
     });
 
     await session.save();
 
-    await Counselor.findByIdAndUpdate(
-      counselorId,
-      {
-        $addToSet: { patients_ids: decoded.userId }
-      },
-      { new: true }
-    );
+    // ✅ Optional: Update counselor's patient list using User._id
+    try {
+      const counselor = await Counselor.findOne({ userId: counselorId }).exec();
+      if (counselor) {
+        await Counselor.findByIdAndUpdate(
+          counselor._id,
+          {
+            $addToSet: { patients_ids: decoded.userId }
+          },
+          { new: true }
+        );
+      }
+    } catch (counselorError) {
+      console.log("Warning: Could not update counselor patient list:", counselorError);
+      // Continue without failing the session creation
+    }
 
     console.log(`Session booked: Patient ${decoded.userId} with Counselor ${counselorId} on ${date} at ${time}`);
 
@@ -60,43 +72,13 @@ export async function POST(request: NextRequest) {
         counselorId: session.counselorId,
         date: session.date,
         time: session.time,
-        status: session.status
+        status: session.status,
+        zoomLink: session.zoomLink
       }
     });
 
   } catch (error: any) {
     console.error("Error booking session:", error);
     return NextResponse.json({ error: error.message || "Failed to book session" }, { status: 500 });
-  }
-}
-
-export async function PATCH(request: NextRequest) {
-  await connectDB();
-
-  try {
-    const { sessionId, status } = await request.json();
-
-    if (!sessionId || !status) {
-      return NextResponse.json({ error: "Missing sessionId or status" }, { status: 400 });
-    }
-
-    const session = await Session.findByIdAndUpdate(
-      sessionId,
-      { status },
-      { new: true }
-    );
-
-    if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ 
-      message: "Session status updated successfully", 
-      session 
-    });
-
-  } catch (error: any) {
-    console.error("Error updating session status:", error);
-    return NextResponse.json({ error: error.message || "Failed to update session" }, { status: 500 });
   }
 }

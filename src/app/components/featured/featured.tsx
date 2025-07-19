@@ -5,21 +5,55 @@ import Image from 'next/image'
 const Featured = () => {
   return (
     <div className={styles.container}>
-
-      <h4 className={styles.title}><b>MindfulConnect  ❤️‍🩹<br/>Bloggit Reading Corner</b></h4> 
+      <div className={styles.headerSection}>
+        <div className={styles.badge}>✨ Featured Article</div>
+        <h1 className={styles.title}>
+          <span className={styles.brandName}>MindfulConnect</span>
+          <span className={styles.subtitle}>Your Journey to Wellness Starts Here</span>
+        </h1>
+        <p className={styles.description}>
+          Discover insights, stories, and resources to support your mental health journey
+        </p>
+      </div>
       
-      <div className={styles.post}>
-        <div className={styles.imgContainer}>
-          <Image src={"/p1.jpeg"} alt="Featured Image 1" fill className={styles.image} />
-        </div>
-        <div className={styles.txtContainer}>
-          <h2 className={styles.postTitle}>Lorem ipsum dolor, sit amet consectetur elit.</h2>
-
-          <p className= {styles.postDesc}>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus omnis quae minus laboriosam temporibus, ipsam aperiam! Ducimus nesciunt harum tempore est, reprehenderit asperiores maiores ipsum at, quas odit ratione sunt. Lorem ipsum dolor sit.</p>
-
-          <button className={styles.button}>Read More</button>
-
+      <div className={styles.featuredPost}>
+        <div className={styles.postCard}>
+          <div className={styles.imgContainer}>
+            <Image 
+              src={"/p1.jpeg"} 
+              alt="A serene moment of reflection and peace" 
+              fill 
+              className={styles.image} 
+              priority
+            />
+            <div className={styles.imageOverlay}></div>
           </div>
+          <div className={styles.contentContainer}>
+            <div className={styles.postMeta}>
+              <span className={styles.category}>Mindfulness</span>
+              <span className={styles.readTime}>5 min read</span>
+            </div>
+            <h2 className={styles.postTitle}>
+              Finding Peace in Daily Moments: A Guide to Mindful Living
+            </h2>
+            <p className={styles.postDesc}>
+              Discover simple yet powerful techniques to bring mindfulness into your everyday life. 
+              Learn how small moments of awareness can create lasting positive changes in your mental well-being 
+              and help you navigate life's challenges with greater clarity and peace.
+            </p>
+            <div className={styles.actionContainer}>
+              <button className={styles.readButton}>
+                <span>Continue Reading</span>
+                <svg className={styles.arrow} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <div className={styles.engagement}>
+                <span className={styles.likes}>💙 24 helpful</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

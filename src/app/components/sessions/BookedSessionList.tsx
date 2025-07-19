@@ -25,7 +25,7 @@ export default function BookedSessionList({ bookedSessions = [] }: BookedSession
               </svg>
               <span>
                 <span className="font-semibold text-[#0369a1]">{session.date}</span> –{' '}
-                <span className="font-semibold text-[#0369a1]">{session.time}</span> with {session.counselor}
+                <span className="font-semibold text-[#0369a1]">{session.time}</span> with {session.counselor.name}
               </span>
             </li>
           ))}

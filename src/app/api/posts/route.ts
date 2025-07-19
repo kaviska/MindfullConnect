@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
 import { connect } from "@/dbConfig/dbConfig";
-import '@/models/userModel';
+import User from '@/models/User';
 import Post from '@/models/postModel';
 import { getUserFromToken } from "@/lib/getUserFromToken";
 
 
 // GET posts either all or by category
-export async function GET(request: Request) {
-  await connect();
-
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category');
-
+export async function GET(req: Request) {
   try {
+    await connect();
+    
+    const { searchParams } = new URL(req.url);
+    const category = searchParams.get('category');
+    
     let posts;
 
     if (category) {
