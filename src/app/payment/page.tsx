@@ -64,6 +64,8 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
   };
 
   return (
+        <Suspense fallback={<div>Loading...</div>}>
+
     
     <div className="max-w-lg mx-auto mt-8 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
       {/* Header Section */}
@@ -164,6 +166,7 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
         </div>
       </div>
     </div>
+    </Suspense>
   );
 }
 
