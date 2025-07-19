@@ -1,24 +1,26 @@
-import { NextResponse } from 'next/server';
-import { connect } from "@/dbConfig/dbConfig";
+import { NextResponse, NextRequest } from 'next/server';
+import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Post from '@/models/postModel';
 import { getUserFromToken } from "@/lib/getUserFromToken";
+import { Model } from 'mongoose';
 
 
 // GET posts either all or by category
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    await connect();
+    await dbConnect();
     
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
     
     let posts;
+    const PostModel = Post as Model<any>;
 
     if (category) {
-      posts = await Post.find({ category, published: true });
+      posts = await PostModel.find({ category, published: true });
     } else {
-      posts = await Post.find({ published: true });
+      posts = await PostModel.find({ published: true });
     }
 
     return NextResponse.json(posts);
@@ -28,24 +30,56 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
-        await connect();
+        console.log('POST /api/posts called');
+        await dbConnect();
         
         const body = await req.json();
+        console.log('Request body received:', { ...body, content: '[CONTENT_TRUNCATED]' });
         
-        // Optionally, generate the slug if it's not passed
+        // Improved slug generation
         if (!body.slug) {
-          body.slug = body.title.toLowerCase().replace(/ /g, '-') + '-' + new Date().getTime();
+          const baseSlug = body.title
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '') // Remove special characters except hyphens and spaces
+            .replace(/\s+/g, '-') // Replace spaces with hyphens
+            .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+            .trim(); // Remove leading/trailing whitespace
+          
+          body.slug = `${baseSlug}-${Date.now()}`;
+          console.log('Generated slug:', body.slug);
+        } else {
+          console.log('Using provided slug:', body.slug);
         }
     
-        const newPost = new Post(body);
+        const PostModel = Post as Model<any>;
+        console.log('Creating new post with PostModel');
+        
+        const newPost = new PostModel(body);
+        console.log('Post instance created, saving to database');
     
         await newPost.save();
+        console.log('Post saved successfully with ID:', newPost._id);
     
-        return NextResponse.json({ message: 'Post created successfully', post: newPost }, { status: 201 });
+        return NextResponse.json({ 
+          message: 'Post created successfully', 
+          post: newPost,
+          slug: newPost.slug 
+        }, { status: 201 });
       } catch (error: any) {
-        console.error('Create post error:', error);  // More detailed error logging
-        return NextResponse.json({ error: 'Failed to create post', details: error.message }, { status: 500 });
+        console.error('Create post error:', error);
+        console.error('Error stack:', error.stack);
+        console.error('Error details:', {
+          name: error.name,
+          message: error.message,
+          code: error.code
+        });
+        
+        return NextResponse.json({ 
+          error: 'Failed to create post', 
+          details: error.message,
+          errorType: error.name 
+        }, { status: 500 });
       }
 }

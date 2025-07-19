@@ -30,9 +30,10 @@ async function getBlogPost(slug: string) {
 export default async function EditBlogPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const blog = await getBlogPost(params.slug);
+  const { slug } = await params;
+  const blog = await getBlogPost(slug);
 
   if (!blog) {
     return <div className="p-10 text-center text-red-500">Blog not found.</div>;
