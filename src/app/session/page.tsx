@@ -159,7 +159,7 @@ const handleBookingSuccess = async (sessionData: any) => {
       // Redirect to payment page
       localStorage.setItem("amount", paymentData.amount);
 
-      window.location.href = `/payment?client_secret=${paymentData.client_secret}&session_id=${sessionData.id}`;
+      window.location.href = `/payment?client_secret=${paymentData.client_secret}&session_id=${sessionData._id}`;
     } else {
       console.error('❌ Payment intent creation failed:', paymentData.error);
       alert('Payment setup failed. Please try again.');

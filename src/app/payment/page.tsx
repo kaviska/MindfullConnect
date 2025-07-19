@@ -38,7 +38,7 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/session?payment=success`,
+        return_url: `${window.location.origin}/payment-success`,
       },
       redirect: "if_required",
     });
