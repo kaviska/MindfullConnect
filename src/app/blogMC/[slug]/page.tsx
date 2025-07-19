@@ -3,7 +3,7 @@ import styles from './page.module.css'
 import Image from 'next/image'
 import BlogPostViewer from '@/app/components/blogPostViewer/render'
 import { type Metadata } from 'next'
-import type { PageProps } from 'next'
+import { Suspense } from 'react'
 
 async function getData(slug: string) {
   try {
@@ -33,6 +33,8 @@ export default async function BlogPost({ params }: PageProps<{ slug: string }>) 
   }
 
   return (
+        <Suspense fallback={<div>Loading...</div>}>
+
     <div className={styles.container}>
       <h1 className={styles.title}>{post.title}</h1>
       <div className={styles.meta}>
@@ -56,5 +58,6 @@ export default async function BlogPost({ params }: PageProps<{ slug: string }>) 
         <BlogPostViewer content={parsedContent} />
       </div>
     </div>
+    </Suspense>
   )
 }
