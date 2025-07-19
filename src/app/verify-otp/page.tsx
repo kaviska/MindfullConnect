@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react'
+
 
 export default function VerifyOtpPage() {
   const router = useRouter();
@@ -50,6 +52,8 @@ export default function VerifyOtpPage() {
   };
 
   return (
+        <Suspense fallback={<div>Loading...</div>}>
+
     <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4">
       <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-4 text-center text-blue-500">Verify Your Email</h2>
@@ -77,5 +81,6 @@ export default function VerifyOtpPage() {
         </button>
       </div>
     </div>
+    </Suspense>
   );
 }

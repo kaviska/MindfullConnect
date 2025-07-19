@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './cardList.module.css';
 import Card from '../card/card';
+import { Suspense } from 'react'
+
 
 const CardList = () => {
   const [posts, setPosts] = useState<any[]>([]);
@@ -31,6 +33,7 @@ const CardList = () => {
   }, [category]);
 
   return (
+     <Suspense fallback={<div>Loading...</div>}>
     <div className={styles.container}>
       <h1 className={styles.title}>
         {category ? `Posts in "${category}"` : 'Recent Posts'}
@@ -53,6 +56,7 @@ const CardList = () => {
         ))}
       </div>
     </div>
+    </Suspense>
   );
 };
 

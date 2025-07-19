@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 
 import ZoomLoader from '@/components/zoom/ZoomLoader';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react'
+
 
 export default function ZoomMeetingPage({ params }: { params: { meetingId: string } }) {
   const searchParams = useSearchParams();
@@ -26,6 +28,7 @@ export default function ZoomMeetingPage({ params }: { params: { meetingId: strin
   }
 
   return (
+     <Suspense fallback={<div>Loading...</div>}>
     <ZoomLoader
       meetingNumber={params.meetingId}
       sdkKey={sdkKey}
@@ -33,5 +36,6 @@ export default function ZoomMeetingPage({ params }: { params: { meetingId: strin
       password={password}
       userName={userName}
     />
+    </Suspense>
   );
 }

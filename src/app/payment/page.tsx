@@ -173,7 +173,11 @@ export default function Payment() {
   const sessionId = searchParams.get("session_id");
 
   if (!clientSecret || !sessionId) {
-    return <div>Invalid payment parameters</div>;
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <div>Invalid payment parameters</div>
+      </Suspense>
+    );
   }
 
   return (
