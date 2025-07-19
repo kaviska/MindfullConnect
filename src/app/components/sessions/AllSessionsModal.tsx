@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Calendar, Clock, User, X, MessageSquare, Video, Phone } from 'lucide-react';
 import { BookedSession } from '../types';
 import Link from 'next/link';
+import SessionDetailsModal from './SessionDetailsModal'; // ✅ Add this import
 
 interface AllSessionsModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past' | 'completed' | 'cancelled'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
+
+  
   // ✅ Fetch sessions when modal opens
   useEffect(() => {
     if (isOpen) {
