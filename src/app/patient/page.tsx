@@ -24,7 +24,7 @@ export default function PatientPage() {
   // ✅ Add state for dynamic sessions
   const [upcomingSessions, setUpcomingSessions] = useState<BookedSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // ✅ Add state for featured counselors
+  // ✅ Add state for featured counselors'
   const [featuredCounselors, setFeaturedCounselors] = useState<Counselor[]>([]);
   const [counselorsLoading, setCounselorsLoading] = useState(true);
   // ✅ Add state for modal

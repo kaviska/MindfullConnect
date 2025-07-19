@@ -13,9 +13,7 @@ export const ChatLayout: React.FC = () => {
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  const [selectedConversationId, setSelectedConversationId] = useState<
-    string | null
-  >(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isProfileSidebarVisible, setIsProfileSidebarVisible] = useState(false);
   const [showProfileSidebar, setShowProfileSidebar] = useState(false);
   const [layoutHeight, setLayoutHeight] = useState<number>(0);
@@ -48,17 +46,14 @@ export const ChatLayout: React.FC = () => {
 
   const fetchUsers = useCallback(async () => {
     if (isLoading || !user) {
-      // Remove token dependency
-      console.log(
-        "Skipping fetchUsers: AuthContext is loading or user/token is null"
-      );
+      console.log("Skipping fetchUsers: AuthContext is loading or user/token is null");
       return;
     }
 
     try {
       console.log("Fetching users with cookies");
       const res = await fetch("/api/users", {
-        credentials: "include", // ✅ Include cookies
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -76,21 +71,18 @@ export const ChatLayout: React.FC = () => {
     } catch (error) {
       console.error("Error fetching users:", error);
     }
-  }, [user, isLoading]); // Remove token dependency
+  }, [user, isLoading]);
 
   const fetchConversations = useCallback(async () => {
     if (isLoading || !user) {
-      // Remove token dependency
-      console.log(
-        "Skipping fetchConversations: AuthContext is loading or user/token is null"
-      );
+      console.log("Skipping fetchConversations: AuthContext is loading or user/token is null");
       return;
     }
 
     try {
       console.log("Fetching conversations with cookies");
       const res = await fetch("/api/conversations", {
-        credentials: "include", // ✅ Include cookies
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -107,20 +99,12 @@ export const ChatLayout: React.FC = () => {
     } catch (error) {
       console.error("Error fetching conversations:", error);
     }
-  }, [user, isLoading]); // Remove token dependency
+  }, [user, isLoading]);
 
   useEffect(() => {
     fetchConversations();
     fetchUsers();
   }, [fetchConversations, fetchUsers]);
-
-  useEffect(() => {
-    console.log("Conversations state updated:", conversations);
-  }, [conversations]);
-
-  useEffect(() => {
-    console.log("Users state updated:", users);
-  }, [users]);
 
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
@@ -132,89 +116,85 @@ export const ChatLayout: React.FC = () => {
     setShowChatMain(false);
     setSelectedConversationId(null);
     setShowProfileSidebar(false);
-    setIsProfileSidebarVisible(false); // Reset for consistency
+    setIsProfileSidebarVisible(false);
   };
 
   const toggleProfileSidebar = () => {
-    // On small screens, if ChatMain is visible, toggle showProfileSidebar
-    // On larger screens, toggle isProfileSidebarVisible
     if (showChatMain && !isProfileSidebarVisible) {
       setShowProfileSidebar((prev) => !prev);
     } else {
       setIsProfileSidebarVisible((prev) => !prev);
-      setShowProfileSidebar(false); // Ensure small screen state is reset
+      setShowProfileSidebar(false);
     }
   };
 
   const handleProfileBack = () => {
     setShowProfileSidebar(false);
-    setIsProfileSidebarVisible(false); // Reset both states
+    setIsProfileSidebarVisible(false);
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Loading authentication...</p>
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-[#f8fcff] to-[#e3f2fd]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-blue-600 font-medium">Loading authentication...</p>
+        </div>
       </div>
     );
   }
 
   if (!user || !token) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Redirecting to login...</p>
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-[#f8fcff] to-[#e3f2fd]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-blue-600 font-medium">Redirecting to login...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      className="flex flex-col w-full sm:max-w-8xl mt-5 mx-auto sm:px-4 overflow-x-auto"
-      style={{ height: `${layoutHeight}px` }}
-    >
-      <div className="flex w-full h-full">
-        <div className="flex w-full sm:flex sm:w-full sm:h-full">
-          <div
-            className={`${showChatMain ? "hidden sm:flex" : "flex"} w-full sm:w-auto`}
-          >
-            <div className="w-full sm:w-[306px] md:w-[306px] max-md:w-2/3">
-              <ChatSidebar
-                onSelectConversation={handleSelectConversation}
-                conversations={conversations}
-                users={users}
-                className="w-full sm:w-[306px] md:w-[306px] max-md:w-full sm:min-w-60"
-              />
-            </div>
-          </div>
-          <div
-            className={`${showChatMain ? "flex" : "hidden sm:flex"} w-full sm:w-auto flex-1 md:flex-1 max-md:w-2/3`}
-          >
-            <div
-              className={`${showProfileSidebar ? "hidden sm:flex" : "flex"} w-full sm:w-auto flex-1 md:flex-1 max-md:w-1/3`}
-            >
-              <ChatMain
-                conversationId={selectedConversationId}
-                user={user}
-                token={token}
-                conversation={conversations.find(
-                  (conv) => conv._id === selectedConversationId
-                )}
-                onToggleProfileSidebar={toggleProfileSidebar}
-                fetchConversations={fetchConversations}
-                onBack={handleBack}
-                className="w-full sm:flex-1 md:flex-1 max-md:w-full sm:min-w-60"
-              />
-            </div>
-            {(isProfileSidebarVisible || showProfileSidebar) && (
-              <div
-                className={`${showProfileSidebar ? "flex" : "hidden sm:flex"} w-full sm:w-auto`}
-              >
-                <ProfileSidebar
-                  onBack={handleProfileBack}
-                  className="w-full sm:w-[306px] md:w-[306px] max-md:w-full sm:min-w-60"
+    <div className="min-h-screen bg-gradient-to-br from-[#f8fcff] to-[#e3f2fd] p-4">
+      <div
+        className="flex flex-col w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden"
+        style={{ height: `${layoutHeight - 32}px` }}
+      >
+        <div className="flex w-full h-full">
+          <div className="flex w-full sm:flex sm:w-full sm:h-full">
+            <div className={`${showChatMain ? "hidden sm:flex" : "flex"} w-full sm:w-auto`}>
+              <div className="w-full sm:w-[320px] md:w-[320px] max-md:w-full">
+                <ChatSidebar
+                  onSelectConversation={handleSelectConversation}
+                  conversations={conversations}
+                  users={users}
+                  className="w-full h-full"
                 />
               </div>
-            )}
+            </div>
+            <div className={`${showChatMain ? "flex" : "hidden sm:flex"} w-full sm:w-auto flex-1`}>
+              <div className={`${showProfileSidebar ? "hidden sm:flex" : "flex"} w-full sm:w-auto flex-1`}>
+                <ChatMain
+                  conversationId={selectedConversationId}
+                  user={user}
+                  token={token}
+                  conversation={conversations.find((conv) => conv._id === selectedConversationId)}
+                  onToggleProfileSidebar={toggleProfileSidebar}
+                  fetchConversations={fetchConversations}
+                  onBack={handleBack}
+                  className="w-full h-full"
+                />
+              </div>
+              {(isProfileSidebarVisible || showProfileSidebar) && (
+                <div className={`${showProfileSidebar ? "flex" : "hidden sm:flex"} w-full sm:w-auto`}>
+                  <ProfileSidebar
+                    onBack={handleProfileBack}
+                    className="w-full sm:w-[320px] md:w-[320px] h-full"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
