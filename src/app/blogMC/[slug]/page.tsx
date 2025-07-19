@@ -5,27 +5,34 @@ import BlogPostViewer from "@/app/components/blogPostViewer/render";
 
 async function getData(slug: string) {
   try {
-    // Decode the slug in case it's URL encoded
     const decodedSlug = decodeURIComponent(slug);
+    console.log('Fetching post for slug:', decodedSlug);
 
-    // Determine base URL
-    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    // Use absolute URL for production
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    if (!baseUrl) {
-      if (process.env.VERCEL_URL) {
-        baseUrl = `https://${process.env.VERCEL_URL}`;
-      } else {
-        baseUrl = "http://localhost:3000";
-      }
-    }
+    console.log('Base URL:', baseUrl);
+    console.log('Full API URL:', `${baseUrl}/api/posts/${decodedSlug}`);
 
     const response = await fetch(`${baseUrl}/api/posts/${decodedSlug}`, {
       cache: "no-store", // Always fetch fresh data
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
-    if (!response.ok) return null;
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
+    if (!response.ok) {
+      console.error('Failed to fetch post:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      return null;
+    }
 
     const post = await response.json();
+    console.log('Post fetched successfully:', post?.title || 'No title');
     return post;
   } catch (error) {
     console.error("Error fetching post:", error);
@@ -35,9 +42,14 @@ async function getData(slug: string) {
 
 const BlogPost = async ({ params }: { params: { slug: string } }) => {
   const { slug } = params;
+  console.log('BlogPost component - slug:', slug);
+  
   const post = await getData(slug);
 
-  if (!post) notFound();
+  if (!post) {
+    console.log('No post found, triggering 404');
+    notFound();
+  }
 
   let parsedContent;
   try {
