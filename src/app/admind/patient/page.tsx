@@ -103,8 +103,6 @@ export default function PatientPage() {
                         <tr>
                             <th className="px-6 py-4 text-center hidden lg:table-cell">User Id</th>
                             <th className="px-6 py-4 text-center">Name</th>
-                            <th className="px-6 py-4 text-center hidden lg:table-cell">Registered Date</th>
-                            <th className="px-6 py-4 text-center hidden md:table-cell">Total Sessions</th>
                             <th className="px-6 py-4 text-center hidden md:table-cell">Email</th>
                             <th className="px-6 py-4 text-center">Status</th>
                             <th className="px-6 py-4 text-center">Action</th>
@@ -118,8 +116,6 @@ export default function PatientPage() {
                                     <img src={user.imageUrl} alt="" className="w-7 h-7 rounded-full" />
                                     {user.firstname}
                                 </td>
-                                <td className="px-6 py-4 text-center hidden lg:table-cell">{user.date}</td>
-                                <td className="px-6 py-4 text-center hidden md:table-cell">{user.totalSessions}</td>
                                 <td className="px-6 py-4 text-center hidden md:table-cell">{user.email}</td>
                                 <td className="px-6 py-4 text-center">{user.status}</td>
                                 <td className="px-6 py-4 text-center flex justify-center gap-3 text-purple-600">
