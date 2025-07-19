@@ -20,13 +20,13 @@ export default function ProfileManagement() {
     name: '',
     description: '',
     permissions: { dashboard: { create: false, read: false, update: false, delete: false }, 
-                   tours: { create: false, read: false, update: false, delete: false }, 
+                   counselor: { create: false, read: false, update: false, delete: false }, 
                    fees: { create: false, read: false, update: false, delete: false }, 
                    visa: { create: false, read: false, update: false, delete: false }, 
-                   anante: { create: false, read: false, update: false, delete: false } },
+                   patient: { create: false, read: false, update: false, delete: false } },
   });
 
-  const sections: string[] = ['Dashboard', 'Tours', 'Fees', 'Visa', 'Anante'];
+  const sections: string[] = ['Dashboard', 'Counselor', 'Fees', 'Visa', 'Patient'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -65,10 +65,10 @@ export default function ProfileManagement() {
       name: '',
       description: '',
       permissions: { dashboard: { create: false, read: false, update: false, delete: false }, 
-                     tours: { create: false, read: false, update: false, delete: false }, 
+                     counselor: { create: false, read: false, update: false, delete: false }, 
                      fees: { create: false, read: false, update: false, delete: false }, 
                      visa: { create: false, read: false, update: false, delete: false }, 
-                     anante: { create: false, read: false, update: false, delete: false } }
+                     patient: { create: false, read: false, update: false, delete: false } }
     });
   };
 
