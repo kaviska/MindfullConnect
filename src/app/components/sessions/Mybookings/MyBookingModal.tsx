@@ -1,3 +1,4 @@
+// ✅ Update MyBookingModal.tsx
 "use client";
 import { useState, useEffect } from 'react';
 import Tabs from './Tabs';
@@ -17,7 +18,8 @@ export default function MyBookingsModal({ isOpen, closeModal }: MyBookingsModalP
   const [dateRange, setDateRange] = useState('');
   const [bookings, setBookings] = useState<BookedSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  // ✅ Track multiple cancelling sessions by ID
+  const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set());
 
   // ✅ Fetch sessions from backend
   const fetchSessions = async () => {
@@ -29,7 +31,6 @@ export default function MyBookingsModal({ isOpen, closeModal }: MyBookingsModalP
 
       const data = await res.json();
       if (res.ok) {
-        // ✅ Determine if session is upcoming or past
         const sessionsWithUpcoming = data.sessions.map((session: BookedSession) => ({
           ...session,
           isUpcoming: new Date(`${session.date}T${session.time}`) > new Date(),
@@ -46,30 +47,24 @@ export default function MyBookingsModal({ isOpen, closeModal }: MyBookingsModalP
     }
   };
 
-  // ✅ Fetch sessions when modal opens
   useEffect(() => {
     if (isOpen) {
       fetchSessions();
     }
   }, [isOpen]);
 
-  // ✅ Filter bookings based on tab, counselor, and date
   const filteredBookings = bookings.filter((booking) => {
     const matchesCounselor = counselorFilter
       ? booking.counselor.name.toLowerCase().includes(counselorFilter.toLowerCase())
       : true;
     
-    // ✅ Fixed date filtering logic
-  const matchesDate = dateRange
-    ? (() => {
-        // dateRange format: "2025-07" (YYYY-MM)
-        // booking.date format: "2025-07-19" (YYYY-MM-DD)
-        const [selectedYear, selectedMonth] = dateRange.split('-');
-        const [bookingYear, bookingMonth] = booking.date.split('-');
-        
-        return selectedYear === bookingYear && selectedMonth === bookingMonth;
-      })()
-    : true;
+    const matchesDate = dateRange
+      ? (() => {
+          const [selectedYear, selectedMonth] = dateRange.split('-');
+          const [bookingYear, bookingMonth] = booking.date.split('-');
+          return selectedYear === bookingYear && selectedMonth === bookingMonth;
+        })()
+      : true;
     
     const isUpcoming = new Date(`${booking.date}T${booking.time}`) > new Date();
     const matchesTab = activeTab === 'upcoming' ? isUpcoming : !isUpcoming;
@@ -77,13 +72,15 @@ export default function MyBookingsModal({ isOpen, closeModal }: MyBookingsModalP
     return matchesCounselor && matchesDate && matchesTab;
   });
 
-  // ✅ Handle session cancellation
+  // ✅ Updated handleCancel to track individual sessions
   const handleCancel = async (sessionId: string) => {
     if (!confirm('Are you sure you want to cancel this session? This action cannot be undone.')) {
       return;
     }
 
-    setIsDeleting(true);
+    // ✅ Add this session ID to cancelling set
+    setCancellingIds(prev => new Set(prev).add(sessionId));
+
     try {
       const res = await fetch(`/api/sessions/${sessionId}`, {
         method: 'DELETE',
@@ -92,7 +89,6 @@ export default function MyBookingsModal({ isOpen, closeModal }: MyBookingsModalP
 
       const data = await res.json();
       if (res.ok) {
-        // ✅ Update session status to cancelled instead of removing
         setBookings(prev => prev.map(booking => 
           booking.id === sessionId 
             ? { ...booking, status: 'cancelled' as const }
@@ -106,15 +102,18 @@ export default function MyBookingsModal({ isOpen, closeModal }: MyBookingsModalP
       console.error('❌ Error cancelling session:', err);
       alert('Network error. Please try again.');
     } finally {
-      setIsDeleting(false);
+      // ✅ Remove this session ID from cancelling set
+      setCancellingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(sessionId);
+        return newSet;
+      });
     }
   };
 
-  // ✅ Handle session rescheduling (placeholder)
   const handleReschedule = (sessionId: string) => {
     console.log(`Reschedule session ${sessionId}`);
     alert('Rescheduling feature coming soon!');
-    // TODO: Implement rescheduling modal/functionality
   };
 
   if (!isOpen) return null;
@@ -140,10 +139,8 @@ export default function MyBookingsModal({ isOpen, closeModal }: MyBookingsModalP
           </button>
         </div>
 
-        {/* Tabs */}
         <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {/* Filters */}
         <BookingFilters
           counselorFilter={counselorFilter}
           setCounselorFilter={setCounselorFilter}
@@ -151,17 +148,16 @@ export default function MyBookingsModal({ isOpen, closeModal }: MyBookingsModalP
           setDateRange={setDateRange}
         />
 
-        {/* Booking List */}
+        {/* ✅ Pass cancellingIds instead of single isDeleting */}
         <BookingList
           bookings={filteredBookings}
           activeTab={activeTab}
           handleCancel={handleCancel}
           handleReschedule={handleReschedule}
-          isDeleting={isDeleting}
+          cancellingIds={cancellingIds} // ✅ Pass Set of IDs
           isLoading={isLoading}
         />
 
-        {/* Summary */}
         <BookingSummary bookings={bookings} />
       </div>
     </div>
