@@ -1,5 +1,4 @@
 import Image from "next/image";
-import PatientImage from "@public/patient-001.jpg";
 
 interface PatientCardProps {
   patient: {
@@ -16,9 +15,9 @@ export default function PatientCard({ patient }: PatientCardProps) {
       <div className="flex justify-center">
         <Image
           alt="patient-image"
-          src={PatientImage}
+          src="/patient-001.jpg" // ✅ Use path string instead of import
           width={150}
-          height={400}
+          height={150}
           className="w-32 h-32 rounded-full object-cover mb-3 text-center"
         />
       </div>
