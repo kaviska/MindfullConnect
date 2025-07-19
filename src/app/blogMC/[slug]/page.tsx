@@ -2,64 +2,43 @@ import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import Image from "next/image";
 import BlogPostViewer from "@/app/components/blogPostViewer/render";
-import dbConnect from "@/lib/mongodb";
-import Post from "@/models/postModel";
-import { Model } from "mongoose";
-import { ObjectId } from "mongodb";
 
 async function getData(slug: string) {
   try {
-    console.log("Getting data for slug:", slug);
-
     // Decode the slug in case it's URL encoded
     const decodedSlug = decodeURIComponent(slug);
-    console.log("Decoded slug:", decodedSlug);
 
-    // Connect to database directly in server component
-    await dbConnect();
-    const PostModel = Post as Model<any>;
+    // Determine base URL
+    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-    // First try to find by slug (most common case)
-    let post = await PostModel.findOne({ slug: decodedSlug }).populate(
-      "author",
-      "username email"
-    );
-
-    console.log(
-      "Searching by slug:",
-      decodedSlug,
-      post ? "Found" : "Not found"
-    );
-
-    // If not found by slug and it looks like an ObjectId, try that
-    if (!post && ObjectId.isValid(decodedSlug)) {
-      console.log("Searching by ObjectId:", decodedSlug);
-      post = await PostModel.findById(decodedSlug).populate(
-        "author",
-        "username email"
-      );
+    if (!baseUrl) {
+      if (process.env.VERCEL_URL) {
+        baseUrl = `https://${process.env.VERCEL_URL}`;
+      } else {
+        baseUrl = "http://localhost:3000";
+      }
     }
 
-    if (post) {
-      console.log("Post found:", post.title);
-      // Convert to plain object to avoid serialization issues
-      return JSON.parse(JSON.stringify(post));
-    } else {
-      console.log("No post found for:", decodedSlug);
-      return null;
-    }
+    const response = await fetch(`${baseUrl}/api/posts/${decodedSlug}`, {
+      cache: "no-store", // Always fetch fresh data
+    });
+
+    if (!response.ok) return null;
+
+    const post = await response.json();
+    return post;
   } catch (error) {
     console.error("Error fetching post:", error);
     return null;
   }
 }
 
-const BlogPost = async ({ params }: { params: Promise<{ slug: string }> }) => {
-  const { slug } = await params;
+const BlogPost = async ({ params }: { params: { slug: string } }) => {
+  const { slug } = params;
   const post = await getData(slug);
+
   if (!post) notFound();
 
-  // Safely parse content with error handling
   let parsedContent;
   try {
     parsedContent =
@@ -73,7 +52,7 @@ const BlogPost = async ({ params }: { params: Promise<{ slug: string }> }) => {
       content: [
         {
           type: "paragraph",
-          content: [{ type: "text", text: "Error loading content" }],
+          content: [{ type: "text", text: "Error loading content." }],
         },
       ],
     };
