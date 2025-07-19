@@ -170,27 +170,28 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
   );
 }
 
-export default function Payment() {
+function PaymentContent() {
   const searchParams = useSearchParams();
   const clientSecret = searchParams.get("client_secret");
   const sessionId = searchParams.get("session_id");
 
   if (!clientSecret || !sessionId) {
-    return (
-      <Suspense fallback={<div>Loading...</div>}>
-        <div>Invalid payment parameters</div>
-      </Suspense>
-    );
+    return <div>Invalid payment parameters</div>;
   }
 
   return (
-        <Suspense fallback={<div>Loading...</div>}>
-
     <Elements stripe={stripePromise} options={{ clientSecret }}>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4">
         <PaymentForm clientSecret={clientSecret} sessionId={sessionId} />
       </div>
     </Elements>
+  );
+}
+
+export default function Payment() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentContent />
     </Suspense>
   );
 }
