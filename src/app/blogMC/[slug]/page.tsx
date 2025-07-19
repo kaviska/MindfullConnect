@@ -2,64 +2,55 @@ import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import Image from "next/image";
 import BlogPostViewer from "@/app/components/blogPostViewer/render";
-import dbConnect from "@/lib/mongodb";
-import Post from "@/models/postModel";
-import { Model } from "mongoose";
-import { ObjectId } from "mongodb";
 
 async function getData(slug: string) {
   try {
-    console.log("Getting data for slug:", slug);
-
-    // Decode the slug in case it's URL encoded
     const decodedSlug = decodeURIComponent(slug);
-    console.log("Decoded slug:", decodedSlug);
+    console.log('Fetching post for slug:', decodedSlug);
 
-    // Connect to database directly in server component
-    await dbConnect();
-    const PostModel = Post as Model<any>;
+    // Use absolute URL for production
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // First try to find by slug (most common case)
-    let post = await PostModel.findOne({ slug: decodedSlug }).populate(
-      "author",
-      "username email"
-    );
+    console.log('Base URL:', baseUrl);
+    console.log('Full API URL:', `${baseUrl}/api/posts/${decodedSlug}`);
 
-    console.log(
-      "Searching by slug:",
-      decodedSlug,
-      post ? "Found" : "Not found"
-    );
+    const response = await fetch(`${baseUrl}/api/posts/${decodedSlug}`, {
+      cache: "no-store", // Always fetch fresh data
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    // If not found by slug and it looks like an ObjectId, try that
-    if (!post && ObjectId.isValid(decodedSlug)) {
-      console.log("Searching by ObjectId:", decodedSlug);
-      post = await PostModel.findById(decodedSlug).populate(
-        "author",
-        "username email"
-      );
-    }
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
 
-    if (post) {
-      console.log("Post found:", post.title);
-      // Convert to plain object to avoid serialization issues
-      return JSON.parse(JSON.stringify(post));
-    } else {
-      console.log("No post found for:", decodedSlug);
+    if (!response.ok) {
+      console.error('Failed to fetch post:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
       return null;
     }
+
+    const post = await response.json();
+    console.log('Post fetched successfully:', post?.title || 'No title');
+    return post;
   } catch (error) {
     console.error("Error fetching post:", error);
     return null;
   }
 }
 
-const BlogPost = async ({ params }: { params: Promise<{ slug: string }> }) => {
-  const { slug } = await params;
+const BlogPost = async ({ params }: { params: { slug: string } }) => {
+  const { slug } = params;
+  console.log('BlogPost component - slug:', slug);
+  
   const post = await getData(slug);
-  if (!post) notFound();
 
-  // Safely parse content with error handling
+  if (!post) {
+    console.log('No post found, triggering 404');
+    notFound();
+  }
+
   let parsedContent;
   try {
     parsedContent =
@@ -73,7 +64,7 @@ const BlogPost = async ({ params }: { params: Promise<{ slug: string }> }) => {
       content: [
         {
           type: "paragraph",
-          content: [{ type: "text", text: "Error loading content" }],
+          content: [{ type: "text", text: "Error loading content." }],
         },
       ],
     };
