@@ -1,24 +1,45 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { Calendar, Clock, User, X, MessageSquare, Video, Phone } from 'lucide-react';
-import { BookedSession } from '../types';
-import Link from 'next/link';
-import SessionDetailsModal from './SessionDetailsModal'; // ✅ Add this import
+import { Calendar, Clock, MessageSquare, Video, X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { BookedSession } from "../types";
+import SessionDetailsModal from "./SessionDetailsModal"; // ✅ Add this import
 
 interface AllSessionsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalProps) {
+export default function AllSessionsModal({
+  isOpen,
+  onClose,
+}: AllSessionsModalProps) {
   const [sessions, setSessions] = useState<BookedSession[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<BookedSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past' | 'completed' | 'cancelled'>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState<
+    "all" | "upcoming" | "past" | "completed" | "cancelled"
+  >("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
+  // ✅ Add state for SessionDetailsModal
+  const [isSessionDetailsModalOpen, setIsSessionDetailsModalOpen] =
+    useState(false);
+  const [selectedSession, setSelectedSession] = useState<BookedSession | null>(
+    null
+  );
 
-  
+  // ✅ Add handlers for session details
+  const handleViewDetails = (session: BookedSession) => {
+    setSelectedSession(session);
+    setIsSessionDetailsModalOpen(true);
+  };
+
+  const handleCloseSessionDetails = () => {
+    setIsSessionDetailsModalOpen(false);
+    setSelectedSession(null);
+  };
+
   // ✅ Fetch sessions when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -35,16 +56,19 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
     setIsLoading(true);
     try {
       const res = await fetch("/api/sessions/my", {
-        credentials: 'include',
+        credentials: "include",
       });
 
       const data = await res.json();
       if (res.ok) {
         // Add isUpcoming flag to each session
-        const sessionsWithStatus = data.sessions.map((session: BookedSession) => ({
-          ...session,
-          isUpcoming: new Date(`${session.date}T${session.time}`) > new Date(),
-        }));
+        const sessionsWithStatus = data.sessions.map(
+          (session: BookedSession) => ({
+            ...session,
+            isUpcoming:
+              new Date(`${session.date}T${session.time}`) > new Date(),
+          })
+        );
         setSessions(sessionsWithStatus);
       } else {
         console.error("❌ Error loading sessions:", data.error);
@@ -60,25 +84,32 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
     let filtered = sessions;
 
     // Filter by status/time
-    if (filter === 'upcoming') {
-      filtered = filtered.filter(session => 
-        new Date(`${session.date}T${session.time}`) > new Date() && 
-        session.status !== 'cancelled'
+    if (filter === "upcoming") {
+      filtered = filtered.filter(
+        (session) =>
+          new Date(`${session.date}T${session.time}`) > new Date() &&
+          session.status !== "cancelled"
       );
-    } else if (filter === 'past') {
-      filtered = filtered.filter(session => 
-        new Date(`${session.date}T${session.time}`) < new Date() || 
-        session.status === 'completed'
+    } else if (filter === "past") {
+      filtered = filtered.filter(
+        (session) =>
+          new Date(`${session.date}T${session.time}`) < new Date() ||
+          session.status === "completed"
       );
-    } else if (filter !== 'all') {
-      filtered = filtered.filter(session => session.status === filter);
+    } else if (filter !== "all") {
+      filtered = filtered.filter((session) => session.status === filter);
     }
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(session =>
-        session.counselor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        session.counselor.specialty.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (session) =>
+          session.counselor.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          session.counselor.specialty
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
 
@@ -93,43 +124,51 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
 
       if (aIsUpcoming && !bIsUpcoming) return -1;
       if (!aIsUpcoming && bIsUpcoming) return 1;
-      
-      return aIsUpcoming ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
+
+      return aIsUpcoming
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime();
     });
 
     setFilteredSessions(filtered);
   };
 
   const getStatusColor = (status: string, isUpcoming: boolean) => {
-    if (!isUpcoming && status !== 'cancelled') return 'bg-gray-100 text-gray-700';
-    
+    if (!isUpcoming && status !== "cancelled")
+      return "bg-gray-100 text-gray-700";
+
     switch (status) {
-      case 'confirmed': return 'bg-green-100 text-green-700';
-      case 'pending': return 'bg-yellow-100 text-yellow-700';
-      case 'cancelled': return 'bg-red-100 text-red-700';
-      case 'completed': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case "confirmed":
+        return "bg-green-100 text-green-700";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "cancelled":
+        return "bg-red-100 text-red-700";
+      case "completed":
+        return "bg-blue-100 text-blue-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      weekday: 'short'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "short",
     });
   };
 
   const formatTime = (timeStr: string) => {
-    const [hours, minutes] = timeStr.split(':');
+    const [hours, minutes] = timeStr.split(":");
     const time = new Date();
     time.setHours(parseInt(hours), parseInt(minutes));
-    return time.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
+    return time.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -172,19 +211,19 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
             {/* Filter Buttons */}
             <div className="flex gap-2 overflow-x-auto">
               {[
-                { key: 'all', label: 'All' },
-                { key: 'upcoming', label: 'Upcoming' },
-                { key: 'past', label: 'Past' },
-                { key: 'completed', label: 'Completed' },
-                { key: 'cancelled', label: 'Cancelled' }
+                { key: "all", label: "All" },
+                { key: "upcoming", label: "Upcoming" },
+                { key: "past", label: "Past" },
+                { key: "completed", label: "Completed" },
+                { key: "cancelled", label: "Cancelled" },
               ].map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => setFilter(key as any)}
                   className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${
                     filter === key
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-600 border border-gray-300 hover:bg-blue-50'
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-600 border border-gray-300 hover:bg-blue-50"
                   }`}
                 >
                   {label}
@@ -203,25 +242,30 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
                 <div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin"></div>
                 <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
               </div>
-              <p className="text-gray-500 mt-4 text-lg font-medium">Loading your sessions...</p>
-              <p className="text-gray-400 text-sm">Please wait while we fetch your appointment history</p>
+              <p className="text-gray-500 mt-4 text-lg font-medium">
+                Loading your sessions...
+              </p>
+              <p className="text-gray-400 text-sm">
+                Please wait while we fetch your appointment history
+              </p>
             </div>
           ) : filteredSessions.length === 0 ? (
             // ✅ Empty State
             <div className="text-center py-16">
               <Calendar className="h-20 w-20 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                {searchTerm || filter !== 'all' ? 'No sessions match your filters' : 'No sessions found'}
+                {searchTerm || filter !== "all"
+                  ? "No sessions match your filters"
+                  : "No sessions found"}
               </h3>
               <p className="text-gray-500 mb-6">
-                {searchTerm || filter !== 'all' 
-                  ? 'Try adjusting your search or filter criteria'
-                  : 'Start your wellness journey by booking your first session'
-                }
+                {searchTerm || filter !== "all"
+                  ? "Try adjusting your search or filter criteria"
+                  : "Start your wellness journey by booking your first session"}
               </p>
-              {(!searchTerm && filter === 'all') && (
+              {!searchTerm && filter === "all" && (
                 <Link href="/session">
-                  <button 
+                  <button
                     onClick={onClose}
                     className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
                   >
@@ -234,14 +278,29 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
             // ✅ Sessions List
             <div className="space-y-4">
               {filteredSessions.map((session) => {
-                const isUpcoming = new Date(`${session.date}T${session.time}`) > new Date();
-                const isToday = new Date(session.date).toDateString() === new Date().toDateString();
-                
+                const isUpcoming =
+                  new Date(`${session.date}T${session.time}`) > new Date();
+                const isToday =
+                  new Date(session.date).toDateString() ===
+                  new Date().toDateString();
+
+                console.log("🔍 Session Debug:", {
+                  sessionId: session.id,
+                  date: session.date,
+                  time: session.time,
+                  status: session.status,
+                  isUpcoming,
+                  isToday,
+                  hasZoomLink: !!session.zoomLink,
+                }); // ✅ Add debug logging
+
                 return (
-                  <div 
-                    key={session.id} 
+                  <div
+                    key={session.id}
                     className={`bg-white border rounded-xl p-6 hover:shadow-lg transition-all ${
-                      isToday ? 'ring-2 ring-blue-500 bg-blue-50' : 'border-gray-200'
+                      isToday
+                        ? "ring-2 ring-blue-500 bg-blue-50"
+                        : "border-gray-200"
                     }`}
                   >
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -250,21 +309,28 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
                         <div className="flex items-start gap-4">
                           {/* Avatar */}
                           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                            {session.counselor.name.split(' ').map(n => n[0]).join('')}
+                            {session.counselor.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </div>
-                          
+
                           {/* Details */}
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-gray-900 text-lg">{session.counselor.name}</h3>
+                              <h3 className="font-semibold text-gray-900 text-lg">
+                                {session.counselor.name}
+                              </h3>
                               {isToday && (
                                 <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-medium">
                                   Today
                                 </span>
                               )}
                             </div>
-                            <p className="text-gray-600 mb-2">{session.counselor.specialty}</p>
-                            
+                            <p className="text-gray-600 mb-2">
+                              {session.counselor.specialty}
+                            </p>
+
                             <div className="flex items-center gap-4 text-sm text-gray-500">
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-4 w-4" />
@@ -272,7 +338,10 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
-                                <span>{formatTime(session.time)} ({session.duration} min)</span>
+                                <span>
+                                  {formatTime(session.time)} ({session.duration}{" "}
+                                  min)
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -282,34 +351,68 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
                       {/* Status & Actions */}
                       <div className="flex items-center gap-3">
                         {/* Status */}
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(session.status, isUpcoming)}`}>
-                          {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(session.status, isUpcoming)}`}
+                        >
+                          {session.status.charAt(0).toUpperCase() +
+                            session.status.slice(1)}
                         </span>
 
                         {/* Action Buttons */}
                         <div className="flex gap-2">
                           {/* Chat Button */}
-                          <Link href={`/chat/${session.counselor.id}`}>
-                            <button className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors" title="Chat">
+                          <Link href={"/chatinterface"}>
+                            <button
+                              className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
+                              title="Chat"
+                            >
                               <MessageSquare className="h-4 w-4" />
                             </button>
                           </Link>
 
                           {/* Join/View Button */}
-                          {isUpcoming && session.status === 'confirmed' ? (
+                          {isUpcoming &&
+                          (session.status === "confirmed" ||
+                            session.status === "pending") ? (
                             isToday ? (
-                              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1">
+                              <button
+                                onClick={() => {
+                                  console.log(
+                                    "🎯 Join button clicked for today session:",
+                                    session.id
+                                  );
+                                  if (session.zoomLink) {
+                                    console.log(
+                                      "✅ Opening zoom link:",
+                                      session.zoomLink
+                                    );
+                                    window.open(session.zoomLink, "_blank");
+                                  } else {
+                                    console.log("❌ No zoom link available");
+                                    handleViewDetails(session);
+                                  }
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1"
+                              >
                                 <Video className="h-4 w-4" />
-                                Join Now
+                                {session.zoomLink ? "Join Now" : "Join Meeting"}
                               </button>
                             ) : (
-                              <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                              <button
+                                onClick={() => handleViewDetails(session)}
+                                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                              >
                                 View Details
                               </button>
                             )
                           ) : (
-                            <button className="bg-gray-400 text-white px-4 py-2 rounded-lg font-medium cursor-not-allowed">
-                              {session.status === 'completed' ? 'Completed' : 'Unavailable'}
+                            <button
+                              onClick={() => handleViewDetails(session)}
+                              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                            >
+                              {session.status === "completed"
+                                ? "View Details"
+                                : "UnAvailable"}
                             </button>
                           )}
                         </div>
@@ -329,7 +432,7 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
               Showing {filteredSessions.length} of {sessions.length} sessions
             </p>
             <Link href="/session">
-              <button 
+              <button
                 onClick={onClose}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
               >
@@ -338,6 +441,12 @@ export default function AllSessionsModal({ isOpen, onClose }: AllSessionsModalPr
             </Link>
           </div>
         </div>
+        {/* ✅ Add SessionDetailsModal */}
+        <SessionDetailsModal
+          isOpen={isSessionDetailsModalOpen}
+          onClose={handleCloseSessionDetails}
+          session={selectedSession}
+        />
       </div>
     </div>
   );

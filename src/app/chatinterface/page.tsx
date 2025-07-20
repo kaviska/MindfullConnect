@@ -6,18 +6,22 @@ import { ProfileSidebar } from "@/app/components/ProfileSidebar";
 import { Conversation } from "@/app/components/types";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function Page() {
   const { user, token, isLoading } = useAuth();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    string | null
+  >(null);
   const [isProfileSidebarVisible, setIsProfileSidebarVisible] = useState(false);
   const [showProfileSidebar, setShowProfileSidebar] = useState(false);
   const [layoutHeight, setLayoutHeight] = useState<number>(0);
   const [showChatMain, setShowChatMain] = useState(false);
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null);
 
   useEffect(() => {
     const updateLayoutHeight = () => {
@@ -88,6 +92,8 @@ export default function Page() {
   }, [fetchConversations, fetchUsers]);
 
   const handleSelectConversation = (conversationId: string) => {
+    const conversation = conversations.find((c) => c._id === conversationId);
+    setSelectedConversation(conversation || null); // ✅ Set the full conversation object
     setSelectedConversationId(conversationId);
     setShowChatMain(true);
     fetchConversations();
@@ -96,6 +102,8 @@ export default function Page() {
   const handleBack = () => {
     setShowChatMain(false);
     setSelectedConversationId(null);
+    setSelectedConversation(null); // ✅ Clear selected conversation
+
     setShowProfileSidebar(false);
     setIsProfileSidebarVisible(false);
   };
@@ -144,7 +152,9 @@ export default function Page() {
       >
         <div className="flex w-full h-full">
           <div className="flex w-full sm:flex sm:w-full sm:h-full">
-            <div className={`${showChatMain ? "hidden sm:flex" : "flex"} w-full sm:w-auto`}>
+            <div
+              className={`${showChatMain ? "hidden sm:flex" : "flex"} w-full sm:w-auto`}
+            >
               <div className="w-full sm:w-[320px] md:w-[320px] max-md:w-full">
                 <ChatSidebar
                   onSelectConversation={handleSelectConversation}
@@ -155,13 +165,17 @@ export default function Page() {
               </div>
             </div>
 
-            <div className={`${showChatMain ? "flex" : "hidden sm:flex"} w-full sm:w-auto flex-1`}>
-              <div className={`${showProfileSidebar ? "hidden sm:flex" : "flex"} w-full sm:w-auto flex-1`}>
+            <div
+              className={`${showChatMain ? "flex" : "hidden sm:flex"} w-full sm:w-auto flex-1`}
+            >
+              <div
+                className={`${showProfileSidebar ? "hidden sm:flex" : "flex"} w-full sm:w-auto flex-1`}
+              >
                 <ChatMain
                   conversationId={selectedConversationId}
                   user={user}
                   token={token}
-                  conversation={conversations.find((conv) => conv._id === selectedConversationId)}
+                  conversation={selectedConversation} // ✅ Pass the full conversation object
                   onToggleProfileSidebar={toggleProfileSidebar}
                   fetchConversations={fetchConversations}
                   onBack={handleBack}
@@ -170,8 +184,11 @@ export default function Page() {
               </div>
 
               {(isProfileSidebarVisible || showProfileSidebar) && (
-                <div className={`${showProfileSidebar ? "flex" : "hidden sm:flex"} w-full sm:w-auto`}>
+                <div
+                  className={`${showProfileSidebar ? "flex" : "hidden sm:flex"} w-full sm:w-auto`}
+                >
                   <ProfileSidebar
+                    conversation={selectedConversation} // ✅ Pass conversation here
                     onBack={handleProfileBack}
                     className="w-full sm:w-[320px] md:w-[320px] h-full"
                   />
