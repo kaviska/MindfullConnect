@@ -33,10 +33,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(normalizedUser);
         localStorage.setItem("user", JSON.stringify(normalizedUser)); // Update localStorage
       } else {
-        console.error("Failed to fetch user, but keeping user in state:", data.error);
+        // console.error("Failed to fetch user, but keeping user in state:", data.error);
       }
     } catch (error) {
-      console.error("Error fetching user, but keeping user in state:", error);
+      // console.error("Error fetching user, but keeping user in state:", error);
     } finally {
       setIsLoading(false);
     }
