@@ -244,12 +244,12 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           </h4>
           <div className="space-y-2">
             {/* View Profile (if counselor) */}
-            {otherParticipant.role === "counselor" && (
-              <button className="w-full flex items-center gap-3 p-3 text-left text-gray-700 hover:bg-blue-50 rounded-lg transition-colors">
-                <User className="w-5 h-5 flex-shrink-0" />
-                <span className="truncate">View Counselor Profile</span>
-              </button>
-            )}
+            {/* {otherParticipant.role === "counselor" && (
+              // <button className="w-full flex items-center gap-3 p-3 text-left text-gray-700 hover:bg-blue-50 rounded-lg transition-colors">
+              //   <User className="w-5 h-5 flex-shrink-0" />
+              //   <span className="truncate">View Counselor Profile</span>
+              // </button>
+            )} */}
 
             {/* Schedule Session (if counselor) */}
             {otherParticipant.role === "counselor" && (
@@ -260,10 +260,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
             )}
 
             {/* Conversation Settings */}
-            <button className="w-full flex items-center gap-3 p-3 text-left text-gray-700 hover:bg-blue-50 rounded-lg transition-colors">
-              <Settings className="w-5 h-5 flex-shrink-0" />
-              <span className="truncate">Conversation Settings</span>
-            </button>
+            
           </div>
         </div>
 
@@ -289,14 +286,6 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 </p>
               </div>
 
-              <div className="bg-green-50 rounded-lg p-3">
-                <p className="text-green-900 font-medium mb-1">
-                  Availability
-                </p>
-                <p className="text-green-700 text-xs">
-                  Monday - Friday, 9 AM - 6 PM
-                </p>
-              </div>
 
               <div className="bg-purple-50 rounded-lg p-3">
                 <p className="text-purple-900 font-medium mb-1">
@@ -323,17 +312,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 </p>
               </div>
 
-              <div className="bg-indigo-50 rounded-lg p-3">
-                <p className="text-indigo-900 font-medium mb-1">
-                  Education & Credentials
-                </p>
-                <p className="text-indigo-700 text-xs leading-relaxed">
-                  • PhD in Clinical Psychology - Stanford University<br />
-                  • Licensed Clinical Social Worker (LCSW)<br />
-                  • Board Certified in Cognitive Behavioral Therapy<br />
-                  • Member of American Psychological Association
-                </p>
-              </div>
+              
 
               <div className="bg-pink-50 rounded-lg p-3">
                 <p className="text-pink-900 font-medium mb-1">
@@ -345,17 +324,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                 </p>
               </div>
 
-              {/* Add even more content for testing scroll */}
-              <div className="bg-cyan-50 rounded-lg p-3">
-                <p className="text-cyan-900 font-medium mb-1">
-                  Client Reviews
-                </p>
-                <p className="text-cyan-700 text-xs leading-relaxed">
-                  ⭐⭐⭐⭐⭐ "Dr. Sarah helped me overcome my anxiety with practical techniques and genuine care."<br />
-                  ⭐⭐⭐⭐⭐ "Professional, empathetic, and highly effective treatment approach."<br />
-                  ⭐⭐⭐⭐⭐ "Life-changing sessions that gave me tools for long-term mental wellness."
-                </p>
-              </div>
+            ]
 
               <div className="bg-teal-50 rounded-lg p-3">
                 <p className="text-teal-900 font-medium mb-1">

@@ -33,20 +33,20 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Services</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/find-a-counsellor" className="hover:text-blue-600 transition-colors">
+                <Link href="/session" className="hover:text-blue-600 transition-colors">
                   Find a counsellor
                 </Link>
               </li>
               <li>
-                <Link href="/join-as-counsellor" className="hover:text-blue-600 transition-colors">
+                <Link href="/counsellor" className="hover:text-blue-600 transition-colors">
                   Join as a counsellor
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/progress-tracker" className="hover:text-blue-600 transition-colors">
                   Progress tracker
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/get-started" className="hover:text-blue-600 transition-colors">
                   Get started
@@ -75,7 +75,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/contact-us" className="hover:text-blue-600 transition-colors">
+                <Link href="/Contact" className="hover:text-blue-600 transition-colors">
                   Contact us
                 </Link>
               </li>
@@ -87,7 +87,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Information</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/faq" className="hover:text-blue-600 transition-colors">
+                <Link href="" className="hover:text-blue-600 transition-colors">
                   FAQ
                 </Link>
               </li>
@@ -97,14 +97,14 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/refund-policy" className="hover:text-blue-600 transition-colors">
+                <Link href="/refund" className="hover:text-blue-600 transition-colors">
                   Refund policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms-and-conditions" className="hover:text-blue-600 transition-colors">
+                {/* <Link href="/terms-and-conditions" className="hover:text-blue-600 transition-colors">
                   Terms and conditions
-                </Link>
+                </Link> */}
               </li>
             </ul>
           </div>
