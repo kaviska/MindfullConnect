@@ -6,7 +6,6 @@ const Featured = () => {
   return (
     <div className={styles.container}>
       <div className={styles.headerSection}>
-        <div className={styles.badge}>✨ Featured Article</div>
         <h1 className={styles.title}>
           <span className={styles.brandName}>MindfulConnect</span>
           <span className={styles.subtitle}>Your Journey to Wellness Starts Here</span>
@@ -30,8 +29,8 @@ const Featured = () => {
           </div>
           <div className={styles.contentContainer}>
             <div className={styles.postMeta}>
-              <span className={styles.category}>Mindfulness</span>
-              <span className={styles.readTime}>5 min read</span>
+              <span className={styles.category}>MindfulConnect</span>
+              <span className={styles.readTime}>Reading Corner</span>
             </div>
             <h2 className={styles.postTitle}>
               Finding Peace in Daily Moments: A Guide to Mindful Living
@@ -48,9 +47,6 @@ const Featured = () => {
                   <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-              <div className={styles.engagement}>
-                <span className={styles.likes}>💙 24 helpful</span>
-              </div>
             </div>
           </div>
         </div>
