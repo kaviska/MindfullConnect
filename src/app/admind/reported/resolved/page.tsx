@@ -25,7 +25,7 @@ const Resolved = () => {
     const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
-        fetch(`/api/reports/resolved?page=${currentPage}`)
+        fetch(`/admind/api/reports/resolved?page=${currentPage}`)
             .then((res) => res.json())
             .then((data) => {
                 setReports(data.reports);
@@ -34,20 +34,20 @@ const Resolved = () => {
     }, [currentPage]);
 
     return (
-        <div className="p-6 bg-[#E9F0F6] min-h-screen flex flex-col space-y-8">
-            {/* Stats card */}
-            <div className="w-full flex justify-center">
+        <div className="p-4 sm:p-6 bg-[#E9F0F6] min-h-screen flex flex-col space-y-6 sm:space-y-8">
+            {/* Stats card - responsive container */}
+            <div className="w-full max-w-7xl mx-auto">
                 <StatsCard />
             </div>
 
             {/* Heading */}
-            <div className="flex items-center space-x-4">
-                <h1 className="text-3xl font-bold text-[#1045A1]">Resolved Reports</h1>
-                <span className="text-xl text-[#1045A1]">({reports.length})</span>
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#1045A1]">Resolved Reports</h1>
+                <span className="text-lg sm:text-xl text-[#1045A1]">({reports.length})</span>
             </div>
 
             {/* Reports Table */}
-            <div className="bg-white rounded-xl overflow-x-auto shadow">
+            <div className="bg-white rounded-xl overflow-x-auto shadow max-w-7xl mx-auto w-full">
                 <table className="min-w-full text-left text-xs sm:text-sm">
                     <thead className="bg-[#F5F7FA] text-gray-600 font-semibold">
                         <tr>

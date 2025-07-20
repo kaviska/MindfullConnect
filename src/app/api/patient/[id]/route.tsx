@@ -34,3 +34,25 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
         return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
     }
 }
+
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+    try {
+        await dbConnect();
+
+        const params = await context.params;
+        const id = params.id;
+
+        const user = await User.findById(id);
+
+        if (!user) {
+            return NextResponse.json({ success: false, message: "Patient not found" }, { status: 404 });
+        }
+
+        await User.findByIdAndDelete(id);
+
+        return NextResponse.json({ success: true, message: "Patient deleted successfully" });
+    } catch (error) {
+        console.error("DELETE /api/patient/[id] failed:", error);
+        return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
+    }
+}

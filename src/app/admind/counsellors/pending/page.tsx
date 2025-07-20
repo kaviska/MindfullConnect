@@ -14,24 +14,24 @@ interface Counsellor {
     _id: string;
     firstname: string;
     lastname: string;
+    name: string;
     email: string;
     isActive: boolean;
+    status: string;
     imageUrl: string;
-    dob?: string;
-    contact?: string;
-    gender?: string;
-    nic?: string;
-    nationality?: string;
-    qualifications?: string;
-    specialization?: string;
-    proofUrl?: string;
+    specialty?: string;
+    bio?: string;
+    rating?: number;
+    reviews?: number;
+    consultationFee?: number;
+    yearsOfExperience?: number;
 }
 
 const fetchCounsellors = async (
     page: number,
     query: string
 ): Promise<{ users: Counsellor[]; totalPages: number }> => {
-    const res = await fetch(`/api/counsellors/pending?page=${page}&q=${query}`);
+    const res = await fetch(`/admind/api/counsellors/pending?page=${page}&q=${query}`);
     if (!res.ok) throw new Error("Failed to fetch counsellors");
 
     const data = await res.json();
@@ -39,7 +39,7 @@ const fetchCounsellors = async (
 };
 
 const fetchCounsellorById = async (id: string): Promise<Counsellor> => {
-    const res = await fetch(`/api/counsellors/pending/${id}`);
+    const res = await fetch(`/admind/api/counsellors/pending/${id}`);
     if (!res.ok) throw new Error("Failed to fetch counsellor");
     const data = await res.json();
     return data.user;
@@ -93,9 +93,9 @@ export default function CounsellorPendingPage() {
     const handleAccept = async () => {
         if (!selectedCounsellor) return;
         try {
-            await fetch(`/api/counsellors/pending/${selectedCounsellor._id}`, {
+            await fetch(`/admind/api/counsellors/pending/${selectedCounsellor._id}`, {
                 method: "PUT",
-                body: JSON.stringify({ isActive: true }),
+                body: JSON.stringify({ status: "active" }),
                 headers: { "Content-Type": "application/json" },
             });
             setShowAcceptModal(true);
@@ -109,7 +109,7 @@ export default function CounsellorPendingPage() {
     const confirmReject = async () => {
         if (!selectedCounsellor) return;
         try {
-            await fetch(`/api/counsellors/pending/${selectedCounsellor._id}`, {
+            await fetch(`/admind/api/counsellors/pending/${selectedCounsellor._id}`, {
                 method: "DELETE",
             });
             reloadPage();
@@ -151,7 +151,7 @@ export default function CounsellorPendingPage() {
                                 <td className="px-6 py-4 text-center hidden md:table-cell">{user._id}</td>
                                 <td className="px-6 py-4 text-center flex items-center justify-center gap-2">
                                     <img src={user.imageUrl} alt="" className="w-7 h-7 rounded-full" />
-                                    {user.firstname}
+                                    {`${user.firstname || ''} ${user.lastname || ''}`.trim()}
                                 </td>
                                 <td className="px-6 py-4 text-center hidden md:table-cell">{user.email}</td>
                                 <td className="px-6 py-4 text-center">

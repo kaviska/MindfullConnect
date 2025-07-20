@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Pagination from "../../ui/pagination/pagination";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import DescriptionIcon from '@mui/icons-material/Description';
+import DeleteIcon from "@mui/icons-material/Delete";
 import PatientProfilePopup from "../../ui/patient/profilepopup/profilepopup";
 import { useDebouncedCallback } from "use-debounce";
 import SearchIcon from '@mui/icons-material/Search';
@@ -24,7 +25,7 @@ const fetchPatients = async (
     page: number,
     query: string
 ): Promise<{ users: Patient[]; totalPages: number }> => {
-    const res = await fetch(`/api/patient?page=${page}&q=${query}`);
+    const res = await fetch(`/admind/api/patient?page=${page}&q=${query}`);
     if (!res.ok) throw new Error("Failed to fetch patients");
 
     const data = await res.json();
@@ -35,7 +36,7 @@ const fetchPatients = async (
 };
 
 const fetchPatientById = async (id: string): Promise<Patient> => {
-    const res = await fetch(`/api/patient/${id}`);
+    const res = await fetch(`/admind/api/patient/${id}`);
     if (!res.ok) throw new Error("Failed to fetch patient");
     const data = await res.json();
     return data.user;
@@ -51,6 +52,7 @@ export default function PatientPage() {
     const [patients, setPatients] = useState<Patient[]>([]);
     const [totalPages, setTotalPages] = useState(1);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const handleSearch = useDebouncedCallback((term: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -76,6 +78,31 @@ export default function PatientPage() {
             setSelectedPatient(user);
         } catch (err) {
             console.error("Failed to fetch patient", err);
+        }
+    };
+
+    const handleDeletePatient = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this patient? This action cannot be undone.")) {
+            setDeletingId(id);
+            try {
+                const response = await fetch(`/admind/api/patient/${id}`, {
+                    method: "DELETE",
+                });
+                
+                if (response.ok) {
+                    setPatients(prev => prev.filter(patient => patient._id !== id));
+                    if (selectedPatient?._id === id) {
+                        setSelectedPatient(null);
+                    }
+                } else {
+                    alert("Failed to delete patient");
+                }
+            } catch (error) {
+                console.error("Error deleting patient:", error);
+                alert("Failed to delete patient");
+            } finally {
+                setDeletingId(null);
+            }
         }
     };
 
@@ -132,8 +159,22 @@ export default function PatientPage() {
                                     <button
                                         onClick={() => handleViewDetails(user._id)}
                                         className="w-[35px] h-[35px] flex items-center justify-center rounded-full cursor-pointer hover:scale-110 transition-all"
+                                        title="View Details"
                                     >
                                         <DescriptionIcon fontSize="medium" style={{ color: "black" }} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeletePatient(user._id)}
+                                        disabled={deletingId === user._id}
+                                        className="w-[35px] h-[35px] flex items-center justify-center rounded-full cursor-pointer hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="Delete Patient"
+                                    >
+                                        <DeleteIcon 
+                                            fontSize="medium" 
+                                            style={{ 
+                                                color: deletingId === user._id ? "#gray" : "#ef4444" 
+                                            }} 
+                                        />
                                     </button>
                                 </td>
                             </tr>

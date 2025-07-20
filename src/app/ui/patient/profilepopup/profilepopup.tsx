@@ -33,7 +33,7 @@ export default function PatientProfilePopup({ onClose, patient }: ProfilePopupPr
     const handleDelete = async () => {
         const formData = new FormData();
         formData.set("id", patient._id);
-        await fetch("/api/deletepatient", {
+        await fetch("/admind/api/deletepatient", {
             method: "POST",
             body: formData,
         });

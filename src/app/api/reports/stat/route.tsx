@@ -1,6 +1,6 @@
 // /pages/api/reports/stats.ts
 import { NextResponse } from "next/server";
-import { Report } from "../../../lib/models";
+import Report from "../../../models/report";
 import dbConnect from "../../../lib/mongodb";
 
 export const GET = async () => {

@@ -52,18 +52,24 @@ const ProfilePopup: React.FC<CounsellorProfilePopupProps> = ({
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             {[
-                                { label: "Full Name", value: counsellor.firstname + " " + counsellor.lastname },
-                                { label: "Date of Birth", value: counsellor.dob },
-                                { label: "Email address", value: counsellor.email },
-                                { label: "Contact Number", value: counsellor.contact },
-                                { label: "Gender", value: counsellor.gender },
-                                { label: "NIC", value: counsellor.nic },
-                                { label: "Nationality", value: counsellor.nationality },
+                                { label: "Full Name", value: counsellor.name || counsellor.fullName },
+                                { label: "Email Address", value: counsellor.email },
+                                { label: "Specialty", value: counsellor.specialty },
+                                { label: "Years of Experience", value: counsellor.yearsOfExperience },
+                                { label: "Consultation Fee", value: counsellor.consultationFee ? `$${counsellor.consultationFee}` : '' },
+                                { label: "Rating", value: counsellor.rating ? `${counsellor.rating}/5` : '' },
+                                { label: "Reviews Count", value: counsellor.reviews },
+                                { label: "Highest Qualification", value: counsellor.highestQualification },
+                                { label: "University", value: counsellor.university },
+                                { label: "License Number", value: counsellor.licenseNumber },
+                                { label: "Availability Type", value: counsellor.availabilityType },
+                                { label: "Session Duration", value: counsellor.sessionDuration ? `${counsellor.sessionDuration} mins` : '' },
+                                { label: "Status", value: counsellor.status },
                             ].map((field, i) => (
                                 <div key={i}>
                                     <label className="block mb-1 font-semibold text-gray-700">{field.label}</label>
                                     <input
-                                        value={field.value}
+                                        value={field.value || 'N/A'}
                                         readOnly
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-[#f5f7fa] text-sm text-gray-800 focus:outline-none"
                                     />
@@ -71,37 +77,37 @@ const ProfilePopup: React.FC<CounsellorProfilePopupProps> = ({
                             ))}
 
                             <div className="sm:col-span-1">
-                                <label className="block mb-1 font-semibold text-gray-700">Qualifications</label>
+                                <label className="block mb-1 font-semibold text-gray-700">Bio</label>
                                 <textarea
-                                    value={counsellor.qualifications}
+                                    value={counsellor.bio || 'N/A'}
                                     readOnly
                                     className="w-full min-h-[5rem] px-3 py-2 border border-gray-300 rounded-md bg-[#f5f7fa] text-sm text-gray-800 resize-y focus:outline-none"
                                 />
                             </div>
                             <div className="sm:col-span-1">
-                                <label className="block mb-1 font-semibold text-gray-700">Specialization Areas</label>
+                                <label className="block mb-1 font-semibold text-gray-700">Description</label>
                                 <textarea
-                                    value={counsellor.specialization}
+                                    value={counsellor.description || 'N/A'}
                                     readOnly
                                     className="w-full min-h-[5rem] px-3 py-2 border border-gray-300 rounded-md bg-[#f5f7fa] text-sm text-gray-800 resize-y focus:outline-none"
                                 />
                             </div>
 
                             <div className="sm:col-span-2">
-                                <label className="block mb-2 font-semibold text-gray-700">Proof Documents</label>
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-[#f5f7fa] px-5 py-3 rounded-md text-sm flex items-center gap-3 shadow-sm border border-gray-300">
-                                        <DownloadIcon fontSize="small" />
-                                        <a
-                                            href={counsellor.proofUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            download
-                                            className="text-blue-700 hover:underline"
-                                        >
-                                            Download
-                                        </a>
-                                    </div>
+                                <label className="block mb-2 font-semibold text-gray-700">Languages Spoken</label>
+                                <div className="bg-[#f5f7fa] px-5 py-3 rounded-md text-sm shadow-sm border border-gray-300">
+                                    {counsellor.languagesSpoken && counsellor.languagesSpoken.length > 0 
+                                        ? counsellor.languagesSpoken.join(', ') 
+                                        : 'N/A'}
+                                </div>
+                            </div>
+
+                            <div className="sm:col-span-2">
+                                <label className="block mb-2 font-semibold text-gray-700">Therapeutic Modalities</label>
+                                <div className="bg-[#f5f7fa] px-5 py-3 rounded-md text-sm shadow-sm border border-gray-300">
+                                    {counsellor.therapeuticModalities && counsellor.therapeuticModalities.length > 0 
+                                        ? counsellor.therapeuticModalities.join(', ') 
+                                        : 'N/A'}
                                 </div>
                             </div>
                         </div>

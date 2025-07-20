@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 
 const reportSchema = new mongoose.Schema({
     reporterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    reporterName: { type: String, required: true, unique: true, minlength: 5, maxlength: 50 },
+    reporterName: { type: String, required: true, minlength: 5, maxlength: 50 },
     reporteeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    reporteeName: { type: String, required: true, unique: true, minlength: 5, maxlength: 50 },
+    reporteeName: { type: String, required: true, minlength: 5, maxlength: 50 },
     reportType: {
         type: String,
         required: true,

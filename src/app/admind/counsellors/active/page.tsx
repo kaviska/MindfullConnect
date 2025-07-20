@@ -6,30 +6,37 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 import SearchIcon from "@mui/icons-material/Search";
 import DescriptionIcon from "@mui/icons-material/Description";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ProfilePopup from "../../../ui/counsellors/activepopup/activepopup";
 
 interface Counsellor {
     _id: string;
+    name: string;
     firstname: string;
     lastname: string;
     email: string;
     isActive: boolean;
+    status: string;
     imageUrl: string;
-    dob?: string;
-    contact?: string;
-    gender?: string;
-    nic?: string;
-    nationality?: string;
-    qualifications?: string;
-    specialization?: string;
-    proofUrl?: string;
+    specialty?: string;
+    bio?: string;
+    rating?: number;
+    reviews?: number;
+    consultationFee?: number;
+    yearsOfExperience?: number;
+    highestQualification?: string;
+    university?: string;
+    licenseNumber?: string;
+    availabilityType?: string;
+    sessionDuration?: number;
+    description?: string;
 }
 
 const fetchCounsellors = async (
     page: number,
     query: string
 ): Promise<{ users: Counsellor[]; totalPages: number }> => {
-    const res = await fetch(`/api/counsellors/active?page=${page}&q=${query}`);
+    const res = await fetch(`/admind/api/counsellors/active?page=${page}&q=${query}`);
     if (!res.ok) throw new Error("Failed to fetch counsellors");
 
     const data = await res.json();
@@ -37,7 +44,7 @@ const fetchCounsellors = async (
 };
 
 const fetchCounsellorById = async (id: string): Promise<Counsellor> => {
-    const res = await fetch(`/api/counsellors/active/${id}`);
+    const res = await fetch(`/admind/api/counsellors/active/${id}`);
     if (!res.ok) throw new Error("Failed to fetch counsellor");
     const data = await res.json();
     return data.user;
@@ -53,6 +60,7 @@ export default function CounsellorActivePage() {
     const [counsellors, setCounsellors] = useState<Counsellor[]>([]);
     const [totalPages, setTotalPages] = useState(1);
     const [selectedCounsellor, setSelectedCounsellor] = useState<Counsellor | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const handleSearch = useDebouncedCallback((term: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -81,6 +89,40 @@ export default function CounsellorActivePage() {
         }
     };
 
+    const handleEditCounsellor = (updatedCounsellor: Counsellor) => {
+        setCounsellors(prev => 
+            prev.map(counsellor => 
+                counsellor._id === updatedCounsellor._id ? updatedCounsellor : counsellor
+            )
+        );
+        setSelectedCounsellor(updatedCounsellor);
+    };
+
+    const handleDeleteCounsellor = async (id: string) => {
+        if (window.confirm("Are you sure you want to delete this counsellor? This action cannot be undone.")) {
+            setDeletingId(id);
+            try {
+                const response = await fetch(`/admind/api/counsellors/active/${id}`, {
+                    method: "DELETE",
+                });
+                
+                if (response.ok) {
+                    setCounsellors(prev => prev.filter(counsellor => counsellor._id !== id));
+                    if (selectedCounsellor?._id === id) {
+                        setSelectedCounsellor(null);
+                    }
+                } else {
+                    alert("Failed to delete counsellor");
+                }
+            } catch (error) {
+                console.error("Error deleting counsellor:", error);
+                alert("Failed to delete counsellor");
+            } finally {
+                setDeletingId(null);
+            }
+        }
+    };
+
     return (
         <div className="p-6 bg-[#E9F0F6] min-h-screen">
             <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -105,7 +147,7 @@ export default function CounsellorActivePage() {
                             <th className="px-6 py-4 text-center">Name</th>
                             <th className="px-6 py-4 text-center hidden md:table-cell">Email</th>
                             <th className="px-6 py-4 text-center">Status</th>
-                            <th className="px-6 py-4 text-center">Action</th>
+                            <th className="px-6 py-4 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,7 +156,7 @@ export default function CounsellorActivePage() {
                                 <td className="px-6 py-4 text-center hidden md:table-cell">{user._id}</td>
                                 <td className="px-6 py-4 text-center flex items-center justify-center gap-2">
                                     <img src={user.imageUrl} alt="" className="w-7 h-7 rounded-full" />
-                                    {user.firstname}
+                                    {`${user.firstname || ''} ${user.lastname || ''}`.trim()}
                                 </td>
                                 <td className="px-6 py-4 text-center hidden md:table-cell">{user.email}</td>
                                 <td className="px-6 py-4 text-center text-green-600 font-semibold">Registered</td>
@@ -122,8 +164,22 @@ export default function CounsellorActivePage() {
                                     <button
                                         onClick={() => handleViewDetails(user._id)}
                                         className="w-[35px] h-[35px] flex items-center justify-center rounded-full cursor-pointer hover:scale-110 transition-all"
+                                        title="View Details"
                                     >
                                         <DescriptionIcon fontSize="medium" style={{ color: "black" }} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteCounsellor(user._id)}
+                                        disabled={deletingId === user._id}
+                                        className="w-[35px] h-[35px] flex items-center justify-center rounded-full cursor-pointer hover:scale-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="Delete Counsellor"
+                                    >
+                                        <DeleteIcon 
+                                            fontSize="medium" 
+                                            style={{ 
+                                                color: deletingId === user._id ? "#gray" : "#ef4444" 
+                                            }} 
+                                        />
                                     </button>
                                 </td>
                             </tr>
@@ -138,8 +194,9 @@ export default function CounsellorActivePage() {
                 <ProfilePopup
                     counsellor={selectedCounsellor}
                     onClose={() => setSelectedCounsellor(null)}
+                    onEdit={handleEditCounsellor}
                     onBlock={async () => {
-                        await fetch(`/api/counsellors/active/${selectedCounsellor._id}`, {
+                        await fetch(`/admind/api/counsellors/active/${selectedCounsellor._id}`, {
                             method: "DELETE",
                         });
                         setSelectedCounsellor(null);

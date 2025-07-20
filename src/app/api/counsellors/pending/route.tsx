@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectToDB } from "../../../lib/utils";
-import { User } from "../../../lib/models";
+import dbConnect from "../../../lib/mongodb";
+import Counselor from "@/app/models/counselor";
 
 export async function GET(req: NextRequest) {
     try {
-        await connectToDB();
+        await dbConnect();
 
         const searchParams = req.nextUrl.searchParams;
         const page = parseInt(searchParams.get("page") || "1");
@@ -14,26 +14,45 @@ export async function GET(req: NextRequest) {
         const skip = (page - 1) * pageSize;
 
         const filter: any = {
-            role: "Counsellor",
-            isActive: false,
+            status: "pending",  // Using status field from Counselor model
         };
 
         if (query) {
             filter.$or = [
-                { firstname: { $regex: query, $options: "i" } },
-                { lastname: { $regex: query, $options: "i" } },
-                { email: { $regex: query, $options: "i" } },
+                { name: { $regex: query, $options: "i" } },
             ];
         }
 
-        const totalCount = await User.countDocuments(filter);
-        const users = await User.find(filter)
+        const totalCount = await Counselor.countDocuments(filter);
+        const counselors = await Counselor.find(filter)
+            .populate('userId', 'email fullName')  // Populate user data to get email
             .skip(skip)
             .limit(pageSize)
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean();
+
+        // Format the counselors data consistently for frontend
+        const formattedUsers = counselors.map((counselor: any) => ({
+            _id: counselor._id.toString(),
+            firstname: counselor.name?.split(' ')[0] || '',
+            lastname: counselor.name?.split(' ')[1] || '',
+            name: counselor.name,
+            fullName: counselor.name,
+            email: counselor.userId?.email || 'N/A',  // Get email from populated User data
+            isActive: counselor.status === "active",
+            status: counselor.status,
+            imageUrl: counselor.avatar || '/default-avatar.png',
+            specialty: counselor.specialty,
+            bio: counselor.bio,
+            rating: counselor.rating,
+            reviews: counselor.reviews,
+            consultationFee: counselor.consultationFee,
+            yearsOfExperience: counselor.yearsOfExperience,
+            createdAt: counselor.createdAt
+        }));
 
         return NextResponse.json({
-            users,
+            users: formattedUsers,
             totalPages: Math.ceil(totalCount / pageSize),
         });
     } catch (error) {
