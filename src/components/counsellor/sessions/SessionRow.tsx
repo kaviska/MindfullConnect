@@ -1,6 +1,5 @@
 "use client";
 
-import { JoinWithSDKButton } from "@/components/ui/JoinWithSDKButton";
 import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -10,6 +9,7 @@ const statusColors: Record<string, string> = {
   completed: "bg-green-100 text-green-600",
   cancelled: "bg-red-100 text-red-600",
   "counselor requested reschedule": "bg-orange-100 text-orange-600",
+  overdue: "bg-red-200 text-red-700",
 };
 
 interface SessionProps {
@@ -42,6 +42,39 @@ export default function SessionRow({
   const [formattedDateTime, setFormattedDateTime] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [effectiveStatus, setEffectiveStatus] = useState<string>(status);
+
+  // Function to determine if session is overdue
+  const isSessionOverdue = () => {
+    try {
+      const sessionDateTime = new Date(`${date}T${time}`);
+      const now = new Date();
+      return (
+        sessionDateTime < now && !["completed", "cancelled"].includes(status)
+      );
+    } catch (error) {
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    // Update effective status based on whether session is overdue
+    const updateStatus = () => {
+      if (isSessionOverdue()) {
+        setEffectiveStatus("overdue");
+      } else {
+        setEffectiveStatus(status);
+      }
+    };
+
+    // Initial update
+    updateStatus();
+
+    // Set up interval to check every minute for real-time updates
+    const interval = setInterval(updateStatus, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [date, time, status]);
 
   useEffect(() => {
     // Combine date and time to create a proper datetime
@@ -142,7 +175,11 @@ export default function SessionRow({
   const isSessionCancelled = status === "cancelled";
   const isSessionRescheduleRequested =
     status === "counselor requested reschedule";
-  const shouldDisableJoin = isSessionCancelled || !zoomLink;
+  const shouldDisableJoin =
+    isSessionCancelled ||
+    !zoomLink ||
+    effectiveStatus === "pending" ||
+    effectiveStatus === "overdue";
 
   return (
     <tr className="hover:bg-blue-50/50 transition-all duration-200 group">
@@ -175,7 +212,7 @@ export default function SessionRow({
       </td>
 
       <td className="px-6 py-4">
-        {zoomLink && !isSessionCancelled ? (
+        {zoomLink && !shouldDisableJoin ? (
           <a
             href={zoomLink}
             target="_blank"
@@ -200,7 +237,11 @@ export default function SessionRow({
             className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg ${
               isSessionCancelled
                 ? "bg-red-100 text-red-500"
-                : "bg-gray-100 text-gray-500"
+                : effectiveStatus === "pending"
+                  ? "bg-yellow-100 text-yellow-600"
+                  : effectiveStatus === "overdue"
+                    ? "bg-red-100 text-red-600"
+                    : "bg-gray-100 text-gray-500"
             }`}
           >
             <svg
@@ -216,7 +257,13 @@ export default function SessionRow({
                 d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            {isSessionCancelled ? "Cancelled" : "No link"}
+            {isSessionCancelled
+              ? "Cancelled"
+              : effectiveStatus === "pending"
+                ? "Pending"
+                : effectiveStatus === "overdue"
+                  ? "Overdue"
+                  : "No link"}
           </span>
         )}
       </td>
@@ -224,42 +271,32 @@ export default function SessionRow({
       <td className="px-6 py-4">
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-            statusColors[status] || "bg-gray-200 text-gray-600"
+            statusColors[effectiveStatus] || "bg-gray-200 text-gray-600"
           }`}
         >
           <div
             className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-              status === "pending"
+              effectiveStatus === "pending"
                 ? "bg-yellow-400"
-                : status === "confirmed"
+                : effectiveStatus === "confirmed"
                   ? "bg-blue-400"
-                  : status === "completed"
+                  : effectiveStatus === "completed"
                     ? "bg-green-400"
-                    : status === "cancelled"
+                    : effectiveStatus === "cancelled"
                       ? "bg-red-400"
-                      : status === "counselor requested reschedule"
+                      : effectiveStatus === "counselor requested reschedule"
                         ? "bg-orange-400"
-                        : "bg-gray-400"
+                        : effectiveStatus === "overdue"
+                          ? "bg-red-600"
+                          : "bg-gray-400"
             }`}
           ></div>
-          {status}
+          {effectiveStatus}
         </span>
       </td>
 
       <td className="px-6 py-4">
         <div className="flex items-center space-x-2">
-          {zoomLink && !isSessionCancelled ? (
-            <JoinWithSDKButton
-              meetingId={_id}
-              sdkKey={process.env.ZOOM_SDK_KEY}
-            />
-          ) : zoomLink && isSessionCancelled ? (
-            <div className="opacity-50 cursor-not-allowed">
-              <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-lg">
-                SDK Join Disabled
-              </span>
-            </div>
-          ) : null}
           <button
             onClick={handleEdit}
             disabled={
