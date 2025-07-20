@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, MessageCircle, Search, Phone, Mail, Clock } from 'lucide-react';
 import Footer from '@/components/home/Footer';
+import Nav from '@/components/home/Nav'; // ✅ Add this import
 
 // FAQ Data
 const faqs = [
@@ -146,6 +147,7 @@ const Accordion: React.FC<AccordionProps> = ({
 
   return (
     <div className="group">
+      
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-6 text-left flex items-center justify-between hover:bg-blue-50/50 transition-all duration-200 focus:outline-none focus:bg-blue-50"
@@ -194,8 +196,10 @@ const FaqPage = () => {
   }, [searchTerm]);
 
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative">
       {/* ✅ Decorative Background Elements */}
+      <Nav />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
