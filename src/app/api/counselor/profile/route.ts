@@ -122,7 +122,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  await dbconfig();
+  await connectDB();
 
   try {
     const token = request.cookies.get('token')?.value || request.headers.get('authorization')?.replace('Bearer ', '');
