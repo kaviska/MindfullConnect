@@ -2,15 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Question from "@/models/Question";
 import { createNotification } from "@/utility/backend/notificationService";
+import jwt from "jsonwebtoken";
+
 
 function respond(data: object, status: number = 200) {
   return NextResponse.json(data, { status });
 }
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 // Create a new question
 export async function POST(req: NextRequest) {
   await dbConnect();
+
+
   try {
+     const token = req.cookies.get("token")?.value;
+            if (!token) {
+              return NextResponse.json(
+                { message: "Authentication required" },
+                { status: 401 }
+              );
+            }
+        
+            // Verify JWT token
+            let decoded;
+            try {
+              decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+            } catch (error) {
+              return NextResponse.json(
+                { message: "Invalid token" },
+                { status: 401 }
+              );
+            }
     const body = await req.json();
     const { question, options, correct_answer_index, question_group_id } = body;
 

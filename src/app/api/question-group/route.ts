@@ -9,6 +9,8 @@ import jwt from "jsonwebtoken";
 function respond(data: object, status: number = 200) {
   return NextResponse.json(data, { status });
 }
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+
 
 // Add a new question group
 export async function POST(req: NextRequest) {
