@@ -42,7 +42,7 @@ const Layout = ({ children }: LayoutProps) => {
   useEffect(() => {
     const fetchPermissions = async () => {
       if (userId) {
-        const res = await fetch(/api/permissions/${userId});
+const res = await fetch(`/admind/api/employees/${userId}`);
         const data = await res.json();
         setPermissions(data.permissions || {});
       }
@@ -88,7 +88,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       {!isMobile && (
-        <div className={${collapsed ? 'w-20' : 'w-64'} transition-all duration-300 flex-shrink-0}>
+        <div className={`${collapsed ? 'w-20' : 'w-64'} transition-all duration-300 flex-shrink-0`}>
           <Sidebar
             collapsed={collapsed}
             setCollapsed={setCollapsed}
