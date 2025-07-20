@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Permissions {
   create: boolean;
@@ -15,20 +15,41 @@ interface Role {
   permissions: Record<string, Permissions>;
 }
 
+interface Employee {
+  id: string;
+  name: string;
+}
+
 export default function ProfileManagement() {
   const [role, setRole] = useState<Role>({
     name: '',
     description: '',
     permissions: { dashboard: { create: false, read: false, update: false, delete: false }, 
-                   tours: { create: false, read: false, update: false, delete: false }, 
-                   fees: { create: false, read: false, update: false, delete: false }, 
-                   visa: { create: false, read: false, update: false, delete: false }, 
-                   anante: { create: false, read: false, update: false, delete: false } },
+                   counselor: { create: false, read: false, update: false, delete: false }, 
+                   report: { create: false, read: false, update: false, delete: false }, 
+                   employee: { create: false, read: false, update: false, delete: false }, 
+                   patient: { create: false, read: false, update: false, delete: false } },
   });
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const sections: string[] = ['Dashboard', 'Tours', 'Fees', 'Visa', 'Anante'];
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch('http://localhost:3001/api/employees');
+        if (!res.ok) throw new Error('Failed to fetch employees');
+        const data = await res.json();
+        setEmployees(data);
+      } catch (err) {
+        setError('Error fetching employees');
+      }
+    };
+    fetchEmployees();
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const sections: string[] = ['Dashboard', 'Counselor', 'Report', 'Employee', 'Patient'];
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setRole(prev => ({ ...prev, [name]: value }));
   };
@@ -65,10 +86,10 @@ export default function ProfileManagement() {
       name: '',
       description: '',
       permissions: { dashboard: { create: false, read: false, update: false, delete: false }, 
-                     tours: { create: false, read: false, update: false, delete: false }, 
-                     fees: { create: false, read: false, update: false, delete: false }, 
-                     visa: { create: false, read: false, update: false, delete: false }, 
-                     anante: { create: false, read: false, update: false, delete: false } }
+                     counselor: { create: false, read: false, update: false, delete: false }, 
+                     report: { create: false, read: false, update: false, delete: false }, 
+                     employee: { create: false, read: false, update: false, delete: false }, 
+                     patient: { create: false, read: false, update: false, delete: false } }
     });
   };
 
@@ -77,15 +98,21 @@ export default function ProfileManagement() {
       <h2 className="text-2xl font-bold mb-4">Add Role</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1">Role Name</label>
-          <input
-            type="text"
+          <label className="block mb-1">Employee</label>
+          <select
             name="name"
             value={role.name}
             onChange={handleChange}
             className="w-full p-2 border rounded"
             required
-          />
+          >
+            <option value="">Select an employee</option>
+            {employees.map((employee) => (
+              <option key={employee.id} value={employee.name}>
+                {`${employee.name} (ID: ${employee.id})`}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block mb-1">Description</label>
@@ -154,6 +181,7 @@ export default function ProfileManagement() {
             </div>
           ))}
         </div>
+        {error && <p className="text-red-500">{error}</p>}
         <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
           Save Role
         </button>
