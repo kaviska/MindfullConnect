@@ -199,7 +199,7 @@ export default function MyQuizzesPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Score:</span>
                       <span className={`font-semibold ${getScoreColor(quiz.score)}`}>
-                        {quiz.score}% ({quiz.correctAnswers}/{quiz.totalQuestions})
+                        {quiz.score}({quiz.correctAnswers}/{quiz.totalQuestions})
                       </span>
                     </div>
                   )}

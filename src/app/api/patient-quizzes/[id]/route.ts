@@ -3,120 +3,152 @@ import dbConnect from "@/lib/db";
 import PatientQuiz from "@/models/PatientQuiz";
 import Quiz from "@/models/Quiz";
 import Question from "@/models/Question";
+import User from "@/models/User";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  await dbConnect();
-  
-  try {
-    const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ message: "Authentication required" }, { status: 401 });
-    }
+// Helper function to verify token and get user
+const verifyToken = async (req: NextRequest) => {
+  const token = req.cookies.get("token")?.value;
+  if (!token) {
+    throw new Error("Authentication required");
+  }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    const { id } = await params;
-    
-    const patientQuiz = await PatientQuiz.findById(id)
-      .populate('quizId')
-      .populate('patientId', 'fullName email');
+  const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+  const user = await User.findById(decoded.userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return { user, userId: decoded.userId };
+};
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await dbConnect();
+    const { user, userId } = await verifyToken(request);
+
+    const patientQuiz = await PatientQuiz.findById(params.id)
+      .populate({
+        path: 'quizId',
+        select: 'title description question_group_id'
+      });
 
     if (!patientQuiz) {
-      return NextResponse.json({ message: "Quiz assignment not found" }, { status: 404 });
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
-    // Verify the quiz belongs to the current user
-    if (patientQuiz.patientId._id.toString() !== decoded.userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    // Check if user has access to this quiz
+    if (user.role === "patient" && patientQuiz.patientId.toString() !== userId) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    if (user.role === "counselor" && patientQuiz.counsellorId.toString() !== userId) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     // Get questions for the quiz
-    const questions = await Question.find({ 
-      question_group_id: patientQuiz.quizId.question_group_id 
-    }).select('question options _id'); // Don't include correct_answer_index
+    const questions = await Question.find({
+      question_group_id: patientQuiz.quizId.question_group_id
+    }).select('_id question options');
 
     return NextResponse.json({
       patientQuiz,
       questions
-    }, { status: 200 });
+    });
 
   } catch (error) {
-    console.error("Error fetching quiz details:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    console.error("Error fetching patient quiz:", error);
+    if (error instanceof Error && error.message === "Authentication required") {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  await dbConnect();
-  
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ message: "Authentication required" }, { status: 401 });
-    }
+    await dbConnect();
+    const { user, userId } = await verifyToken(request);
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    const { action, answers, timeSpent } = await req.json();
-    const { id } = await params;
+    const body = await request.json();
+    const { action, answers, timeSpent } = body;
 
-    const patientQuiz = await PatientQuiz.findById(id);
+    const patientQuiz = await PatientQuiz.findById(params.id)
+      .populate({
+        path: 'quizId',
+        select: 'question_group_id'
+      });
+
     if (!patientQuiz) {
-      return NextResponse.json({ message: "Quiz assignment not found" }, { status: 404 });
+      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
 
-    // Verify the quiz belongs to the current user
-    if (patientQuiz.patientId.toString() !== decoded.userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    // Check if user has access to this quiz
+    if (user.role === "patient" && patientQuiz.patientId.toString() !== userId) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    if (action === 'start') {
-      patientQuiz.status = 'in_progress';
-      patientQuiz.startedDate = new Date();
-      patientQuiz.attempts += 1;
-    } else if (action === 'submit') {
-      // Get correct answers to calculate score
-      const questions = await Question.find({ 
-        question_group_id: patientQuiz.quizId.question_group_id 
+    if (action === "start") {
+      patientQuiz.status = "in-progress";
+      patientQuiz.startedAt = new Date();
+      await patientQuiz.save();
+
+      return NextResponse.json({ message: "Quiz started successfully" });
+    }
+
+    if (action === "submit") {
+      // Get questions to calculate score
+      const questions = await Question.find({
+        question_group_id: patientQuiz.quizId.question_group_id
       });
 
-      let correctAnswers = 0;
-      const processedAnswers = answers.map((answer: any) => {
+      let score = 0;
+      answers.forEach((answer: any) => {
         const question = questions.find(q => q._id.toString() === answer.questionId);
-        const isCorrect = question && question.correct_answer_index === answer.selectedOption;
-        if (isCorrect) correctAnswers++;
-        
-        return {
-          questionId: answer.questionId,
-          selectedOption: answer.selectedOption,
-          isCorrect,
-          answeredAt: new Date()
-        };
+        if (question && question.correct_answer_index === answer.selectedOption) {
+          score++;
+        }
       });
 
-      // Fix score calculation to handle NaN
-      const totalQuestions = questions.length;
-      const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-
-      patientQuiz.status = 'completed';
-      patientQuiz.completedDate = new Date();
-      patientQuiz.answers = processedAnswers;
+      // Update patient quiz
+      patientQuiz.status = "completed";
+      patientQuiz.answers = answers;
       patientQuiz.score = score;
-      patientQuiz.totalQuestions = totalQuestions;
-      patientQuiz.correctAnswers = correctAnswers;
-      patientQuiz.timeSpent = timeSpent || 0;
+      patientQuiz.totalQuestions = questions.length;
+      patientQuiz.timeSpent = timeSpent;
+      patientQuiz.completedAt = new Date();
+      patientQuiz.attempts += 1;
+
+      await patientQuiz.save();
+
+      return NextResponse.json({
+        message: "Quiz submitted successfully",
+        score,
+        totalQuestions: questions.length
+      });
     }
 
-    await patientQuiz.save();
-
-    return NextResponse.json({ 
-      message: "Quiz updated successfully", 
-      data: patientQuiz 
-    }, { status: 200 });
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
 
   } catch (error) {
-    console.error("Error updating quiz:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    console.error("Error updating patient quiz:", error);
+    if (error instanceof Error && error.message === "Authentication required") {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
