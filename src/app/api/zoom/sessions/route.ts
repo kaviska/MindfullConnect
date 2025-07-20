@@ -63,14 +63,29 @@ export async function GET(req: NextRequest) {
     // Fetch Zoom meetings where this user is the counsellor
     const SessionModel = Session as Model<any>;
     console.log('Searching for sessions with counselorId:', user._id);
+    console.log('User _id type:', typeof user._id);
+    console.log('User _id toString:', user._id.toString());
     
-    const meetings = await SessionModel.find({ counselorId: user._id })
+    // Try both ObjectId and string matching
+    const meetings = await SessionModel.find({ 
+      $or: [
+        { counselorId: user._id },
+        { counselorId: user._id.toString() }
+      ]
+    })
       .populate('patientId', 'fullName email')
       .sort({ createdAt: -1 }) // latest meetings first
       .lean();
 
     console.log('Found sessions:', meetings.length);
     console.log('Sessions data:', meetings);
+
+    // Let's also check all sessions to see what counselorIds exist
+    const allSessions = await SessionModel.find({})
+      .select('counselorId')
+      .lean();
+    
+    console.log('All sessions counselorIds:', allSessions.map(s => ({ id: s.counselorId, type: typeof s.counselorId })));
 
     return NextResponse.json({ meetings });
   } catch (err: any) {
