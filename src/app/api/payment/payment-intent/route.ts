@@ -16,18 +16,22 @@ export async function POST(request: Request) {
     const counselor = await Counselor.findOne({ userId: counselorId });
     console.log("Counsellor", counselorId, counselor);
     
-    // Determine the final amount to charge
-    const counselorFee = counselor?.consultationFee;
-    const finalAmount = (counselorFee && counselorFee > 0) ? counselorFee : amount;
-    console.log(`💰 Using amount: $${finalAmount/100} (Counselor fee: $${counselorFee/100 || 'not set'}, Default: $${amount/100})`);
+    // Determine the final amount to charge (convert dollars to cents)
+    const counselorFeeInDollars = counselor?.consultationFee;
+    const counselorFeeInCents = counselorFeeInDollars ? counselorFeeInDollars * 100 : 0;
+    const finalAmount = (counselorFeeInCents && counselorFeeInCents > 0) ? counselorFeeInCents : amount;
     
-    // Debug the stripeAccountId field
-    console.log("All counselor keys:", Object.keys(counselor || {}));
-    console.log("Raw stripeAccountId:", counselor?.stripeAccountId);
-    console.log("toObject stripeAccountId:", counselor?.toObject()?.stripeAccountId);
-    console.log("Direct access:", counselor && counselor['stripeAccountId']);
+    console.log(`💰 Counselor fee: $${counselorFeeInDollars} (${counselorFeeInCents} cents)`);
+    console.log(`💰 Final amount to charge: $${finalAmount/100} (${finalAmount} cents)`);
     
-    const connectAccountId = counselor?.toObject()?.stripeAccountId || counselor?.stripeAccountId;
+    // Calculate platform fee (20%) and counselor amount (80%)
+    const platformFeeAmount = Math.floor(finalAmount * 0.2); // 20% to platform
+    const counselorAmount = finalAmount - platformFeeAmount; // 80% to counselor
+    
+    console.log(`💰 Platform fee (20%): $${platformFeeAmount/100} (${platformFeeAmount} cents)`);
+    console.log(`💰 Counselor amount (80%): $${counselorAmount/100} (${counselorAmount} cents)`);
+    
+    const connectAccountId = counselor?.stripeAccountId;
     console.log("Connect Account ID:", connectAccountId);
 
     let paymentIntentParams: any = {
@@ -36,6 +40,9 @@ export async function POST(request: Request) {
       metadata: {
         sessionId: sessionId,
         counselorId: counselorId,
+        counselorFeeInDollars: counselorFeeInDollars?.toString() || '0',
+        platformFeeInCents: platformFeeAmount.toString(),
+        counselorAmountInCents: counselorAmount.toString(),
       },
       automatic_payment_methods: {
         enabled: true,
@@ -47,37 +54,27 @@ export async function POST(request: Request) {
       try {
         // Verify the Connect account has required capabilities
         const account = await stripe.accounts.retrieve(connectAccountId);
-        const hasTransferCapability = account.capabilities?.transfers ===
-          "active";
+        const hasTransferCapability = account.capabilities?.transfers === "active";
 
         if (hasTransferCapability) {
-          paymentIntentParams.application_fee_amount = Math.floor(finalAmount * 0.2); // 20% commission
+          paymentIntentParams.application_fee_amount = platformFeeAmount; // 20% commission to platform
           paymentIntentParams.transfer_data = {
             destination: connectAccountId, // 80% goes to counselor
           };
-          console.log(
-            `✅ Using Connect account: ${connectAccountId} for counselor: ${counselorId}`
-          );
+          console.log(`✅ Using Connect account: ${connectAccountId} for counselor: ${counselorId}`);
+          console.log(`✅ Platform will receive: $${platformFeeAmount/100} as application fee`);
+          console.log(`✅ Counselor will receive: $${counselorAmount/100} as transfer`);
         } else {
-          console.log(
-            `⚠️ Connect account ${connectAccountId} lacks transfer capability, processing direct payment`
-          );
+          console.log(`⚠️ Connect account ${connectAccountId} lacks transfer capability, processing direct payment`);
         }
       } catch (error) {
-        console.log(
-          `⚠️ Connect account ${connectAccountId} invalid, processing direct payment:`,
-          error
-        );
+        console.log(`⚠️ Connect account ${connectAccountId} invalid, processing direct payment:`, error);
       }
     } else {
-      console.log(
-        `ℹ️ No Connect account for counselor: ${counselorId}, processing direct payment`
-      );
+      console.log(`ℹ️ No Connect account for counselor: ${counselorId}, processing direct payment`);
     }
 
-    const { client_secret: clientSecret } = await stripe.paymentIntents.create(
-      paymentIntentParams
-    );
+    const { client_secret: clientSecret } = await stripe.paymentIntents.create(paymentIntentParams);
      // ✅ Update session status to confirmed after successful payment intent creation
     if (sessionId) {
       await Session.findByIdAndUpdate(sessionId, {
