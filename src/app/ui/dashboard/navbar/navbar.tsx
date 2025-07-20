@@ -1,15 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     NotificationsNone,
-    NotificationsActive,
     Logout,
 } from '@mui/icons-material';
 
 const Navbar = () => {
-    const [notifications, setNotifications] = useState(false);
     const router = useRouter();
 
     const handleLogout = () => {
@@ -34,13 +31,9 @@ const Navbar = () => {
                 <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
                     <button
                         className="w-[32px] h-[32px] sm:w-[40px] sm:h-[40px] flex items-center justify-center rounded-full cursor-pointer hover:scale-110 transition-all"
-                        onClick={() => setNotifications(!notifications)}
+                        onClick={() => router.push('/admind/contactmessages')}
                     >
-                        {notifications ? (
-                            <NotificationsActive fontSize="small" />
-                        ) : (
-                            <NotificationsNone fontSize="small" />
-                        )}
+                        <NotificationsNone fontSize="small" />
                     </button>
 
                     <button
@@ -50,7 +43,6 @@ const Navbar = () => {
                         <Logout fontSize="small" />
                     </button>
 
-                    {/* Profile Image – will not shrink or clip */}
                     <div
                         className="w-[40px] h-[40px] sm:w-[50px] sm:h-[50px] bg-gray-300 rounded-full overflow-hidden cursor-pointer hover:scale-110 transition-all flex-shrink-0"
                         onClick={goToProfile}
