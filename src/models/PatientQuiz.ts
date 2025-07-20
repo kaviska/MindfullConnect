@@ -1,32 +1,69 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, model, models } from "mongoose";
 
-const patientQuizSchema = new Schema({
-  quizId: { type: Schema.Types.ObjectId, ref: 'Quiz', required: true },
-  patientId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  counsellorId: { type: Schema.Types.ObjectId, ref: 'Counselor', required: true },
-  status: { 
-    type: String, 
-    enum: ['assigned', 'in_progress', 'completed', 'expired'], 
-    default: 'assigned' 
+const PatientQuizSchema = new Schema({
+  quizId: {
+    type: Schema.Types.ObjectId,
+    ref: "Quiz",
+    required: true,
   },
-  assignedDate: { type: Date, default: Date.now },
-  startedDate: { type: Date },
-  dueDate: { type: Date },
-  completedDate: { type: Date },
-  score: { type: Number, default: 0 },
-  correctAnswers: { type: Number, default: 0 },
-  totalQuestions: { type: Number, default: 0 },
-  timeSpent: { type: Number, default: 0 }, // in seconds
+  patientId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  counsellorId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  status: {
+    type: String,
+    enum: ['assigned', 'in-progress', 'completed'],
+    default: 'assigned',
+  },
+  attempts: {
+    type: Number,
+    default: 0,
+  },
+  maxAttempts: {
+    type: Number,
+    default: 3,
+  },
+  dueDate: {
+    type: Date,
+  },
   answers: [{
-    questionId: { type: Schema.Types.ObjectId },
-    selectedOption: { type: Number },
-    isCorrect: { type: Boolean, default: false },
-    answeredAt: { type: Date, default: Date.now }
+    questionId: {
+      type: Schema.Types.ObjectId,
+      ref: "Question",
+      required: true,
+    },
+    selectedOption: {
+      type: Number,
+      required: true,
+    },
   }],
-  attempts: { type: Number, default: 0 },
-  maxAttempts: { type: Number, default: 3 }
-}, { timestamps: true });
+  score: {
+    type: Number,
+  },
+  totalQuestions: {
+    type: Number,
+  },
+  timeSpent: {
+    type: Number, // in seconds
+  },
+  startedAt: {
+    type: Date,
+  },
+  completedAt: {
+    type: Date,
+  },
+  assignedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-const PatientQuiz = mongoose.models.PatientQuiz || mongoose.model("PatientQuiz", patientQuizSchema);
+const PatientQuiz = models.PatientQuiz || model("PatientQuiz", PatientQuizSchema);
 
 export default PatientQuiz;

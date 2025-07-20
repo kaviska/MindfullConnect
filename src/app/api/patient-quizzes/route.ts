@@ -5,117 +5,106 @@ import Quiz from "@/models/Quiz";
 import User from "@/models/User";
 import Counselor from "@/models/Counselor";
 import jwt from "jsonwebtoken";
-import { createNotification } from "@/utility/backend/notificationService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
+// Helper function to verify token and get user
+const verifyToken = async (req: NextRequest) => {
+  const token = req.cookies.get("token")?.value;
+  if (!token) {
+    throw new Error("Authentication required");
+  }
+
+  const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+  const user = await User.findById(decoded.userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return { user, userId: decoded.userId };
+};
+
 export async function POST(req: NextRequest) {
-  await dbConnect();
-  
   try {
-    const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ message: "Authentication required" }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    await dbConnect();
     
-    const user = await User.findById(decoded.userId);
-    if (!user || user.role !== "counselor") {
-      return NextResponse.json({ message: "Only counselors can assign quizzes" }, { status: 403 });
+    const { user, userId } = await verifyToken(req);
+
+    // Only counselors can assign quizzes
+    if (user.role !== "counselor") {
+      return NextResponse.json({ error: "Only counselors can assign quizzes" }, { status: 403 });
     }
 
-    const counselor = await Counselor.findOne({ userId: user._id });
-    if (!counselor) {
-      return NextResponse.json({ message: "Counselor profile not found" }, { status: 404 });
-    }
+    const body = await req.json();
+    const { quizId, patientId, dueDate, maxAttempts } = body;
 
-    const { quizId, patientId, dueDate, maxAttempts } = await req.json();
-
-    // Validate quiz exists
-    const quiz = await Quiz.findById(quizId);
-    if (!quiz) {
-      return NextResponse.json({ message: "Quiz not found" }, { status: 404 });
-    }
-
-    // Validate patient exist
-    const patient = await User.findById(patientId);
-    if (!patient) {
-      return NextResponse.json({ message: "Patient not found" }, { status: 404 });
-    }
-
-
-
-    // Check if already assigned
-    const existingAssignment = await PatientQuiz.findOne({ 
-      quizId, 
-      patientId, 
-      status: { $in: ['assigned', 'in_progress'] } 
+    // Check if quiz is already assigned to this patient
+    const existingAssignment = await PatientQuiz.findOne({
+      quizId,
+      patientId,
     });
+
     if (existingAssignment) {
-      return NextResponse.json({ message: "Quiz already assigned to this patient" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Quiz already assigned to this patient" },
+        { status: 400 }
+      );
     }
 
     const patientQuiz = new PatientQuiz({
       quizId,
       patientId,
-      counsellorId: counselor._id,
+      counsellorId: userId,
       dueDate: dueDate ? new Date(dueDate) : undefined,
-      maxAttempts: maxAttempts || 3
+      maxAttempts: maxAttempts || 3,
     });
 
     await patientQuiz.save();
 
-    // Create notification for quiz assignment
-    await createNotification({
-      type: "quiz_assigned",
-      message: `Quiz "${quiz.title}" assigned to patient ${patient.fullName}`,
-      user_id: decoded.userId,
-      time: new Date(),
+    return NextResponse.json({
+      message: "Quiz assigned successfully",
+      patientQuiz
     });
-
-    return NextResponse.json({ 
-      message: "Quiz assigned successfully", 
-      data: patientQuiz 
-    }, { status: 201 });
 
   } catch (error) {
     console.error("Error assigning quiz:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    if (error instanceof Error && error.message === "Authentication required") {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET(req: NextRequest) {
-  await dbConnect();
-  
   try {
-    const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ message: "Authentication required" }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    const user = await User.findById(decoded.userId);
+    await dbConnect();
+    
+    const { user, userId } = await verifyToken(req);
     
     let query = {};
     
-    if (user?.role === "counselor") {
-      const counselor = await Counselor.findOne({ userId: user._id });
-      query = { counsellorId: counselor?._id };
+    if (user.role === "counselor") {
+      query = { counsellorId: userId };
     } else {
-      query = { patientId: decoded.userId };
+      query = { patientId: userId };
     }
 
     const patientQuizzes = await PatientQuiz.find(query)
       .populate('quizId', 'title description')
       .populate('patientId', 'fullName email')
-      .populate('counsellorId', 'name specialty')
-      .sort({ createdAt: -1 });
+      .populate('counsellorId', 'fullName')
+      .sort({ assignedAt: -1 });
 
     return NextResponse.json(patientQuizzes, { status: 200 });
 
   } catch (error) {
     console.error("Error fetching patient quizzes:", error);
+    if (error instanceof Error && error.message === "Authentication required") {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }

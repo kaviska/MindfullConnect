@@ -34,7 +34,7 @@ export default function SignupPage() {
 
       setToast({
         open: true,
-        message: "Account created successfully! Please verify your email.",
+        message: "Account created successfully!.",
         type: "success",
       });
 
@@ -308,7 +308,7 @@ export default function SignupPage() {
           
         
 
-            {/* Login Link */}
+            {/* Login Links */}
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}

@@ -23,6 +23,8 @@ export default function SessionTable() {
       console.log("Response status:", res.status);
       const data = await res.json();
       console.log("Response data:", data);
+      console.log("Data.meetings:", data.meetings);
+      console.log("Data.meetings length:", data.meetings?.length);
 
       if (!res.ok) {
         throw new Error(
@@ -32,6 +34,7 @@ export default function SessionTable() {
 
       setSessions(data.meetings || []); // from your API response
       console.log("Sessions set:", data.meetings);
+      console.log("Sessions state after setting:", data.meetings || []);
     } catch (err: any) {
       console.error("Error fetching sessions:", err);
       setError(err.message);
