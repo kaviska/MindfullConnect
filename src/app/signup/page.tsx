@@ -6,6 +6,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Heart, Star, CheckCircle } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -51,12 +52,9 @@ export default function SignupPage() {
         }
       }, 1500);
     } catch (error: any) {
-      // console.error("Signup failed", error);
-
-      // ✅ Enhanced error handling
+      // ...existing error handling...
       let errorMessage = "Signup failed";
 
-      // More detailed debugging
       console.log("🔍 Error details:");
       console.log("  - Full error:", error);
       console.log("  - Response:", error.response);
@@ -76,14 +74,12 @@ export default function SignupPage() {
 
       console.log("📋 Setting toast with message:", errorMessage);
 
-      // Ensure toast state is updated
       setToast({
         open: true,
         message: errorMessage,
         type: "error",
       });
 
-      // Double-check toast was set
       setTimeout(() => {
         console.log("🍞 Toast should be showing with:", errorMessage);
       }, 100);
@@ -91,239 +87,239 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
+
   const handleLoginRedirect = () => {
-    // Clear any existing toast
     setToast({
       open: false,
       message: "",
       type: "success",
     });
-
-    // Navigate to login
     router.push("/login");
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="min-h-screen flex">
       <Toast open={toast.open} message={toast.message} type={toast.type} />
 
-      {/* Login page image box */}
-      <div
-        className="w-1/2 bg-blue-100 flex items-center justify-center"
-        style={{
-          backgroundImage: "url(/fa6bcf6b949547c06f42950b66bfe3af.jpg)",
-          backgroundSize: "cover",
-          width: "850px",
-        }}
-      ></div>
+      {/* Left Panel - Features and Brand */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-purple-600 via-blue-600 to-blue-700 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-16 w-24 h-24 bg-white rounded-full animate-pulse"></div>
+          <div className="absolute top-40 right-24 w-16 h-16 bg-white rounded-full animate-pulse delay-1000"></div>
+          <div className="absolute bottom-32 left-24 w-20 h-20 bg-white rounded-full animate-pulse delay-2000"></div>
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 w-full">
+          <div className="max-w-md text-center">
+            <div className="mb-8">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Heart className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-4xl font-bold mb-4">Join Our Community</h1>
+              <p className="text-blue-100 text-lg leading-relaxed">
+                Start your journey towards better mental health with professional support and a caring community.
+              </p>
+            </div>
+            
+            {/* Benefits */}
+            <div className="space-y-4 text-left">
+              <div className="flex items-center space-x-3">
+                <CheckCircle className="w-5 h-5 text-green-300" />
+                <span className="text-blue-100">Free initial consultation</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Star className="w-5 h-5 text-yellow-300" />
+                <span className="text-blue-100">Licensed professionals</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Heart className="w-5 h-5 text-pink-300" />
+                <span className="text-blue-100">Personalized care plans</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Decorative Image */}
+        <div 
+          className="absolute inset-0 opacity-20 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/fa6bcf6b949547c06f42950b66bfe3af.jpg)' }}
+        ></div>
+      </div>
 
-      {/* credentials section */}
-      <div className="w-1/2 flex flex-col justify-center items-center bg-white text-slate-500">
-        <div className="flex justify-end">
+      {/* Right Panel - Signup Form */}
+      <div className="w-full lg:w-1/2 flex flex-col bg-white">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6">
+          <Link href="/" className="text-2xl font-bold text-blue-600">
+            MindfulConnect
+          </Link>
           <Link href="/">
-            <button
-              type="button"
-              className="w-full ml-80 mt-4 py-2 px-6 bg-blue-600 text-white rounded-3xl shadow-sm hover:bg-blue-700"
-            >
-              Back
+            <button className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+              ← Back to Home
             </button>
           </Link>
         </div>
-        <div className="w-full max-w-md px-6 py-12">
-          <h1 className="text-4xl font-semibold mb-14 mt-6 text-blue-500">
-            MindfulConnect
-          </h1>
-          <h2 className="text-xl font-semibold mb-6 text-slate-700">
-            Hello,here's to hope and healing !
-          </h2>
 
-          <form className="space-y-6" onSubmit={onSignup}>
-            <div>
-              <label
-                htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                value={user.fullName}
-                onChange={(e) => setUser({ ...user, fullName: e.target.value })}
-                placeholder="Enter your full name"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
+        {/* Signup Form */}
+        <div className="flex-1 flex items-center justify-center px-6 py-8">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+              <p className="text-gray-600">Join us on your path to wellness and healing</p>
             </div>
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={user.email}
-                onChange={(e) => setUser({ ...user, email: e.target.value })}
-                placeholder="Enter your email"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={passwordVisible ? "text" : "password"} //password to text
-                  id="password"
-                  value={user.password}
-                  onChange={(e) =>
-                    setUser({ ...user, password: e.target.value })
-                  }
-                  placeholder="Enter password"
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setPasswordVisible(!passwordVisible)} // ✅ Add this line
-                  className="absolute inset-y-0 right-0 px-3 py-2 text-sm text-gray-500 focus:outline-none"
-                >
-                  {passwordVisible ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.98 8.223a12.042 12.042 0 0116.042 0m-1.26 5.914a3.5 3.5 0 10-4.924-4.924m2.477 3.885a6.5 6.5 0 01-10.254-.847M4.493 13.128a12.042 12.042 0 0115.015 0"
-                      />
-                      <line
-                        x1="3"
-                        y1="21"
-                        x2="21"
-                        y2="3"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 4.5c7.732 0 11.19 5.965 11.19 5.965S19.732 16.5 12 16.5 0.81 10.465 0.81 10.465 4.268 4.5 12 4.5z"
-                      />
-                      <circle cx="12" cy="10.5" r="3" fill="currentColor" />
-                    </svg>
-                  )}
-                </button>
+            <form className="space-y-6" onSubmit={onSignup}>
+              {/* Full Name Field */}
+              <div className="space-y-2">
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    id="fullName"
+                    value={user.fullName}
+                    onChange={(e) => setUser({ ...user, fullName: e.target.value })}
+                    placeholder="Enter your full name"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label
-                htmlFor="role"
-                className="block text-sm font-medium text-gray-700"
-              >
-                I want to register as
-              </label>
-              <select
-                id="role"
-                value={user.role}
-                onChange={(e) => setUser({ ...user, role: e.target.value })}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="User">User (Seeking Support)</option>
-                <option value="counselor">Counselor (Providing Support)</option>
-              </select>
-            </div>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    id="email"
+                    value={user.email}
+                    onChange={(e) => setUser({ ...user, email: e.target.value })}
+                    placeholder="Enter your email"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    required
+                  />
+                </div>
+              </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center text-sm text-gray-600">
+              {/* Password Field */}
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type={passwordVisible ? "text" : "password"}
+                    id="password"
+                    value={user.password}
+                    onChange={(e) => setUser({ ...user, password: e.target.value })}
+                    placeholder="Create a strong password"
+                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPasswordVisible(!passwordVisible)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {passwordVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                  I want to register as
+                </label>
+                <select
+                  id="role"
+                  value={user.role}
+                  onChange={(e) => setUser({ ...user, role: e.target.value })}
+                  className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  <option value="User">User (Seeking Support)</option>
+                  <option value="counselor">Counselor (Providing Support)</option>
+                </select>
+                {user.role === "counselor" && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    📋 Counselors will need to complete additional verification steps
+                  </p>
+                )}
+              </div>
+
+              {/* Terms Agreement */}
+              <div className="flex items-start space-x-3">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                  required
                 />
-                <span className="ml-2">I agree to the Terms & Conditions</span>
-              </label>
-            </div>
+                <span className="text-sm text-gray-600 leading-relaxed">
+                  I agree to the{' '}
+                  <Link href="#" className="text-blue-600 hover:text-blue-500 font-medium">
+                    Terms of Service
+                  </Link>{' '}
+                  and{' '}
+                  <Link href="#" className="text-blue-600 hover:text-blue-500 font-medium">
+                    Privacy Policy
+                  </Link>
+                </span>
+              </div>
 
-            <button
-              type="submit"
-              disabled={buttonDisabled || loading}
-              className={`w-full py-2 px-4 text-white rounded-3xl shadow-sm ${
-                buttonDisabled || loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              {loading ? "Creating Account..." : "Sign up"}
-            </button>
-          </form>
-
-          <hr className="border-t-2 border-gray-300 my-4 mt-8" />
-
-          <div className="mt-8">
-            <button className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-3xl shadow-sm flex items-center justify-center hover:bg-gray-200">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                x="0px"
-                y="0px"
-                width="35"
-                height="20"
-                viewBox="0 0 48 48"
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={buttonDisabled || loading}
+                className={`w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white transition-all duration-200 ${
+                  buttonDisabled || loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg transform hover:-translate-y-0.5"
+                }`}
               >
-                <path
-                  fill="#FFC107"
-                  d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
-                ></path>
-                <path
-                  fill="#FF3D00"
-                  d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
-                ></path>
-                <path
-                  fill="#4CAF50"
-                  d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
-                ></path>
-                <path
-                  fill="#1976D2"
-                  d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
-                ></path>
-              </svg>
-              Sign in with Google
-            </button>
-          </div>
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    Create Account
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </form>
 
-          <div className="mt-14 text-center text-sm text-black">
-            Already have an account?
-            <button
-              onClick={handleLoginRedirect}
-              className="text-blue-500 hover:underline ml-1"
-            >
-              Sign in now
-            </button>
+          
+        
+
+            {/* Login Link */}
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-600">
+                Already have an account?{' '}
+                <button
+                  onClick={handleLoginRedirect}
+                  className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                >
+                  Sign in here
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>

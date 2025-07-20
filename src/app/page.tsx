@@ -18,6 +18,7 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
+// hero
 
 export default function Main() {
   return (

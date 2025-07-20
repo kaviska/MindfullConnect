@@ -12,13 +12,21 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
     
+    console.log('API: Received category parameter:', category);
+    
     let posts;
     const PostModel = Post as Model<any>;
 
     if (category) {
-      posts = await PostModel.find({ category, published: true });
+      // Ensure category matching is exact
+      posts = await PostModel.find({ 
+        category: category.trim(), 
+        published: true 
+      }).sort({ createdAt: -1 });
+      console.log(`API: Found ${posts.length} posts for category: ${category}`);
     } else {
-      posts = await PostModel.find({ published: true });
+      posts = await PostModel.find({ published: true }).sort({ createdAt: -1 });
+      console.log(`API: Found ${posts.length} total published posts`);
     }
 
     return NextResponse.json(posts);

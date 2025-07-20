@@ -8,6 +8,7 @@ interface GoalModelProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
+// re-depoy
 
 export default function GoalModel({ open, setOpen }: GoalModelProps) {
   const [goalTitle, setGoalTitle] = useState("");

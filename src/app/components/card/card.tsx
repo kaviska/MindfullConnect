@@ -7,6 +7,21 @@ import BlogPostViewer from "@/app/components/blogPostViewer/render";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+// Helper function to get category-based cover image
+const getCategoryImage = (category: string): string => {
+  const categoryImageMap: { [key: string]: string } = {
+    wellbeing: "/images/categories/wellbeing-cover.jpg",
+    mindfulness: "/images/categories/mindfulness-cover.jpg",
+    "self-care": "/images/categories/self-care-cover.jpg",
+    relationships: "/images/categories/relationships-cover.jpg",
+    therapy: "/images/categories/therapy-cover.jpg",
+    resilience: "/images/categories/default-cover.jpg",
+    other: "/images/categories/default-cover.jpg",
+  };
+
+  return categoryImageMap[category] || "/images/categories/default-cover.jpg";
+};
+
 const Card = ({ item, showActions = false, onDelete }: any) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -58,16 +73,14 @@ const Card = ({ item, showActions = false, onDelete }: any) => {
   return (
     <article className={styles.container}>
       <div className={styles.cardWrapper}>
-        {item.img && (
-          <div className={styles.imageContainer}>
-            <Image
-              src={item.img}
-              alt={item.title || "Blog post image"}
-              fill
-              className={styles.image}
-            />
-          </div>
-        )}
+        <div className={styles.imageContainer}>
+          <Image
+            src={item.img || getCategoryImage(item.catSlug)}
+            alt={item.title || "Blog post image"}
+            fill
+            className={styles.image}
+          />
+        </div>
         <div className={styles.contentWrapper}>
           <div className={styles.header}>
             <div className={styles.metaInfo}>
@@ -97,6 +110,15 @@ const Card = ({ item, showActions = false, onDelete }: any) => {
               </div>
               <div className={styles.categoryWrapper}>
                 <span className={styles.category}>{item.catSlug}</span>
+                {showActions && (
+                  <span
+                    className={`${styles.statusLabel} ${
+                      item.published ? styles.publishedLabel : styles.draftLabel
+                    }`}
+                  >
+                    {item.published ? "Published" : "Draft"}
+                  </span>
+                )}
               </div>
             </div>
 

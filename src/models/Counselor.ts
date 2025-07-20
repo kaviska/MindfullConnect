@@ -18,7 +18,7 @@ const counselorSchema = new Schema({
     startTime: { type: String },
     endTime: { type: String }
   }],
-  consultationFee: { type: Number, default: 0 },
+  consultationFee: { type: Number, default: 0 }, // Amount in USD (dollars, not cents)
 
   // Counseling Approach
   bio: { type: String, maxlength: 1000 },

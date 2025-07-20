@@ -144,13 +144,7 @@ export default function GoalsPage() {
               <UserPlus size={18} />
               Assign Goal
             </button>
-            <button
-              onClick={() => setMilestoneOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 shadow-sm"
-            >
-              <CheckCircle size={18} />
-              Add Milestone
-            </button>
+           
             <button
               onClick={() => setAssignQuizModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors duration-200 shadow-sm"

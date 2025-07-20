@@ -76,6 +76,7 @@
 .categoryWrapper {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .category {
@@ -87,6 +88,28 @@
   font-weight: 600;
   text-transform: capitalize;
   border: 1px solid #e8f5e8;
+}
+
+.statusLabel {
+  padding: 0.25rem 0.625rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  border: 1px solid;
+}
+
+.publishedLabel {
+  background: linear-gradient(135deg, #e8f5e8 0%, #e0f2e0 100%);
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+.draftLabel {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  color: #f57c00;
+  border-color: #ff9800;
 }
 
 .actionsMenu {
