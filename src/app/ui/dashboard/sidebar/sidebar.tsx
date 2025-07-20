@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
     Home,
@@ -72,22 +71,6 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth, isSuperAdmin, permissio
     };
 
     const menuItems = [
-<<<<<<< Updated upstream
-        {
-            name: 'Dashboard',
-            icon: <Home />,
-            path: '/admind/dashboard'
-        },
-        {
-            name: 'Panel',
-            icon: <Dashboard />,
-            path: '/admind/panel'
-        },
-        {
-            name: 'Patients',
-            icon: <PsychologyAlt />,
-            path: '/admind/patient'
-=======
 
 
         { name: 'Dashboard', icon: <Home />, path: '/admind/dashboard', badge: null },
@@ -98,7 +81,6 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth, isSuperAdmin, permissio
             icon: <PsychologyAlt />,
             path: '/admind/patient',
             badge: 'new'
->>>>>>> Stashed changes
         },
         {
             name: 'Counsellors',
@@ -116,17 +98,9 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth, isSuperAdmin, permissio
                 { name: 'Pending', path: '/admind/reported/pending', count: 3 },
             ],
         },
-<<<<<<< Updated upstream
-        {
-            name: 'Employees',
-            icon: <Badge />,
-            path: '/admind/employee'
-        },
-=======
         ...(isSuperAdmin 
             ? [{ name: 'Employees', icon: <Badge />, path: '/admind/employee', badge: null }]
                 : []),
->>>>>>> Stashed changes
     ];
 
     console.log(menuItems);
@@ -147,14 +121,8 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth, isSuperAdmin, permissio
             {/* Logo Section */}
             <div className="flex items-center justify-center py-6 border-b border-gray-100">
                 <div className="flex items-center space-x-3">
-                    <div className={`relative ${collapsed && !isMobile ? 'w-10 h-10' : 'w-12 h-12'} transition-all duration-300`}>
-                        <Image
-                            src="/logo.png"
-                            alt="MindfulConnect Logo"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-lg">M</span>
                     </div>
                     {(showText && !collapsed) || isMobile ? (
                         <div className="flex flex-col">
@@ -232,9 +200,6 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth, isSuperAdmin, permissio
                                         ) : null}
                                     </div>
 
-<<<<<<< Updated upstream
-
-=======
                                     {((showText && !collapsed) || isMobile) && item.badge && (
                                         <span className={`text-xs px-2 py-1 rounded-full ${item.badge === 'new'
                                             ? 'bg-green-100 text-green-700'
@@ -243,7 +208,6 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth, isSuperAdmin, permissio
                                             {item.badge}
                                         </span>
                                     )}
->>>>>>> Stashed changes
                                 </Link>
                             )}
 
