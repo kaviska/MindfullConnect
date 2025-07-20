@@ -1,12 +1,13 @@
 .container {
   margin: 0 auto;
   max-width: 1400px;
-  padding: 4rem 1.5rem 6rem;
+  padding: 2rem 1.5rem 3rem;
   background: linear-gradient(135deg, #f8fffe 0%, #e8f5ff 50%, #f0f9ff 100%);
   min-height: 90vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin: 0;
 }
 
 .headerSection {

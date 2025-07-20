@@ -108,9 +108,9 @@ const Card = ({ item, showActions = false, onDelete }: any) => {
               >
                 <button className={styles.menuButton} aria-label="Post actions">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="1" fill="currentColor" />
-                    <circle cx="12" cy="5" r="1" fill="currentColor" />
-                    <circle cx="12" cy="19" r="1" fill="currentColor" />
+                    <circle cx="12" cy="12" r="3" fill="currentColor" />
+                    <circle cx="12" cy="5" r="3" fill="currentColor" />
+                    <circle cx="12" cy="19" r="3" fill="currentColor" />
                   </svg>
                 </button>
                 {menuOpen && (
