@@ -15,7 +15,10 @@ const transporter = nodemailer.createTransport({
 
 export async function POST(request: Request) {
     try {
-        const { to, subject, message, originalMessage } = await request.json();
+        const { to, subject, message, originalMessage, messageId } = await request.json();
+
+        // Connect to database
+        await dbConnect();
 
         if (!to || !message) {
             return NextResponse.json(
@@ -29,66 +32,74 @@ export async function POST(request: Request) {
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <style>
-                    body {
+                    body { 
                         font-family: Arial, sans-serif;
                         line-height: 1.6;
-                        color: #333;
+                        color: #333333;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
                         max-width: 600px;
                         margin: 0 auto;
+                        padding: 20px;
                     }
                     .header {
                         background-color: #1045A1;
+                        color: white;
                         padding: 20px;
                         text-align: center;
-                    }
-                    .header h1 {
-                        color: white;
-                        margin: 0;
-                        font-size: 24px;
                     }
                     .content {
+                        background-color: #ffffff;
                         padding: 20px;
-                        background-color: #f9f9f9;
                     }
                     .reply-message {
-                        background-color: white;
+                        margin-bottom: 30px;
                         padding: 20px;
+                        background-color: #f8f9fa;
                         border-radius: 5px;
-                        margin-bottom: 20px;
                     }
                     .original-message {
-                        background-color: #f0f0f0;
+                        margin-top: 30px;
                         padding: 20px;
+                        background-color: #f1f1f1;
+                        border-left: 4px solid #1045A1;
                         border-radius: 5px;
-                        margin-top: 20px;
-                        font-style: italic;
                     }
                     .footer {
+                        margin-top: 30px;
+                        padding-top: 20px;
+                        border-top: 1px solid #eee;
                         text-align: center;
-                        padding: 20px;
-                        font-size: 12px;
                         color: #666;
+                        font-size: 14px;
                     }
                 </style>
             </head>
             <body>
-                <div class="header">
-                    <h1>MindfulConnect Response</h1>
-                </div>
-                <div class="content">
-                    <div class="reply-message">
-                        ${message.replace(/\n/g, '<br>')}
+                <div class="container">
+                    <div class="header">
+                        <h2>Response from MindfulConnect</h2>
                     </div>
-                    
-                    <div class="original-message">
-                        <strong>Your Original Message:</strong><br><br>
-                        ${originalMessage.replace(/\n/g, '<br>')}
+                    <div class="content">
+                        <div class="reply-message">
+                            ${message.replace(/\n/g, '<br>')}
+                        </div>
+                        
+                        <div class="original-message">
+                            <strong>Your Original Message:</strong><br><br>
+                            ${originalMessage.replace(/\n/g, '<br>')}
+                        </div>
+                        
+                        <div class="footer">
+                            <p>Thank you for contacting MindfulConnect.<br>
+                            This is an automated email, please do not reply directly to this message.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="footer">
-                    <p>This is an automated response from MindfulConnect. Please do not reply directly to this email.</p>
-                    <p>© ${new Date().getFullYear()} MindfulConnect. All rights reserved.</p>
                 </div>
             </body>
             </html>
@@ -96,45 +107,36 @@ export async function POST(request: Request) {
 
         // Create plain text version as fallback
         const textContent = `
-            MindfulConnect Response
-            
-            ${message}
-            
-            Your Original Message:
-            ${originalMessage}
-            
-            ---
-            This is an automated response from MindfulConnect. Please do not reply directly to this email.
-            © ${new Date().getFullYear()} MindfulConnect. All rights reserved.
+Response from MindfulConnect:
+
+${message}
+
+---------------
+Original Message:
+---------------
+${originalMessage}
+
+Thank you for contacting MindfulConnect.
+This is an automated email, please do not reply directly to this message.
         `;
 
-        // Connect to database
-        await dbConnect();
-
+        // Send email
         // Send email
         await transporter.sendMail({
-            from: {
-                name: "MindfulConnect Support",
-                address: process.env.EMAIL_USER as string
-            },
+            from: `"MindfulConnect Support" <${process.env.EMAIL_USER}>`,
             to,
             subject,
-            text: textContent,
-            html: htmlContent,
+            text: textContent, // Fallback plain text version
+            html: htmlContent, // HTML version
         });
 
-        // Update the contact message status
-        const messageId = request.headers.get('x-message-id');
-        if (!messageId) {
-            throw new Error('Message ID not provided');
+        // Delete the message from the database
+        const deletedMessage = await ContactUs.findByIdAndDelete(messageId);
+        if (!deletedMessage) {
+            throw new Error('Message not found in database');
         }
 
-        await ContactUs.findByIdAndUpdate(messageId, {
-            replied: true,
-            replyDate: new Date()
-        });
-
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, message: 'Reply sent and message deleted' });
     } catch (error) {
         console.error("Error sending email:", error);
         return NextResponse.json(

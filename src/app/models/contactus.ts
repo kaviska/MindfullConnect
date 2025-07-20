@@ -7,8 +7,6 @@ export interface IContactUs extends Document {
     role: "User" | "Counsellor";
     message: string;
     createdAt: Date;
-    replied: boolean;
-    replyDate?: Date;
 }
 
 const ContactUsSchema: Schema = new Schema({
@@ -18,8 +16,6 @@ const ContactUsSchema: Schema = new Schema({
     role: { type: String, enum: ["User", "Counsellor"], required: true },
     message: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
-    replied: { type: Boolean, default: false },
-    replyDate: { type: Date },
 });
 
 export default mongoose.models.ContactUs || mongoose.model<IContactUs>("ContactUs", ContactUsSchema);

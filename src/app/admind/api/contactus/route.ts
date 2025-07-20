@@ -12,14 +12,14 @@ export async function GET(req: Request) {
         const limit = 10; // items per page
         const skip = (page - 1) * limit;
 
-        // Fetch only unreplied contacts
-        const contacts = await ContactUs.find({ replied: false })
+        // Fetch contacts with pagination
+        const contacts = await ContactUs.find({})
             .sort({ createdAt: -1 }) // Sort by newest first
             .skip(skip)
             .limit(limit);
 
         // Get total count for pagination
-        const total = await ContactUs.countDocuments({ replied: false });
+        const total = await ContactUs.countDocuments({});
         const totalPages = Math.ceil(total / limit);
 
         return NextResponse.json({

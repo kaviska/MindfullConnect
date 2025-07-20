@@ -16,7 +16,7 @@ interface ContactMessage {
 }
 
 const fetchMessages = async (page: number): Promise<{ contacts: ContactMessage[]; totalPages: number }> => {
-    const res = await fetch(`/admind/api/contactus?page=${page}&pending=true`);
+    const res = await fetch(`/admind/api/contactus?page=${page}`);
     if (!res.ok) {
         console.error("Failed to fetch messages:", await res.text());
         throw new Error("Failed to fetch messages");
@@ -55,28 +55,28 @@ const ContactMessagesPage = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-message-id': selectedMessage._id,
                 },
                 body: JSON.stringify({
                     to: selectedMessage.email,
                     subject: `Re: Your Message to MindfulConnect`,
                     message: replyMessage,
                     originalMessage: selectedMessage.message,
+                    messageId: selectedMessage._id,
                 }),
-            }); if (!response.ok) {
+            });
+
+            if (!response.ok) {
                 throw new Error('Failed to send reply');
             }
 
             setShowReplyForm(false);
             setReplyMessage('');
-            alert('Reply sent successfully!');
-
-            // Remove the replied message from the list
-            setMessages(prevMessages =>
-                prevMessages.filter(msg => msg._id !== selectedMessage._id)
-            );
-
             setShowModal(false);
+            // Refresh the messages list
+            const data = await fetchMessages(page);
+            setMessages(data.contacts);
+            setTotalPages(data.totalPages);
+            alert('Reply sent successfully and message removed!');
         } catch (error) {
             console.error('Error sending reply:', error);
             alert('Failed to send reply. Please try again.');
