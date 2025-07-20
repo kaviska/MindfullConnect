@@ -2,7 +2,6 @@
 
 import { X } from "lucide-react";
 import React, { useState } from "react";
-import DownloadIcon from "@mui/icons-material/Download";
 import BlockUserModal from "../../blockuser/blockuser";
 import EditCounsellorPopup from "../editpopup/editpopup";
 
@@ -94,8 +93,8 @@ const ProfilePopup: React.FC<CounsellorProfilePopupProps> = ({
                             <div className="sm:col-span-2">
                                 <label className="block mb-2 font-semibold text-gray-700">Languages Spoken</label>
                                 <div className="bg-[#f5f7fa] px-5 py-3 rounded-md text-sm shadow-sm border border-gray-300">
-                                    {counsellor.languagesSpoken && counsellor.languagesSpoken.length > 0 
-                                        ? counsellor.languagesSpoken.join(', ') 
+                                    {counsellor.languagesSpoken && counsellor.languagesSpoken.length > 0
+                                        ? counsellor.languagesSpoken.join(', ')
                                         : 'N/A'}
                                 </div>
                             </div>
@@ -103,8 +102,8 @@ const ProfilePopup: React.FC<CounsellorProfilePopupProps> = ({
                             <div className="sm:col-span-2">
                                 <label className="block mb-2 font-semibold text-gray-700">Therapeutic Modalities</label>
                                 <div className="bg-[#f5f7fa] px-5 py-3 rounded-md text-sm shadow-sm border border-gray-300">
-                                    {counsellor.therapeuticModalities && counsellor.therapeuticModalities.length > 0 
-                                        ? counsellor.therapeuticModalities.join(', ') 
+                                    {counsellor.therapeuticModalities && counsellor.therapeuticModalities.length > 0
+                                        ? counsellor.therapeuticModalities.join(', ')
                                         : 'N/A'}
                                 </div>
                             </div>
