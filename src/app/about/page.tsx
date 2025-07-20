@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Heart, Shield, Users, Award, CheckCircle, Star, ArrowRight, Target, Globe, Lightbulb } from 'lucide-react';
 import Footer from '@/components/home/Footer';
 import Image from 'next/image';
+import Nav from '@/components/home/Nav'; // ✅ Add this import
 
 const AboutPage = () => {
   const teamMembers = [
@@ -71,6 +72,7 @@ const AboutPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
       {/* ✅ Soft Background Elements */}
+      <Nav />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-float"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-float-delayed"></div>

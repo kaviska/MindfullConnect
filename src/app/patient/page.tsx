@@ -104,11 +104,11 @@ export default function PatientPage() {
 
   const quickActions = [
     {
-      title: "Progress Tracking",
+      title: "Messages",
       icon: TrendingUp,
-      href: "/patient/progress",
+      href: "/chatinterface",
       color: "bg-gradient-to-br from-[#10b981] to-[#059669]",
-      description: "Monitor your wellness journey",
+      description: "Secure messaging with end to end encryption ",
     },
     {
       title: "My Goals",
@@ -124,13 +124,7 @@ export default function PatientPage() {
       color: "bg-gradient-to-br from-[#f59e0b] to-[#d97706]",
       description: "Take personalized wellness quizzes",
     },
-    {
-      title: "Profile",
-      icon: User,
-      href: "/patient/profile",
-      color: "bg-gradient-to-br from-[#6b7280] to-[#4b5563]",
-      description: "Manage your account settings",
-    },
+    
   ];
 
   // ✅ Calculate dynamic wellness stats
