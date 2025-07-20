@@ -44,7 +44,11 @@ export default function GoalsPage() {
   };
 
   // Calculate stats from real data
-  const totalPatients = new Set(patientGoals.map((pg: any) => pg.patientId._id)).size;
+  const totalPatients = new Set(
+    patientGoals
+      .filter((pg: any) => pg.patientId && pg.patientId._id)
+      .map((pg: any) => pg.patientId._id)
+  ).size;
   const activeGoals = patientGoals.filter((pg: any) => pg.status === 'in_progress' || pg.status === 'assigned').length;
   const completedMilestones = patientGoals.reduce((total: number, pg: any) => 
     total + pg.milestones.filter((m: any) => m.status === 'completed').length, 0
@@ -80,24 +84,30 @@ export default function GoalsPage() {
   ];
 
   // Get unique patients for display
-  const patients = patientGoals.reduce((unique: any[], pg: any) => {
-    if (!unique.find(p => p._id === pg.patientId._id)) {
-      const patientGoalsCount = patientGoals.filter((g: any) => g.patientId._id === pg.patientId._id);
-      const completedGoals = patientGoalsCount.filter((g: any) => g.status === 'completed').length;
-      const avgProgress = patientGoalsCount.reduce((sum: number, g: any) => sum + g.progress, 0) / patientGoalsCount.length;
-      
-      unique.push({
-        _id: pg.patientId._id,
-        name: pg.patientId.fullName,
-        email: pg.patientId.email,
-        goalsCount: patientGoalsCount.length,
-        completedGoals,
-        avgProgress: Math.round(avgProgress),
-        status: avgProgress >= 80 ? "healthy" : avgProgress >= 50 ? "warning" : "danger"
-      });
-    }
-    return unique;
-  }, []);
+  const patients = patientGoals
+    .filter((pg: any) => pg.patientId && pg.patientId._id) // Filter out null patientId entries
+    .reduce((unique: any[], pg: any) => {
+      if (!unique.find(p => p._id === pg.patientId._id)) {
+        const patientGoalsCount = patientGoals.filter((g: any) => 
+          g.patientId && g.patientId._id === pg.patientId._id
+        );
+        const completedGoals = patientGoalsCount.filter((g: any) => g.status === 'completed').length;
+        const avgProgress = patientGoalsCount.length > 0 
+          ? patientGoalsCount.reduce((sum: number, g: any) => sum + g.progress, 0) / patientGoalsCount.length 
+          : 0;
+        
+        unique.push({
+          _id: pg.patientId._id,
+          name: pg.patientId.fullName,
+          email: pg.patientId.email,
+          goalsCount: patientGoalsCount.length,
+          completedGoals,
+          avgProgress: Math.round(avgProgress),
+          status: avgProgress >= 80 ? "healthy" : avgProgress >= 50 ? "warning" : "danger"
+        });
+      }
+      return unique;
+    }, []);
 
   return (
     <div className="space-y-6">
@@ -210,10 +220,12 @@ export default function GoalsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {patientGoals.map((pg: any) => (
+                {patientGoals
+                  .filter((pg: any) => pg.patientId && pg.patientId._id) // Add null check here too
+                  .map((pg: any) => (
                   <tr key={pg._id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm text-gray-900">{pg.patientId.fullName}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{pg.goalId.title}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{pg.goalId?.title || 'N/A'}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-24 bg-gray-200 rounded-full h-2">

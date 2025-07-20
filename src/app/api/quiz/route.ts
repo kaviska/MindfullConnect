@@ -1,4 +1,5 @@
 import Quiz from "@/models/Quiz";
+import QuestionGroup from "@/models/QuestionGroup";
 import { NextResponse, NextRequest } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import { createNotification } from "@/utility/backend/notificationService";
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   try {
     await dbConnect();
-    const quizzes = await Quiz.find({}).populate("question_group_id");
+    const quizzes = await Quiz.find();
     return respond(quizzes, 200);
   } catch (error) {
     console.error("Error fetching quizzes:", error);
