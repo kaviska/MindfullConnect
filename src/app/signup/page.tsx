@@ -34,7 +34,7 @@ export default function SignupPage() {
 
       setToast({
         open: true,
-        message: "Account created successfully! Please verify your email.",
+        message: "Account created successfully!.",
         type: "success",
       });
 
