@@ -5,7 +5,7 @@ import Chart from "../../ui/dashboard/chart/chart";
 import PieChart from "../../ui/dashboard/piechart/piechart";
 import TopCounsellors from "../../ui/dashboard/topcounsellors/topcounsellors";
 import EarningsInfo from "../../ui/dashboard/earnings/earnings";
-
+//dashboard page for admin with responsive design and modern UI components
 const Dashboard = () => {
     return (
         <div className="min-h-screen bg-transparent p-4 md:p-6 lg:p-8">
@@ -18,24 +18,24 @@ const Dashboard = () => {
 
                 {/* Key Metrics Cards - Responsive Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    <Card 
-                        title="Total Patients" 
-                        endpoint="/admind/api/patient" 
-                        defaultValue={0} 
+                    <Card
+                        title="Total Patients"
+                        endpoint="/admind/api/patient"
+                        defaultValue={0}
                         icon="groups"
                         color="#1C3172"
                     />
-                    <Card 
-                        title="Active Counselors" 
-                        endpoint="/admind/api/counsellors/active" 
-                        defaultValue={0} 
+                    <Card
+                        title="Active Counselors"
+                        endpoint="/admind/api/counsellors/active"
+                        defaultValue={0}
                         icon="person"
                         color="#1C3172"
                     />
-                    <Card 
-                        title="Total Sessions" 
-                        endpoint="/admind/api/sessions" 
-                        defaultValue={0} 
+                    <Card
+                        title="Total Sessions"
+                        endpoint="/admind/api/sessions"
+                        defaultValue={0}
                         icon="event"
                         color="#1C3172"
                     />
