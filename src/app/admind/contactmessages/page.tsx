@@ -76,7 +76,7 @@ const ContactMessagesPage = () => {
             const data = await fetchMessages(page);
             setMessages(data.contacts);
             setTotalPages(data.totalPages);
-            alert('Reply sent successfully and message removed!');
+            alert('Reply sent successfully!');
         } catch (error) {
             console.error('Error sending reply:', error);
             alert('Failed to send reply. Please try again.');
