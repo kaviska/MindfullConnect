@@ -85,7 +85,7 @@ function PaymentForm({ clientSecret, sessionId }: { clientSecret: string; sessio
           <div className="text-center">
             <p className="text-sm font-medium text-gray-600 mb-1">Total Amount</p>
             <p className="text-3xl font-bold text-gray-900">
-              ${parseFloat(amount).toFixed(2)}
+              ${ (parseFloat(amount) / 100).toFixed(2) }
             </p>
           </div>
         </div>
