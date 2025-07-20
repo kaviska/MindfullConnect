@@ -1,75 +1,95 @@
-import React from 'react'
-import styles from './categoryList.module.css'
-import Link from 'next/link';
-import Image from 'next/image';
+"use client";
+
+import React from "react";
+import { useSearchParams } from "next/navigation";
+import styles from "./categoryList.module.css";
+import Link from "next/link";
+import Image from "next/image";
 
 const CategoryList = () => {
+  const searchParams = useSearchParams();
+  const currentCategory = searchParams.get("cat");
+
+  const categories = [
+    {
+      name: "All Blogs",
+      href: "/blogMC",
+      param: null,
+      image: "/globe.svg",
+      className: "allBlogs",
+    },
+    {
+      name: "Wellbeing",
+      href: "/blogMC?cat=wellbeing",
+      param: "wellbeing",
+      image: "/images/categories/wellbeing-cover.jpg",
+      className: "wellbeing",
+    },
+    {
+      name: "Mindfulness",
+      href: "/blogMC?cat=mindfulness",
+      param: "mindfulness",
+      image: "/images/categories/mindfulness-cover.jpg",
+      className: "mindfulness",
+    },
+    {
+      name: "Self-Care",
+      href: "/blogMC?cat=self-care",
+      param: "self-care",
+      image: "/images/categories/self-care-cover.jpg",
+      className: "selfCare",
+    },
+    {
+      name: "Relationships",
+      href: "/blogMC?cat=relationships",
+      param: "relationships",
+      image: "/images/categories/relationships-cover.jpg",
+      className: "relationships",
+    },
+    {
+      name: "Therapy",
+      href: "/blogMC?cat=therapy",
+      param: "therapy",
+      image: "/images/categories/therapy-cover.jpg",
+      className: "therapy",
+    },
+    {
+      name: "Other",
+      href: "/blogMC?cat=other",
+      param: "other",
+      image: "/images/categories/default-cover.jpg",
+      className: "others",
+    },
+  ];
+
   return (
-    <div className = {styles.container}>
+    <div className={styles.container}>
       <h1 className={styles.title}>Filter through Categories</h1>
       <div className={styles.categories}>
-        <Link href="/blogMC?cat=wellbeing" className={`${styles.category} ${styles.wellbeing}`}>
-          <Image
-            src="/TeenTherapy.png" 
-            alt="Category Image 1" 
-            height={32} width={32}
-            className={styles.image} 
-          />
-          Wellbeing
-        </Link>
-
-        <Link href="/blogMC?cat=mindfulness" className={`${styles.category} ${styles.mindfulness}`}>
-          <Image 
-            src="/TeenTherapy.png" 
-            alt="Category Image 1" 
-            width={32} height={32} 
-            className={styles.image}
-          />
-          Mindfulness
-        </Link>
-
-        <Link href="/blogMC?cat=self-Care" className={`${styles.category} ${styles.selfCare}`}>
-          <Image 
-            src="/TeenTherapy.png" 
-            alt="" 
-            width={32} height={32} 
-            className={styles.image} 
-          />
-          Self-Care
-        </Link>
-
-        <Link href="/blogMC?cat=relationships" className={`${styles.category} ${styles.relationships}`}>
-          <Image 
-            src="/TeenTherapy.png" 
-            alt="Category Image 1" 
-            width={32} height={32} 
-            className={styles.image} 
-          />
-          Relationships
-        </Link>
-
-        <Link href="/blogMC?cat=therapy" className={`${styles.category} ${styles.therapy}`}>
-          <Image 
-            src="/TeenTherapy.png" 
-            alt="Category Image 1" 
-            width={32} height={32} 
-            className={styles.image} 
-          />
-          Therapy
-        </Link>
-
-        <Link href="/blogMC?cat=others" className={`${styles.category} ${styles.others}`}>
-          <Image 
-            src="/TeenTherapy.png" 
-            alt="Category Image 1" 
-            width={32} height={32} 
-            className={styles.image} 
-          />
-          Others
-        </Link>
+        {categories.map((category) => {
+          const isActive =
+            currentCategory === category.param ||
+            (currentCategory === null && category.param === null);
+          return (
+            <Link
+              key={category.name}
+              href={category.href}
+              className={`${styles.category} ${styles[category.className]} ${isActive ? styles.active : ""}`}
+            >
+              <Image
+                src={category.image}
+                alt={`${category.name} Category`}
+                height={32}
+                width={32}
+                className={styles.image}
+              />
+              {category.name}
+            </Link>
+          );
+        })}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CategoryList
+export default CategoryList;

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Card from '@/app/components/card/card';
+import { useEffect, useState } from "react";
+import Card from "@/app/components/card/card";
 
 interface BlogPost {
   _id: string;
@@ -11,6 +11,7 @@ interface BlogPost {
   createdAt: string;
   category: string;
   slug: string;
+  published: boolean;
 }
 
 export default function MyBlogs() {
@@ -21,17 +22,19 @@ export default function MyBlogs() {
   useEffect(() => {
     const fetchMyBlogs = async () => {
       try {
-        const res = await fetch('/api/posts/myPosts');
+        const res = await fetch("/api/posts/myPosts");
         const data = await res.json();
 
         if (!Array.isArray(data)) {
-          setError(data.message || data.error || 'Unexpected response from server.');
+          setError(
+            data.message || data.error || "Unexpected response from server."
+          );
           setBlogs([]);
         } else {
           setBlogs(data);
         }
       } catch (err) {
-        setError('Failed to fetch blogs.');
+        setError("Failed to fetch blogs.");
         setBlogs([]);
       } finally {
         setLoading(false);
@@ -43,7 +46,7 @@ export default function MyBlogs() {
 
   // New handler to remove deleted blog from UI
   const handleDelete = (slug: string) => {
-    setBlogs((prevBlogs) => prevBlogs.filter(blog => blog.slug !== slug));
+    setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog.slug !== slug));
   };
 
   return (
@@ -54,7 +57,9 @@ export default function MyBlogs() {
         </h1>
 
         {loading && (
-          <div className="text-center text-gray-500 text-lg">Loading your blogs...</div>
+          <div className="text-center text-gray-500 text-lg">
+            Loading your blogs...
+          </div>
         )}
 
         {error && (
@@ -72,13 +77,14 @@ export default function MyBlogs() {
             <Card
               key={blog._id}
               item={{
-                img: blog.img || '/CoupleTherapy.png',
+                img: blog.img,
                 title: blog.title,
                 desc: blog.content.slice(0, 100),
                 createdAt: blog.createdAt,
                 catSlug: blog.category,
                 slug: blog.slug,
                 _id: blog._id,
+                published: blog.published,
               }}
               showActions={true}
               onDelete={handleDelete}
