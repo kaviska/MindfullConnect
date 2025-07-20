@@ -5,6 +5,7 @@ import { User, FileText, Award, Clock, ChevronDown, ChevronUp, CheckCircle, XCir
 interface PatientQuizResult {
   _id: string;
   quizId: {
+    _id: string;
     title: string;
     description: string;
   };
@@ -14,15 +15,13 @@ interface PatientQuizResult {
     email: string;
   };
   score: number;
-  correctAnswers: number;
   totalQuestions: number;
   timeSpent: number;
   status: string;
-  completedDate: string;
+  completedAt: string;
   answers: Array<{
     questionId: string;
     selectedOption: number;
-    isCorrect: boolean;
   }>;
 }
 
@@ -81,6 +80,35 @@ export default function PatientQuizResultsPage() {
     setQuestions(questionsMap);
   };
 
+  // Calculate correct answers and detailed results
+  const calculateQuizStats = (result: PatientQuizResult, quizQuestions: QuestionDetail[]) => {
+    let correctAnswers = 0;
+    const detailedAnswers = [];
+
+    for (const question of quizQuestions) {
+      const userAnswer = result.answers.find(a => a.questionId === question._id);
+      const isCorrect = userAnswer?.selectedOption === question.correct_answer_index;
+      
+      if (isCorrect) {
+        correctAnswers++;
+      }
+
+      detailedAnswers.push({
+        questionId: question._id,
+        selectedOption: userAnswer?.selectedOption ?? -1,
+        isCorrect
+      });
+    }
+
+    const percentage = Math.round((correctAnswers / result.totalQuestions) * 100);
+    
+    return {
+      correctAnswers,
+      percentage,
+      detailedAnswers
+    };
+  };
+
   const toggleExpanded = (resultId: string) => {
     setExpandedResults(prev => ({
       ...prev,
@@ -99,9 +127,9 @@ export default function PatientQuizResultsPage() {
     return `${minutes}m ${secs}s`;
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
+  const getScoreColor = (percentage: number) => {
+    if (percentage >= 80) return 'text-green-600 bg-green-100';
+    if (percentage >= 60) return 'text-yellow-600 bg-yellow-100';
     return 'text-red-600 bg-red-100';
   };
 
@@ -166,6 +194,7 @@ export default function PatientQuizResultsPage() {
           {filteredResults.map((result) => {
             const isExpanded = expandedResults[result._id];
             const quizQuestions = questions[result.quizId._id] || [];
+            const { correctAnswers, percentage, detailedAnswers } = calculateQuizStats(result, quizQuestions);
             
             return (
               <div key={result._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -186,20 +215,20 @@ export default function PatientQuizResultsPage() {
                       <div className="flex items-center gap-6 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
                           <Award className="h-4 w-4" />
-                          <span>Score: <span className={`px-2 py-1 rounded-full text-sm font-medium ${getScoreColor(result.score)}`}>
-                            {result.score}%
+                          <span>Score: <span className={`px-2 py-1 rounded-full text-sm font-medium ${getScoreColor(percentage)}`}>
+                            {percentage}%
                           </span></span>
                         </div>
                         <div className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4" />
-                          <span>{result.correctAnswers}/{result.totalQuestions} correct</span>
+                          <span>{correctAnswers}/{result.totalQuestions} correct</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4" />
                           <span>{formatTime(result.timeSpent)}</span>
                         </div>
                         <div>
-                          Completed: {new Date(result.completedDate).toLocaleDateString()}
+                          Completed: {new Date(result.completedAt).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
@@ -223,7 +252,8 @@ export default function PatientQuizResultsPage() {
                     <div className="space-y-6">
                       {quizQuestions.map((question, index) => {
                         const userAnswer = result.answers.find(a => a.questionId === question._id);
-                        const isCorrect = userAnswer?.isCorrect || false;
+                        const detailedAnswer = detailedAnswers.find(a => a.questionId === question._id);
+                        const isCorrect = detailedAnswer?.isCorrect || false;
                         
                         return (
                           <div 
@@ -314,15 +344,15 @@ export default function PatientQuizResultsPage() {
                         </div>
                         <div>
                           <span className="text-gray-600">Correct:</span>
-                          <span className="ml-2 font-medium text-green-600">{result.correctAnswers}</span>
+                          <span className="ml-2 font-medium text-green-600">{correctAnswers}</span>
                         </div>
                         <div>
                           <span className="text-gray-600">Incorrect:</span>
-                          <span className="ml-2 font-medium text-red-600">{result.totalQuestions - result.correctAnswers}</span>
+                          <span className="ml-2 font-medium text-red-600">{result.totalQuestions - correctAnswers}</span>
                         </div>
                         <div>
                           <span className="text-gray-600">Accuracy:</span>
-                          <span className="ml-2 font-medium">{Math.round((result.correctAnswers / result.totalQuestions) * 100)}%</span>
+                          <span className="ml-2 font-medium">{percentage}%</span>
                         </div>
                       </div>
                     </div>
