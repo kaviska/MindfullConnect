@@ -70,12 +70,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-blue-600 transition-colors">
+                <Link href="/blogMc" className="hover:text-blue-600 transition-colors">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/Contact" className="hover:text-blue-600 transition-colors">
+                <Link href="/contactus" className="hover:text-blue-600 transition-colors">
                   Contact us
                 </Link>
               </li>
@@ -87,7 +87,7 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Information</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="" className="hover:text-blue-600 transition-colors">
+                <Link href="/faq" className="hover:text-blue-600 transition-colors">
                   FAQ
                 </Link>
               </li>
