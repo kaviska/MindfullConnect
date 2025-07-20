@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectToDB } from "../../lib/utils";
-import { User } from "../../lib/models";
+import dbConnect from "../../../lib/mongodb";
+import { User } from "../../../lib/models";
 
 export async function GET(req: NextRequest) {
-    await connectToDB();
+    await dbConnect();
 
     const { searchParams } = new URL(req.url);
     const page = Number(searchParams.get("page") || 1);

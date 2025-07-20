@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import User from "../../../../models/User";
-import Report from "../../../../models/report";
-import dbConnect from "../../../../lib/mongodb";
+import User from "../../../../../models/User";
+import Report from "../../../../../models/report";
+import dbConnect from "../../../../../lib/mongodb";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
         const { id } = await params;
-        
+
         const report = await Report.findById(id).lean();
-        
+
         if (!report) {
             return NextResponse.json({ success: false, message: "Report not found" }, { status: 404 });
         }
-        
+
         return NextResponse.json({ success: true, report });
     } catch (err) {
         console.error("Error fetching report:", err);

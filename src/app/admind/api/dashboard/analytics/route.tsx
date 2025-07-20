@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import dbConnect from "../../../lib/mongodb";
-import Session from "../../../models/session";
+import dbConnect from "../../../../lib/mongodb";
+import Session from "../../../../models/session";
 
 export async function GET() {
     try {
@@ -11,7 +11,7 @@ export async function GET() {
 
         // Get all sessions grouped by status
         const allSessions = await Session.find({});
-        
+
         const statusBreakdown = {
             pending: allSessions.filter(s => s.status === 'pending').length,
             confirmed: allSessions.filter(s => s.status === 'confirmed').length,
@@ -32,14 +32,14 @@ export async function GET() {
         for (let month = 0; month < 12; month++) {
             const startDate = new Date(currentYear, month, 1).toISOString().split('T')[0];
             const endDate = new Date(currentYear, month + 1, 0).toISOString().split('T')[0];
-            
-            const monthSessions = allSessions.filter(session => 
+
+            const monthSessions = allSessions.filter(session =>
                 session.date >= startDate && session.date <= endDate
             );
 
             const monthCompleted = monthSessions.filter(s => s.status === 'completed').length;
             const monthConfirmed = monthSessions.filter(s => s.status === 'confirmed').length;
-            
+
             monthlyData.push({
                 month: new Date(currentYear, month, 1).toLocaleString("default", { month: "long" }),
                 completed: monthCompleted,
