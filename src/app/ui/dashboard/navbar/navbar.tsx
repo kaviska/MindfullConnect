@@ -9,9 +9,11 @@ import {
 const Navbar = () => {
     const router = useRouter();
 
-    const handleLogout = () => {
-        console.log('Logout clicked');
-    };
+  const handleLogout = () => {
+    localStorage.removeItem('userId');
+    localStorage.removeItem('isSuperAdmin');
+    router.push('/adminsignup');
+};
 
     const goToProfile = () => {
         router.push('/admind/adminprofile/profile');

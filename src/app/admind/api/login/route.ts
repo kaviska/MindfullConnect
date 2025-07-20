@@ -1,17 +1,32 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import dbConnect from '../../../lib/mongodb';
+import Admin from '../../../models/Admin'; // Adjust path if needed
 
-let users: { email: string; password: string }[] = [];
+export async function POST(req: Request) {
+  try {
+    await dbConnect();
+    const { email, password } = await req.json();
 
-export async function POST(request: Request) {
-  const { email, password } = await request.json();
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
 
-  if (!email || !password) {
-    return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+    const passwordMatch = await bcrypt.compare(password, admin.password);
+    if (!passwordMatch) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    // ✅ Return isSuperAdmin flag in response
+    return NextResponse.json({
+      message: 'Login successful',
+      isSuperAdmin: admin.isSuperAdmin,
+      userId: admin._id,
+    }, { status: 200 });
+
+  } catch (error) {
+    console.error('Login Error:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
-
-  const user = users.find(u => u.email === email && u.password === password);
-  if (user) {
-    return NextResponse.json({ message: 'Login successful' }, { status: 200 });
-  }
-  return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-}                                                                                                                                                     
+}

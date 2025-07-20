@@ -23,9 +23,11 @@ interface SidebarProps {
     collapsed: boolean;
     setCollapsed: (value: boolean) => void;
     windowWidth: number;
+    isSuperAdmin?: boolean;
+    permissions?: { [key: string]: { read: boolean } } | null;
 }
 
-const Sidebar = ({ collapsed, setCollapsed, windowWidth }: SidebarProps) => {
+const Sidebar = ({ collapsed, setCollapsed, windowWidth, isSuperAdmin, permissions }: SidebarProps) => {
     const pathname = usePathname();
     const [openDropdowns, setOpenDropdowns] = useState<string[]>([]);
     const [showText, setShowText] = useState(!collapsed);
@@ -70,6 +72,7 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth }: SidebarProps) => {
     };
 
     const menuItems = [
+<<<<<<< Updated upstream
         {
             name: 'Dashboard',
             icon: <Home />,
@@ -84,6 +87,18 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth }: SidebarProps) => {
             name: 'Patients',
             icon: <PsychologyAlt />,
             path: '/admind/patient'
+=======
+
+
+        { name: 'Dashboard', icon: <Home />, path: '/admind/dashboard', badge: null },
+
+        ...(isSuperAdmin ? [{ name: 'Panel', icon: <Dashboard />, path: '/admind/panel', badge: null }] : []),
+        {
+            name: 'Patients',
+            icon: <PsychologyAlt />,
+            path: '/admind/patient',
+            badge: 'new'
+>>>>>>> Stashed changes
         },
         {
             name: 'Counsellors',
@@ -101,12 +116,20 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth }: SidebarProps) => {
                 { name: 'Pending', path: '/admind/reported/pending', count: 3 },
             ],
         },
+<<<<<<< Updated upstream
         {
             name: 'Employees',
             icon: <Badge />,
             path: '/admind/employee'
         },
+=======
+        ...(isSuperAdmin 
+            ? [{ name: 'Employees', icon: <Badge />, path: '/admind/employee', badge: null }]
+                : []),
+>>>>>>> Stashed changes
     ];
+
+    console.log(menuItems);
 
     const isActiveLink = (path: string) => {
         return pathname === path;
@@ -209,7 +232,18 @@ const Sidebar = ({ collapsed, setCollapsed, windowWidth }: SidebarProps) => {
                                         ) : null}
                                     </div>
 
+<<<<<<< Updated upstream
 
+=======
+                                    {((showText && !collapsed) || isMobile) && item.badge && (
+                                        <span className={`text-xs px-2 py-1 rounded-full ${item.badge === 'new'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-gray-200 text-gray-600'
+                                            }`}>
+                                            {item.badge}
+                                        </span>
+                                    )}
+>>>>>>> Stashed changes
                                 </Link>
                             )}
 

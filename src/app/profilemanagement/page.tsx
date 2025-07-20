@@ -36,7 +36,7 @@ export default function ProfileManagement() {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/employees');
+        const res = await fetch('/api/employees');
         if (!res.ok) throw new Error('Failed to fetch employees');
         const data = await res.json();
         setEmployees(data);
