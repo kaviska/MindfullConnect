@@ -1,12 +1,21 @@
 'use client';
+
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import SuccessModal from "@/app/ui/success/success"; // Adjust path if needed
+import SuccessModal from "@/app/ui/success/success";
 
 export default function AdminPassword() {
     const router = useRouter();
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [email, setEmail] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        const storedEmail = localStorage.getItem('email');
+        if (storedEmail) setEmail(storedEmail);
+    }, []);
 
     const handleCancel = () => {
         router.push('/admind/adminprofile/profile');
@@ -17,7 +26,6 @@ export default function AdminPassword() {
     };
 
     const handleSave = () => {
-        // Optional: Add validation or API logic here
         setShowSuccessModal(true);
     };
 
@@ -29,6 +37,8 @@ export default function AdminPassword() {
     const handleModalCancel = () => {
         setShowSuccessModal(false);
     };
+
+    if (!mounted) return null;
 
     return (
         <div className="min-h-screen flex flex-col items-center p-6 md:p-10">
@@ -62,8 +72,9 @@ export default function AdminPassword() {
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <input
                         type="email"
-                        defaultValue="kasi@gmail.com"
-                        className="w-full p-2 mt-1 rounded-md bg-white border border-gray-300"
+                        value={email}
+                        readOnly
+                        className="w-full p-2 mt-1 rounded-md bg-gray-100 border border-gray-300"
                     />
                 </div>
                 <div>

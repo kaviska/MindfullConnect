@@ -21,33 +21,35 @@ const Layout = ({ children }: LayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
   const [mounted, setMounted] = useState(false);
-const [permissions, setPermissions] = useState(null);
+  const [permissions, setPermissions] = useState<Permissions | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPermissions = async () => {
-      const userId = localStorage.getItem('userId');
+    if (typeof window !== 'undefined') {
+      const storedId = localStorage.getItem('userId');
       const isSA = localStorage.getItem('isSuperAdmin') === 'true';
+      setUserId(storedId);
       setIsSuperAdmin(isSA);
-
-      if (userId) {
-        const res = await fetch(`/api/permissions/${userId}`);
-        const data = await res.json();
-        setPermissions(data.permissions || {});
-      }
-    };
-
-    fetchPermissions();
-    setWindowWidth(window.innerWidth);
+      setWindowWidth(window.innerWidth);
+    }
 
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const userId = typeof window !== 'undefined' ? localStorage.getItem('isSuperAdmin') || '' : '';
-  const superadmin = localStorage.getItem('isSuperAdmin') === 'true';
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      if (userId) {
+        const res = await fetch(/api/permissions/${userId});
+        const data = await res.json();
+        setPermissions(data.permissions || {});
+      }
+    };
 
+    fetchPermissions();
+  }, [userId]);
 
   useEffect(() => {
     setMounted(true);
@@ -59,7 +61,6 @@ const [permissions, setPermissions] = useState(null);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
 
   if (!mounted) {
     return (
@@ -87,13 +88,13 @@ const [permissions, setPermissions] = useState(null);
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       {!isMobile && (
-        <div className={`${collapsed ? 'w-20' : 'w-64'} transition-all duration-300 flex-shrink-0`}>
+        <div className={${collapsed ? 'w-20' : 'w-64'} transition-all duration-300 flex-shrink-0}>
           <Sidebar
             collapsed={collapsed}
             setCollapsed={setCollapsed}
             windowWidth={windowWidth}
-            isSuperAdmin={superadmin}
-            permissions={permissions}
+            isSuperAdmin={isSuperAdmin}
+            
           />
         </div>
       )}
@@ -103,7 +104,8 @@ const [permissions, setPermissions] = useState(null);
           collapsed={collapsed}
           setCollapsed={setCollapsed}
           windowWidth={windowWidth}
-          permissions={permissions}
+          isSuperAdmin={isSuperAdmin}
+          
         />
       )}
 
