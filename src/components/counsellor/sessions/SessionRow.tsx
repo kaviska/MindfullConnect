@@ -157,7 +157,7 @@ export default function SessionRow({
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to cancel session");
       }
-
+//newline
       // Call the parent's onDeleteAction callback to refresh the data
       if (onDeleteAction) {
         onDeleteAction(_id);
