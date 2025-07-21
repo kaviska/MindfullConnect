@@ -11,6 +11,8 @@ const sessionSchema = new Schema({
   zoomLink: { type: String, default: null },
   zoomMeetingId: { type: String, default: null }, // Store Zoom meeting ID
    emailSent: { type: String, enum: ["yes", "no"], default: "no" },
+     emailSentAt: { type: Date, default: null }, // Add this field
+
   createdAt: { type: Date, default: Date.now }
 });
 
