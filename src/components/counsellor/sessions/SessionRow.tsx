@@ -2,7 +2,6 @@
 
 import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { JoinWithSDKButton } from "@/components/ui/JoinWithSDKButton";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-600",
@@ -257,34 +256,25 @@ export default function SessionRow({
 
       <td className="px-6 py-4">
         {zoomLink && !shouldDisableJoin ? (
-          <div className="flex flex-col gap-2">
-            <a
-              href={zoomLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+          <a
+            href={zoomLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            <svg
+              className="w-3 h-3 mr-1"
+              fill="currentColor"
+              viewBox="0 0 20 20"
             >
-              <svg
-                className="w-3 h-3 mr-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Join via Browser
-            </a>
-            {effectiveMeetingId && (
-              <JoinWithSDKButton
-                meetingId={effectiveMeetingId}
-                sdkKey={process.env.NEXT_PUBLIC_ZOOM_SDK_KEY}
-                userName={patientId?.fullName || "Guest"}
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                clipRule="evenodd"
               />
-            )}
-          </div>
+            </svg>
+            Join
+          </a>
         ) : (
           <span
             className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg ${

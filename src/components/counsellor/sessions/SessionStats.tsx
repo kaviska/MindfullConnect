@@ -173,7 +173,6 @@ export default function SessionStats() {
           {/* Content */}
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-3xl">{stat.icon}</div>
               <div className="bg-white/20 rounded-lg p-2 group-hover:bg-white/30 transition-colors">
                 <svg
                   className="w-5 h-5 text-white"
