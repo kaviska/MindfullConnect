@@ -218,12 +218,12 @@ export default function MyQuizzesPage() {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center">
+                  {/* <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Assigned:</span>
                     <span className="text-sm font-medium">
                       {new Date(quiz.assignedDate).toLocaleDateString()}
                     </span>
-                  </div>
+                  </div> */}
 
                   {quiz.dueDate && (
                     <div className="flex justify-between items-center">

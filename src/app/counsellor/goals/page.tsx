@@ -269,7 +269,7 @@ export default function GoalsPage() {
           </span>
         </div>
 
-        {patients.length > 0 ? (
+        {/* {patients.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {patients.map((patient) => (
               <PatientCard key={patient._id} patient={patient} />
@@ -283,7 +283,7 @@ export default function GoalsPage() {
               Patients will appear here once goals are assigned
             </p>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Modals */}
