@@ -5,6 +5,7 @@ import Quiz from "@/models/Quiz";
 import User from "@/models/User";
 import Counselor from "@/models/Counselor";
 import jwt from "jsonwebtoken";
+import "@/models/Quiz"; // Import Quiz model to ensure it's registered with Mongoose
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 

@@ -136,9 +136,36 @@ export default function SessionTable() {
       </div>
 
       <div className="backdrop-blur-sm bg-white/70 border border-white/20 rounded-2xl shadow-lg overflow-hidden">
+        <div className="overflow-hidden">
+          <table className="min-w-full">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
+                  Patient
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
+                  Date & Time
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
+                  Duration
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
+                  Zoom Link
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+          </table>
+        </div>
         <div
-          className="overflow-auto max-h-96 scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-100 hover:scrollbar-thumb-blue-500"
+          className="overflow-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-gray-100 hover:scrollbar-thumb-blue-500"
           style={{
+            maxHeight: "320px", // Reduced height for exactly 4 rows
             scrollbarWidth: "thin",
             scrollbarColor: "#60a5fa #f3f4f6",
           }}
@@ -164,28 +191,6 @@ export default function SessionTable() {
             }
           `}</style>
           <table className="min-w-full">
-            <thead className="sticky top-0 z-10">
-              <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
-                  Patient
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
-                  Date & Time
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
-                  Duration
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
-                  Zoom Link
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 tracking-wide whitespace-nowrap">
-                  Actions
-                </th>
-              </tr>
-            </thead>
             <tbody className="divide-y divide-gray-100">
               {sessions.map((session: any) => (
                 <SessionRow

@@ -142,29 +142,8 @@ export default function MyQuizzesPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Award className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Average Score</p>
-              <p className="text-2xl font-bold text-gray-900">{averageScore}%</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <Clock className="h-6 w-6 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Time Spent</p>
-              <p className="text-2xl font-bold text-gray-900">{formatTime(totalTimeSpent)}</p>
-            </div>
-          </div>
-        </div>
+      
+       
       </div>
 
       {/* Quizzes List */}
@@ -218,12 +197,12 @@ export default function MyQuizzesPage() {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center">
+                  {/* <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Assigned:</span>
                     <span className="text-sm font-medium">
                       {new Date(quiz.assignedDate).toLocaleDateString()}
                     </span>
-                  </div>
+                  </div> */}
 
                   {quiz.dueDate && (
                     <div className="flex justify-between items-center">

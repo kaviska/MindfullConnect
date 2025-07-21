@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoom Meeting</title>
+    <script src="https://source.zoom.us/3.13.2/lib/vendor/react.min.js"></script>
+    <script src="https://source.zoom.us/3.13.2/lib/vendor/react-dom.min.js"></script>
+    <script src="https://source.zoom.us/3.13.2/lib/vendor/redux.min.js"></script>
+    <script src="https://source.zoom.us/3.13.2/lib/vendor/redux-thunk.min.js"></script>
+    <script src="https://source.zoom.us/3.13.2/lib/vendor/lodash.min.js"></script>
+    <script src="https://source.zoom.us/zoom-meeting-3.13.2.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        #zmmtg-root {
+            width: 100vw;
+            height: 100vh;
+        }
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f8fafc;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-left: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-container {
+            padding: 20px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            margin: 20px;
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p style="margin-top: 16px; color: #64748b;">Initializing Zoom Meeting...</p>
+    </div>
+    <div id="error" class="error-container" style="display: none;">
+        <h3>Failed to Join Meeting</h3>
+        <p id="error-message"></p>
+        <button onclick="window.parent.postMessage({type: 'ZOOM_ERROR', error: 'User closed error dialog'}, '*')">
+            Close
+        </button>
+    </div>
+    <div id="zmmtg-root"></div>
+
+    <script>
+        // Get parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const meetingId = urlParams.get('meetingId');
+        const signature = urlParams.get('signature');
+        const sdkKey = urlParams.get('sdkKey');
+        const password = urlParams.get('password') || '';
+        const userName = urlParams.get('userName') || 'Guest';
+
+        console.log('Zoom iframe parameters:', {
+            meetingId,
+            signature,
+            sdkKey,
+            password,
+            userName
+        });
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error-message').textContent = message;
+            
+            // Notify parent about error
+            window.parent.postMessage({
+                type: 'ZOOM_ERROR',
+                error: message
+            }, '*');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Validate required parameters and initialize
+        function initializeZoomMeeting() {
+            // Validate required parameters
+            if (!meetingId || !signature || !sdkKey) {
+                showError('Missing required parameters: ' + 
+                    (!meetingId ? 'meetingId ' : '') +
+                    (!signature ? 'signature ' : '') +
+                    (!sdkKey ? 'sdkKey' : '')
+                );
+                return;
+            }
+
+            // Proceed with initialization
+            initZoom();
+        }
+
+        // Initialize Zoom SDK
+        function initZoom() {
+            try {
+                console.log('Initializing Zoom SDK...');
+                
+                // Check if ZoomMtg is available
+                if (typeof ZoomMtg === 'undefined') {
+                    showError('Zoom SDK not loaded - ZoomMtg is undefined');
+                    return;
+                }
+                
+                console.log('ZoomMtg object available:', typeof ZoomMtg);
+                
+                ZoomMtg.setZoomJSLib('https://source.zoom.us/3.13.2/lib', '/av');
+                
+                console.log('Starting preLoadWasm...');
+                ZoomMtg.preLoadWasm();
+                
+                console.log('Starting prepareWebSDK...');
+                ZoomMtg.prepareWebSDK();
+                
+                console.log('Loading i18n...');
+                ZoomMtg.i18n.load('en-US');
+
+                console.log('Calling ZoomMtg.init...');
+                ZoomMtg.init({
+                    leaveUrl: window.location.origin,
+                    isSupportAV: true,
+                    patchJsMedia: true,
+                    success: function() {
+                        console.log('Zoom SDK initialized successfully');
+                        hideLoading();
+                        
+                        // Notify parent that SDK is ready
+                        window.parent.postMessage({
+                            type: 'ZOOM_SDK_READY'
+                        }, '*');
+
+                        // Join the meeting
+                        ZoomMtg.join({
+                            signature: signature,
+                            meetingNumber: meetingId,
+                            userName: userName,
+                            sdkKey: sdkKey,
+                            userEmail: '',
+                            passWord: password,
+                            success: function() {
+                                console.log('Joined Zoom meeting successfully');
+                                
+                                // Notify parent about successful join
+                                window.parent.postMessage({
+                                    type: 'ZOOM_JOINED',
+                                    meetingId: meetingId
+                                }, '*');
+                            },
+                            error: function(err) {
+                                console.error('Zoom Join Error:', err);
+                                showError(`Failed to join meeting: ${err.errorCode} - ${err.reason}`);
+                            }
+                        });
+                    },
+                    error: function(err) {
+                        console.error('Zoom Init Error:', err);
+                        showError(`Failed to initialize Zoom SDK: ${err.errorCode} - ${err.reason}`);
+                    }
+                });
+            } catch (error) {
+                console.error('Zoom initialization error:', error);
+                showError(`Initialization error: ${error.message}`);
+            }
+        }
+
+        // Listen for messages from parent
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'LEAVE_MEETING') {
+                try {
+                    ZoomMtg.leave();
+                } catch (error) {
+                    console.error('Error leaving meeting:', error);
+                }
+            }
+        });
+
+        // Start initialization when page loads
+        window.addEventListener('load', function() {
+            console.log('Page loaded, starting Zoom initialization');
+            
+            // Add a small delay to ensure everything is ready
+            setTimeout(() => {
+                console.log('Starting Zoom init after delay');
+                initializeZoomMeeting();
+            }, 1000);
+        });
+
+        // Add error handling for uncaught errors
+        window.addEventListener('error', function(event) {
+            console.error('Global error in iframe:', event.error);
+            showError(`Global error: ${event.error?.message || 'Unknown error'}`);
+        });
+
+        // Add debug logging for postMessage
+        const originalPostMessage = window.parent.postMessage;
+        window.parent.postMessage = function(...args) {
+            console.log('Sending message to parent:', args[0]);
+            return originalPostMessage.apply(this, args);
+        };
+    </script>
+</body>
+</html>

@@ -107,6 +107,7 @@ export async function PATCH(request: NextRequest) {
     const session = await Session.findByIdAndUpdate(
       sessionId,
       { status },
+      {emailSent: "yes"},
       { new: true }
     );
 

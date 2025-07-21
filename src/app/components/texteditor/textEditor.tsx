@@ -29,7 +29,6 @@ const TextEditor = ({
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
   const [category, setCategory] = useState(initialCategory);
-  const [coverImage, setCoverImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,7 +73,6 @@ const TextEditor = ({
       content,
       description,
       category,
-      coverImage: coverImage ? coverImage.name : initialImage || null,
       published: pubStatus,
       author: '681bcecb2a399b0e3c35e3d6', // TODO: Replace with actual user ID from context or token
     };
@@ -146,16 +144,6 @@ const TextEditor = ({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full border border-gray-200 rounded-lg px-4 py-3 min-h-[120px] text-gray-900 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y transition"
-        />
-      </div>
-
-      {/* Cover Image */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setCoverImage(e.target.files?.[0] || null)}
-          className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 file:cursor-pointer transition"
         />
       </div>
 

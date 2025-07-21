@@ -25,6 +25,7 @@ interface SessionProps {
   duration: number;
   status: string;
   zoomLink?: string;
+  zoomMeetingId?: string;
   createdAt: string;
   onDeleteAction?: (sessionId: string) => void;
 }
@@ -37,12 +38,54 @@ export default function SessionRow({
   duration,
   status,
   zoomLink,
+  zoomMeetingId,
   onDeleteAction,
 }: SessionProps) {
   const [formattedDateTime, setFormattedDateTime] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [effectiveStatus, setEffectiveStatus] = useState<string>(status);
+
+  // Function to extract meeting ID from Zoom link if zoomMeetingId is not available
+  const extractMeetingIdFromLink = (zoomLink: string): string | null => {
+    if (!zoomLink) return null;
+
+    // Common Zoom link patterns:
+    // https://zoom.us/j/1234567890
+    // https://us02web.zoom.us/j/1234567890
+    // https://zoom.us/j/1234567890?pwd=...
+    const patterns = [
+      /\/j\/(\d+)/, // /j/123456789
+      /meeting_number=(\d+)/, // meeting_number=123456789
+      /meetingNumber=(\d+)/, // meetingNumber=123456789
+    ];
+
+    for (const pattern of patterns) {
+      const match = zoomLink.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+
+    return null;
+  };
+
+  // Get effective meeting ID
+  const effectiveMeetingId =
+    zoomMeetingId || extractMeetingIdFromLink(zoomLink || "");
+
+  // Debug logging for Zoom data
+  useEffect(() => {
+    console.log("SessionRow Zoom data:", {
+      sessionId: _id,
+      zoomLink,
+      zoomMeetingId,
+      effectiveMeetingId,
+      hasZoomLink: !!zoomLink,
+      hasZoomMeetingId: !!zoomMeetingId,
+      hasEffectiveMeetingId: !!effectiveMeetingId,
+    });
+  }, [_id, zoomLink, zoomMeetingId, effectiveMeetingId]);
 
   // Function to determine if session is overdue
   const isSessionOverdue = () => {
