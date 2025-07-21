@@ -200,17 +200,23 @@ export default function Home() {
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-6 text-left transition-colors shadow-lg">
+            <a
+            href="/counsellor/sessions"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-6 text-left transition-colors shadow-lg flex flex-col"
+            >
             <Calendar className="mb-3" size={24} />
             <div className="font-semibold">Schedule Session</div>
-            <div className="text-blue-100 text-sm">Book new appointment</div>
-          </button>
+            <div className="text-blue-100 text-sm"> New appointment</div>
+            </a>
           
-          <button className="bg-green-600 hover:bg-green-700 text-white rounded-xl p-6 text-left transition-colors shadow-lg">
+            <a
+            href="/chatinterface"
+            className="bg-green-600 hover:bg-green-700 text-white rounded-xl p-6 text-left transition-colors shadow-lg flex flex-col"
+            >
             <MessageCircle className="mb-3" size={24} />
             <div className="font-semibold">Start Chat</div>
             <div className="text-green-100 text-sm">Begin new conversation</div>
-          </button>
+            </a>
           
           <button className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl p-6 text-left transition-colors shadow-lg">
             <FileText className="mb-3" size={24} />
@@ -218,11 +224,7 @@ export default function Home() {
             <div className="text-purple-100 text-sm">Check session notes</div>
           </button>
           
-          <button className="bg-orange-600 hover:bg-orange-700 text-white rounded-xl p-6 text-left transition-colors shadow-lg">
-            <Users className="mb-3" size={24} />
-            <div className="font-semibold">Client List</div>
-            <div className="text-orange-100 text-sm">Manage clients</div>
-          </button>
+       
 
           <PaymentDashboardButton counselorData={counselorData} />
         </div>
