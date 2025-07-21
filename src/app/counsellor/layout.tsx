@@ -127,16 +127,7 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-6">
-            <div className="hidden md:block">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="pl-12 pr-4 py-3 w-80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                />
-              </div>
-            </div>
+            
 
             <Link
               href="/counsellor/notifications"
@@ -150,9 +141,7 @@ export default function DashboardLayout({
               )}
             </Link>
 
-            <button className="p-3 rounded-xl hover:bg-gray-100 transition-colors">
-              <Settings size={22} className="text-gray-600 hover:text-gray-900" />
-            </button>
+          
 
             <div className="text-base font-medium text-gray-700 border-l pl-6 hidden lg:block">
               Counsellor Dashboard
