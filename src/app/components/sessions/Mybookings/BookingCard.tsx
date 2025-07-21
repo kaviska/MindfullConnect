@@ -83,14 +83,7 @@ export default function BookingCard({
             >
               {isDeleting ? 'Cancelling...' : 'Cancel Session'}
             </button>
-            <button
-              className="py-2 px-4 bg-gradient-to-r from-[#0369a1] to-[#0284c7] text-white rounded-[8px] text-sm font-semibold hover:bg-gradient-to-r hover:from-[#0284c7] hover:to-[#0369a1] transition-all"
-              onClick={() => handleReschedule(booking.id)}
-              disabled={isDeleting}
-              aria-label={`Reschedule session with ${booking.counselor.name}`}
-            >
-              Reschedule
-            </button>
+            
           </div>
         )}
       </div>
