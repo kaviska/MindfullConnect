@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { X, Target, User, Calendar, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import Toast from "@/components/main/Toast"; // Add this import
+
 
 interface AssignGoalModalProps {
   open: boolean;
@@ -18,7 +20,7 @@ export default function AssignGoalModal({ open, setOpen, goalId, onSuccess }: As
   const [targetDate, setTargetDate] = useState("");
   const [milestones, setMilestones] = useState([{ title: "", description: "", targetDate: "" }]);
   const [loading, setLoading] = useState(false);
-  const { setToast } = useToast();
+  const { toast, setToast } = useToast(); // Make sure to destructure toast as well
 
   useEffect(() => {
     if (open) {
@@ -96,7 +98,7 @@ export default function AssignGoalModal({ open, setOpen, goalId, onSuccess }: As
         type: "success",
       });
 
-      setOpen(false);
+      // setOpen(false);
       if (onSuccess) onSuccess();
       
       // Reset form
@@ -263,6 +265,12 @@ export default function AssignGoalModal({ open, setOpen, goalId, onSuccess }: As
           </div>
         </div>
       </div>
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, open: false })}
+      />
     </div>
   );
 }

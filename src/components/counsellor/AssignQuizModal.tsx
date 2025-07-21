@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { X, FileText, User, Calendar } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
+import Toast from "@/components/main/Toast"; // Add this import
+
 
 interface AssignQuizModalProps {
   open: boolean;
@@ -17,7 +19,7 @@ export default function AssignQuizModal({ open, setOpen, onSuccess }: AssignQuiz
   const [dueDate, setDueDate] = useState("");
   const [maxAttempts, setMaxAttempts] = useState(3);
   const [loading, setLoading] = useState(false);
-  const { setToast } = useToast();
+  const { toast, setToast } = useToast(); // Make sure to destructure toast as well
 
   useEffect(() => {
     if (open) {
@@ -80,7 +82,7 @@ export default function AssignQuizModal({ open, setOpen, onSuccess }: AssignQuiz
         type: "success",
       });
 
-      setOpen(false);
+      // setOpen(false);
       if (onSuccess) onSuccess();
       
       // Reset form
@@ -205,6 +207,12 @@ export default function AssignQuizModal({ open, setOpen, onSuccess }: AssignQuiz
           </div>
         </div>
       </div>
+       <Toast
+        open={toast.open}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, open: false })}
+      />
     </div>
   );
 }
