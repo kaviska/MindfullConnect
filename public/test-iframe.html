@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zoom Iframe Test</title>
+</head>
+<body>
+    <h1>Testing Zoom Iframe</h1>
+    <p>This is a simple test to verify the iframe is accessible.</p>
+    <p>Meeting parameters:</p>
+    <div id="params"></div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const params = {
+            meetingId: urlParams.get('meetingId'),
+            signature: urlParams.get('signature'),
+            sdkKey: urlParams.get('sdkKey'),
+            password: urlParams.get('password'),
+            userName: urlParams.get('userName')
+        };
+        
+        document.getElementById('params').innerHTML = JSON.stringify(params, null, 2);
+        console.log('Iframe parameters:', params);
+    </script>
+</body>
+</html>

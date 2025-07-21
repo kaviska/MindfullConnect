@@ -2,6 +2,7 @@
 
 import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { JoinWithSDKButton } from "@/components/ui/JoinWithSDKButton";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-600",
@@ -25,6 +26,7 @@ interface SessionProps {
   duration: number;
   status: string;
   zoomLink?: string;
+  zoomMeetingId?: string;
   createdAt: string;
   onDeleteAction?: (sessionId: string) => void;
 }
@@ -37,12 +39,54 @@ export default function SessionRow({
   duration,
   status,
   zoomLink,
+  zoomMeetingId,
   onDeleteAction,
 }: SessionProps) {
   const [formattedDateTime, setFormattedDateTime] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [effectiveStatus, setEffectiveStatus] = useState<string>(status);
+
+  // Function to extract meeting ID from Zoom link if zoomMeetingId is not available
+  const extractMeetingIdFromLink = (zoomLink: string): string | null => {
+    if (!zoomLink) return null;
+
+    // Common Zoom link patterns:
+    // https://zoom.us/j/1234567890
+    // https://us02web.zoom.us/j/1234567890
+    // https://zoom.us/j/1234567890?pwd=...
+    const patterns = [
+      /\/j\/(\d+)/, // /j/123456789
+      /meeting_number=(\d+)/, // meeting_number=123456789
+      /meetingNumber=(\d+)/, // meetingNumber=123456789
+    ];
+
+    for (const pattern of patterns) {
+      const match = zoomLink.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+
+    return null;
+  };
+
+  // Get effective meeting ID
+  const effectiveMeetingId =
+    zoomMeetingId || extractMeetingIdFromLink(zoomLink || "");
+
+  // Debug logging for Zoom data
+  useEffect(() => {
+    console.log("SessionRow Zoom data:", {
+      sessionId: _id,
+      zoomLink,
+      zoomMeetingId,
+      effectiveMeetingId,
+      hasZoomLink: !!zoomLink,
+      hasZoomMeetingId: !!zoomMeetingId,
+      hasEffectiveMeetingId: !!effectiveMeetingId,
+    });
+  }, [_id, zoomLink, zoomMeetingId, effectiveMeetingId]);
 
   // Function to determine if session is overdue
   const isSessionOverdue = () => {
@@ -213,25 +257,34 @@ export default function SessionRow({
 
       <td className="px-6 py-4">
         {zoomLink && !shouldDisableJoin ? (
-          <a
-            href={zoomLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
-          >
-            <svg
-              className="w-3 h-3 mr-1"
-              fill="currentColor"
-              viewBox="0 0 20 20"
+          <div className="flex flex-col gap-2">
+            <a
+              href={zoomLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-medium rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                clipRule="evenodd"
+              <svg
+                className="w-3 h-3 mr-1"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Join via Browser
+            </a>
+            {effectiveMeetingId && (
+              <JoinWithSDKButton
+                meetingId={effectiveMeetingId}
+                sdkKey={process.env.NEXT_PUBLIC_ZOOM_SDK_KEY}
+                userName={patientId?.fullName || "Guest"}
               />
-            </svg>
-            Join
-          </a>
+            )}
+          </div>
         ) : (
           <span
             className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg ${
