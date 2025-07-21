@@ -20,23 +20,25 @@ export default function SessionStats() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/counselor/session-stats', {
-          method: 'GET',
-          credentials: 'include',
+        const response = await fetch("/api/counselor/session-stats", {
+          method: "GET",
+          credentials: "include",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch session statistics');
+          throw new Error(
+            errorData.error || "Failed to fetch session statistics"
+          );
         }
 
         const data = await response.json();
         setStats(data.stats);
       } catch (err: any) {
-        console.error('Error fetching session stats:', err);
+        console.error("Error fetching session stats:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -50,7 +52,10 @@ export default function SessionStats() {
     return (
       <div className="flex gap-28 justify-center my-6">
         {[1, 2, 3].map((idx) => (
-          <div key={idx} className="rounded-lg px-6 py-6 w-56 bg-gray-200 animate-pulse">
+          <div
+            key={idx}
+            className="rounded-lg px-6 py-6 w-56 bg-gray-200 animate-pulse"
+          >
             <div className="h-5 bg-gray-300 rounded mb-2"></div>
             <div className="h-8 bg-gray-300 rounded"></div>
           </div>
@@ -80,30 +85,33 @@ export default function SessionStats() {
   }
 
   const statItems = [
-    { 
-      label: "Total Sessions", 
-      value: stats.totalSessions, 
-      bg: "bg-orange-300", 
-      text: "text-black" 
+    {
+      label: "Total Sessions",
+      value: stats.totalSessions,
+      bg: "bg-orange-300",
+      text: "text-black",
     },
-    { 
-      label: "Upcoming Sessions", 
-      value: stats.upcomingSessions, 
-      bg: "bg-slate-800", 
-      text: "text-white" 
+    {
+      label: "Upcoming Sessions",
+      value: stats.upcomingSessions,
+      bg: "bg-slate-800",
+      text: "text-white",
     },
-    { 
-      label: "Today's Sessions", 
-      value: stats.todaysSessions, 
-      bg: "bg-slate-800", 
-      text: "text-white" 
+    {
+      label: "Today's Sessions",
+      value: stats.todaysSessions,
+      bg: "bg-slate-800",
+      text: "text-white",
     },
   ];
 
   return (
     <div className="flex gap-28 justify-center my-6">
       {statItems.map((stat, idx) => (
-        <div key={idx} className={`rounded-lg px-6 py-6 w-56 ${stat.bg} ${stat.text}`}>
+        <div
+          key={idx}
+          className={`rounded-lg px-6 py-6 w-56 ${stat.bg} ${stat.text}`}
+        >
           <h3 className="text-lg font-semibold">{stat.label}</h3>
           <p className="text-3xl font-bold">{stat.value}</p>
         </div>
