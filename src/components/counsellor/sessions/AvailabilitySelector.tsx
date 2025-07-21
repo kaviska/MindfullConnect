@@ -108,7 +108,7 @@ const AvailabilitySelector: React.FC = () => {
           axios.get(`/api/availability?weekStart=${nextWeekStart}`, {
             withCredentials: true,
           }),
-          axios.get(`/api/sessions/my`, { withCredentials: true }),
+          axios.get(`/api/counselor/sessions`, { withCredentials: true }), // Changed from /api/sessions/my
         ]);
 
       console.log("API Responses:", {
