@@ -47,21 +47,29 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     chatReferenceId: undefined,
   });
 
-  // Add this function to handle report button click
-  const handleReportUser = (chatUser: ChatUser, conversationId?: string) => {
-    console.log("[ChatSidebar] Opening report modal for user:", {
-      userId: chatUser._id,
-      userName: chatUser.fullName,
-      conversationId,
-    });
+  // ✅ Update the handleReportUser function in ChatSidebar.tsx
+const handleReportUser = (chatUser: ChatUser, conversationId?: string) => {
+  console.log("[ChatSidebar] Opening report modal for user:", {
+    userId: chatUser._id,
+    userName: chatUser.fullName,
+    userRole: chatUser.role,
+    conversationId,
+  });
 
-    setReportModal({
-      isOpen: true,
-      reporteeId: chatUser._id,
-      reporteeName: chatUser.fullName,
-      chatReferenceId: conversationId,
-    });
-  };
+  // Validate required data before opening modal
+  if (!chatUser._id || !chatUser.fullName) {
+    console.error('[ChatSidebar] Invalid user data for reporting:', chatUser);
+    alert('Unable to report this user. Please try again.');
+    return;
+  }
+
+  setReportModal({
+    isOpen: true,
+    reporteeId: chatUser._id,
+    reporteeName: chatUser.fullName,
+    chatReferenceId: conversationId,
+  });
+};
 
   // ✅ Log initial selected conversation
   useEffect(() => {
