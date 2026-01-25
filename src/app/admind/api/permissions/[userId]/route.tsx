@@ -6,11 +6,11 @@ import Admin from '../../../../models/Admin';
 
 export async function GET(
   _req: Request,
-  context: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   await dbConnect();
 
-  const { userId } = context.params;
+  const { userId } = await context.params;
 
   if (!userId) {
     return NextResponse.json({ error: 'Missing userId' }, { status: 400 });

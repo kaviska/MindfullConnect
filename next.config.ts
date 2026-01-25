@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
@@ -9,6 +10,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  outputFileTracingRoot: path.join(__dirname),
   headers: async () => [
     {
       source: '/zoom/:path*',
